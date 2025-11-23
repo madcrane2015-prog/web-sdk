@@ -179,7 +179,7 @@
     bgImg.src = BACKGROUND_URL;
     await new Promise<void>((resolve, reject) => {
       bgImg.onload = () => {
-        console.log("Taustakuva ladattu ok:", BACKGROUND_URL);
+        console.log("Taustakuva ladattu ok:", BACKGROUND_URL, bgImg.width, "x", bgImg.height);
         resolve();
       };
       bgImg.onerror = (err) => {
@@ -188,6 +188,7 @@
       };
     });
     backgroundTexture = Texture.from(bgImg);
+    console.log("Taustakuvan tekstuuri luotu:", backgroundTexture);
 
     // Load symbol textures
     for (const key of SYMBOL_KEYS) {
@@ -215,18 +216,22 @@
     }
 
     symbolTextures = textures;
+    
+    console.log("Taustakuva ladattu, tekstuuri:", backgroundTexture);
 
-    // Add background sprite
+    // Add background sprite FIRST so it stays behind everything
     if (backgroundTexture) {
       const bgSprite = new Sprite(backgroundTexture);
-      // Scale to fit canvas
-      const scaleX = app.renderer.width / bgSprite.texture.width;
-      const scaleY = app.renderer.height / bgSprite.texture.height;
-      const scale = Math.max(scaleX, scaleY); // Cover entire canvas
+      // Scale to fit canvas width while maintaining aspect ratio
+      const scale = app.renderer.width / bgSprite.texture.width;
       bgSprite.scale.set(scale);
+      // Center the background
       bgSprite.x = (app.renderer.width - bgSprite.width) / 2;
       bgSprite.y = (app.renderer.height - bgSprite.height) / 2;
       app.stage.addChild(bgSprite);
+      console.log("Taustakuva lisätty stageen:", bgSprite.width, "x", bgSprite.height);
+    } else {
+      console.error("Taustakuva ei ole saatavilla!");
     }
 
     // 3) Rullien mitat ja sijainnit taustakuvan perusteella
@@ -237,13 +242,13 @@
       return reelIndex === 2 ? symbolHeight : ROWS * ROW_HEIGHT - gap;
     };
 
-    // Rullien sijainnit taustakuvan rullien kohdalla (arvioitu)
+    // Rullien sijainnit taustakuvan rullien kohdalla (tarkemmin mitattu)
     const reelPositions = [
-      { x: 120, y: 150 }, // Vasen rulla
-      { x: 250, y: 150 }, // Toinen rulla  
-      { x: 380, y: 200 }, // Keskimmäinen rulla (korkeammalla)
-      { x: 510, y: 150 }, // Neljäs rulla
-      { x: 640, y: 150 }  // Oikea rulla
+      { x: 80, y: 120 },   // Vasen rulla
+      { x: 200, y: 120 },  // Toinen rulla  
+      { x: 320, y: 140 },  // Keskimmäinen rulla (hieman alempana)
+      { x: 440, y: 120 },  // Neljäs rulla
+      { x: 560, y: 120 }   // Oikea rulla
     ];
 
     // 4) LUODAAN RULLAT + MASKIT
@@ -255,6 +260,14 @@
       
       reelCont.x = reelPositions[i].x;
       reelCont.y = reelPositions[i].y;
+
+      // Add semi-transparent background for reel area
+      const reelBg = new Graphics()
+        .rect(0, 0, REEL_WIDTH, reelHeight)
+        .fill({ color: 0x000000, alpha: 0.3 });
+      reelBg.x = reelPositions[i].x;
+      reelBg.y = reelPositions[i].y;
+      app.stage.addChild(reelBg);
 
       const mask = new Graphics()
         .rect(0, 0, REEL_WIDTH, reelHeight)
