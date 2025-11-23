@@ -1,4 +1,11 @@
-// @ts-ignore
-import config from 'config-vite';
+import { sveltekit } from '@sveltejs/kit/vite';
 
-export default config();
+/** @type {import('vite').UserConfig} */
+const config = {
+  plugins: [sveltekit()],
+
+  // TÄRKEÄ: base path GitHub Pagesille
+  base: process.argv.includes('dev') ? '' : '/web-sdk/oma-peli/'
+};
+
+export default config;
