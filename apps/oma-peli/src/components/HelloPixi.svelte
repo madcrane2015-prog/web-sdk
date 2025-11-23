@@ -255,13 +255,13 @@
       return baseY;
     };
 
-    // Rullien sijainnit taustakuvan rullien kohdalla (mitattu kuvan perusteella)
+    // Rullien sijainnit taustakuvan rullien kohdalla (korjattu kuvan perusteella)
     const reelPositions = [
-      { x: 120, y: 180 },  // Vasen rulla
-      { x: 240, y: 180 },  // Toinen rulla  
-      { x: 360, y: 180 },  // Keskimmäinen rulla (samalla tasolla kuin muut)
-      { x: 480, y: 180 },  // Neljäs rulla
-      { x: 600, y: 180 }   // Oikea rulla
+      { x: 150, y: 160 },  // Vasen rulla - siirretty oikealle
+      { x: 270, y: 160 },  // Toinen rulla  
+      { x: 390, y: 160 },  // Keskimmäinen rulla
+      { x: 510, y: 160 },  // Neljäs rulla
+      { x: 630, y: 160 }   // Oikea rulla
     ];
 
     // 4) LUODAAN RULLAT + MASKIT
@@ -327,18 +327,18 @@
   on:click={spin}
   style="
     position: absolute;
-    left: 480px;
-    top: 500px;
-    width: 80px;
-    height: 80px;
+    left: 470px;
+    top: 480px;
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
-    background-color: transparent;
-    border: none;
+    background-color: rgba(0,255,0,0.1);
+    border: 2px solid rgba(0,255,0,0.3);
     cursor: pointer;
     z-index: 1000;
     font-size: 0;
   "
   title="SPIN"
 >
-  <!-- Nappi on läpinäkyvä, taustakuvan vihreä ympyrä näkyy -->
+  <!-- Nappi on läpinäkyvä, taustakuvan vihreä ympärä näkyy -->
 </button>
