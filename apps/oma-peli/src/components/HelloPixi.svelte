@@ -78,6 +78,18 @@
 
   // Taustakuvan URL (fyysinen peliautomaatti)
   const BACKGROUND_URL = `${base}/symbols/bg.jpg`;
+  
+  // ===== ÄÄNIEFEKTIT =====
+  // Äänitiedostojen URLit
+  const SOUND_URLS = {
+    spin: `${base}/sounds/spin.mp3`,     // SPIN-napin ääni (whirr)
+    stop: `${base}/sounds/stop.mp3`,     // Kiekon pysähtymisääni (chunk)
+    win: `${base}/sounds/win.mp3`        // Voittoääni (tulevaisuudessa)
+  };
+  
+  // Äänien hallinta
+  let soundEnabled = true;              // Voi käyttäjä halutessaan mykistää
+  let audioElements: Record<string, HTMLAudioElement> = {};
 
   // ===== PELIN TILA JA MUUTTUJAT =====
   // Ladatut tekstuurit (kuvat muutettuna PixiJS muotoon)
@@ -104,6 +116,17 @@
     }
     return grid;
   }
+  
+  // Äänen toisto (jos äänet on käytössä)
+  function playSound(soundKey: keyof typeof SOUND_URLS) {
+    if (!soundEnabled || !audioElements[soundKey]) return;
+    
+    const audio = audioElements[soundKey];
+    audio.currentTime = 0; // Palaa alkuun (jos jo soittaa)
+    audio.play().catch(err => {
+      console.warn('Äänen toisto epäonnistui:', soundKey, err);
+    });
+  }
 
   // Alkutilan pelilauta (luodaan heti)
   let gridData: SymbolKey[][] = createGrid();
@@ -123,8 +146,13 @@
     offset = 0;            // Nykyinen scrollaus-offset (0 = normaali asema)
     speed = 0;             // Nykyinen pyörimisnopeus (pikseleitä per frame)
     targetSpeed = 30;      // Tavoitenopeus (saavutetaan kiihdytyksen jälkeen)
-    state: "idle" | "spinning" | "slowing" | "stopped" = "idle"; // Kiekon tila
+    state: "idle" | "spinning" | "slowing" | "bouncing" | "stopped" = "idle"; // Kiekon tila + bounce
     stopDelay = 0;         // Kuinka monta framea odotetaan ennen hidastusta
+    
+    // BOUNCE EFEKTI muuttujat
+    bounceOffset = 0;      // Bounce-efektin Y-siirtymä
+    bounceSpeed = 0;       // Bounce-efektin nopeus
+    bounceFrames = 0;      // Kuinka monta framea bouncessa ollaan
 
     // Konstruktori: luo uuden kiekon
     constructor(index: number, container: Container) {
@@ -151,19 +179,44 @@
         else this.state = "slowing";                        // Aloita hidastus kun viive on nolla
       }
 
-      // HIDASTUS-VAIHE: vähennetään nopeutta kunnes pysähdytään
+      // HIDASTUS-VAIHE: vähennetään nopeutta kunnes aloitetaan bounce
       if (this.state === "slowing") {
         this.speed *= 0.92; // Eksponentiaalinen hidastus (8% vähenee joka frame)
 
-        // Pysähdytään kun nopeus on riittävän pieni
+        // Aloita bounce-efekti kun nopeus on riittävän pieni
         if (this.speed < 2.5) {
-          this.speed = 0;         // Nopeus nollaksi
-          this.state = "stopped"; // Tila: pysähtynyt
-          this.offset = 0;        // Nollaa offset (snap kohdilleen)
+          this.state = "bouncing";   // Siirry bounce-tilaan
+          this.bounceSpeed = -8;     // Alkuperäinen "tökkäys" ylöspäin
+          this.bounceFrames = 0;     // Nollaa bounce-laskuri
+          this.speed = 0;           // Pysäytä normaali liike
+          this.offset = 0;          // Nollaa scroll-offset
+          
+          // Soita "chunk" pysähtymisääni
+          playSound('stop');
+        }
+      }
+      
+      // BOUNCE-VAIHE: "kimpoileva" pysähtyminen
+      if (this.state === "bouncing") {
+        this.bounceFrames++;
+        this.bounceSpeed += 0.8;              // Gravitation (hidastaa ylösnopeus, kiihdyttää alaspäin)
+        this.bounceOffset += this.bounceSpeed; // Päivitä bounce-sijainti
+        
+        // Jos "pomppi" menee liian alas, törmää "lattiaan" ja pomppii takaisin
+        if (this.bounceOffset > 3) {
+          this.bounceOffset = 3;
+          this.bounceSpeed *= -0.6; // Vaimenna pomppiminen (60% energia säilyy)
+        }
+        
+        // Lopeta bounce kun liike on riittävän pientä
+        if (this.bounceFrames > 45 || (Math.abs(this.bounceSpeed) < 0.5 && Math.abs(this.bounceOffset) < 1)) {
+          this.state = "stopped";    // Siirry lopulliseen pysähtynyt-tilaan
+          this.bounceOffset = 0;     // Nollaa bounce-offset
+          this.bounceSpeed = 0;      // Nollaa bounce-nopeus
         }
       }
 
-      // LIIKE-LASKENTA: siirrytään jos nopeus > 0
+      // LIIKE-LASKENTA: siirrytään jos nopeus > 0 (vain spinning/slowing aikana)
       if (this.speed > 0) {
         this.offset += this.speed; // Lisätään offsettia
 
@@ -190,7 +243,8 @@
         const symKey = currentGridColumn[r];  // Hae symbolin avain (a-j)
         if (!symKey) continue;               // Ohita jos ei symbolia
         
-        const y = r * ROW_HEIGHT + this.offset; // Laske Y-koordinaatti (+ offset pyörimistä varten)
+        // Laske Y-koordinaatti (scroll offset + bounce offset)
+        const y = r * ROW_HEIGHT + this.offset + this.bounceOffset;
 
         // Varmista että tekstuurit on ladattu
         if (!symbolTextures) continue;
@@ -203,7 +257,7 @@
         sprite.width = symbolWidth;   // Aseta leveys
         sprite.height = symbolHeight; // Aseta korkeus
         sprite.x = 0;                // X-koordinaatti (suhteessa konttiin)
-        sprite.y = y;                // Y-koordinaatti (sisältää offsetin)
+        sprite.y = y;                // Y-koordinaatti (sisältää offsetit)
 
         stage.addChild(sprite); // Lisää sprite näytölle
       }
@@ -279,7 +333,51 @@
 
     // Tallenna ladatut tekstuurit muuttujaan (käytettävissä koko komponentissa)
     symbolTextures = textures;
-    // ===== 3) TAUSTAKUVAN ASETTELU =====
+    
+    // ===== 3) ÄÄNIEN LATAUS =====
+    // Luodaan HTML5 Audio elementit ääniefektejä varten
+    console.log("Ladataan ääniefektit...");
+    
+    // Luo Web Audio elementit (placeholder-tiedostoja ei ole vielä olemassa)
+    for (const [key, url] of Object.entries(SOUND_URLS)) {
+      const audio = new Audio();
+      audio.src = url;
+      audio.preload = 'auto';
+      audio.volume = 0.7; // 70% äänenvoimakkuus
+      
+      // Yritä esikuormata (ei haittaa jos tiedosto ei ole olemassa)
+      audio.load();
+      
+      // Käsittele latausvirheet hiljaa (placeholder-tilanne)
+      audio.addEventListener('error', () => {
+        console.log(`Äänitiedostoa ei löydy: ${url} (käytetään hiljaista placeholderia)`);
+      });
+      
+      audioElements[key] = audio;
+    }
+    
+    // ===== 3) ÄÄNIEN LATAUS =====
+    // Luodaan HTML5 Audio elementit ääniefektejä varten
+    console.log("Ladataan ääniefektit...");
+    
+    // Luo Web Audio elementit (placeholder-tiedostoja ei ole vielä olemassa)
+    for (const [key, url] of Object.entries(SOUND_URLS)) {
+      const audio = new Audio();
+      audio.src = url;
+      audio.preload = 'auto';
+      audio.volume = 0.7; // 70% äänenvoimakkuus
+      
+      // Yritä esikuormata (ei haittaa jos tiedosto ei ole olemassa)
+      audio.load();
+      
+      // Käsittele latausvirheet hiljaa (placeholder-tilanne)
+      audio.addEventListener('error', () => {
+        console.log(`Äänitiedostoa ei löydy: ${url} (käytetään hiljaista placeholderia)`);
+      });
+      
+      audioElements[key] = audio;
+    }
+    // ===== 4) TAUSTAKUVAN ASETTELU =====
     // Lisätään taustakuva ENSIMMÄISENÄ jotta se jää kaiken taakse
     console.log("Taustakuva ladattu, tekstuuri:", backgroundTexture);
 
@@ -327,7 +425,7 @@
       console.error("Taustakuva ei ole saatavilla!");
     }
 
-    // ===== 4) KIEKKOJEN MITAT JA SIJAINNIT =====
+    // ===== 5) KIEKKOJEN MITAT JA SIJAINNIT =====
     // Lasketaan kiekkojen mitat taustakuvan mukaan
     const REEL_WIDTH = symbolWidth; // Kiekon leveys = symbolien leveys
     
@@ -422,9 +520,13 @@
   // ===================================================================
   function spin() {
     gridData = createGrid();                        // Luo uudet symbolit
-    reels.forEach((r, i) => r.start(i * 15));       // Käynnistä kiekot porrastetusti
-    // Viive kaava: 1. kiekko = 0 framea, 2. = 15, 3. = 30, jne.
+    reels.forEach((r, i) => r.start(60 + i * 20));  // Käynnistä kiekot porrastetusti
+    // Viive kaava: 1. kiekko = 60 framea, 2. = 80, 3. = 100, jne.
+    // Kaikki kiekot pyörivät vähintään 60 framea ennen hidastuksen alkua
     // Tämä luo kauniin "aaltomaisen" pysähtymisen vasemmalta oikealle
+    
+    // Soita "whirr" SPIN-ääni
+    playSound('spin');
   }
 </script>
 
@@ -434,6 +536,31 @@
 
 <!-- PixiJS canvas sijoitetaan tähän div-elementtiin -->
 <div bind:this={container}></div>
+
+<!-- Mykistysnappi oikeassa yläkulmassa -->
+<button
+  on:click={() => { soundEnabled = !soundEnabled; }}
+  style="
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: {soundEnabled ? 'rgba(0,255,0,0.2)' : 'rgba(255,0,0,0.2)'};
+    border: 2px solid {soundEnabled ? 'rgba(0,255,0,0.5)' : 'rgba(255,0,0,0.5)'};
+    cursor: pointer;
+    z-index: 1001;
+    font-size: 20px;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  "
+  title={soundEnabled ? "Mykistä äänet" : "Laita äänet päälle"}
+>
+  {soundEnabled ? "🔊" : "🔇"}
+</button>
 
 <!-- 
   Läpinäkyvä SPIN-nappi taustakuvan vihreän napin päälle
