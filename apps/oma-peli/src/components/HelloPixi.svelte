@@ -12,9 +12,9 @@
   const COLS = 5;
   const ROWS = 3;
 
-  // Symbol dimensions to maintain 760:700 aspect ratio
-  const symbolWidth = 120;
-  const symbolHeight = Math.round(symbolWidth * (700 / 760)); // ≈ 111px
+  // Symbol dimensions to fit background reels properly
+  const symbolWidth = 100;
+  const symbolHeight = Math.round(symbolWidth * (700 / 760)); // ≈ 92px
   const cellSize = symbolWidth; // Keep for compatibility
   const gap = 10;
   const ROW_HEIGHT = symbolHeight + gap;
@@ -222,14 +222,16 @@
     // Add background sprite FIRST so it stays behind everything
     if (backgroundTexture) {
       const bgSprite = new Sprite(backgroundTexture);
-      // Scale to fit canvas width while maintaining aspect ratio
-      const scale = app.renderer.width / bgSprite.texture.width;
+      // Scale to fit canvas properly
+      const scaleX = app.renderer.width / bgSprite.texture.width;
+      const scaleY = app.renderer.height / bgSprite.texture.height;
+      const scale = Math.min(scaleX, scaleY); // Fit entire image
       bgSprite.scale.set(scale);
-      // Center the background
+      // Center the background properly
       bgSprite.x = (app.renderer.width - bgSprite.width) / 2;
       bgSprite.y = (app.renderer.height - bgSprite.height) / 2;
       app.stage.addChild(bgSprite);
-      console.log("Taustakuva lisätty stageen:", bgSprite.width, "x", bgSprite.height);
+      console.log("Taustakuva lisätty stageen:", bgSprite.width, "x", bgSprite.height, "position:", bgSprite.x, bgSprite.y);
     } else {
       console.error("Taustakuva ei ole saatavilla!");
     }
@@ -242,13 +244,13 @@
       return reelIndex === 2 ? symbolHeight : ROWS * ROW_HEIGHT - gap;
     };
 
-    // Rullien sijainnit taustakuvan rullien kohdalla (tarkemmin mitattu)
+    // Rullien sijainnit taustakuvan rullien kohdalla (mitattu kuvan perusteella)
     const reelPositions = [
-      { x: 80, y: 120 },   // Vasen rulla
-      { x: 200, y: 120 },  // Toinen rulla  
-      { x: 320, y: 140 },  // Keskimmäinen rulla (hieman alempana)
-      { x: 440, y: 120 },  // Neljäs rulla
-      { x: 560, y: 120 }   // Oikea rulla
+      { x: 120, y: 180 },  // Vasen rulla
+      { x: 240, y: 180 },  // Toinen rulla  
+      { x: 360, y: 180 },  // Keskimmäinen rulla (samalla tasolla kuin muut)
+      { x: 480, y: 180 },  // Neljäs rulla
+      { x: 600, y: 180 }   // Oikea rulla
     ];
 
     // 4) LUODAAN RULLAT + MASKIT
