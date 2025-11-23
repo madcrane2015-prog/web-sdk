@@ -457,7 +457,7 @@
     z-index: 1000;                         /* Varmista että nappi on päällimmäisenä */
     font-size: 0;                          /* Piilota teksti */
   "
-  title="SPIN"  /* Tooltip-teksti hover:ssa */
+  title="SPIN"
 >
   <!-- Nappi on osittain näkyvä koordinaattien varmistamiseksi -->
 </button>
