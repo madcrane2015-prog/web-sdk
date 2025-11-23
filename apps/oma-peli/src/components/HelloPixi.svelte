@@ -243,6 +243,17 @@
     const getReelHeight = (reelIndex: number) => {
       return reelIndex === 2 ? symbolHeight : ROWS * ROW_HEIGHT - gap;
     };
+    
+    // Keskimmäisen rullan Y-korjaus että se on samassa linjassa muiden keskikohdan kanssa
+    const getAdjustedY = (reelIndex: number, baseY: number) => {
+      if (reelIndex === 2) {
+        // Keskimmäinen rulla: siirretään ylöspäin niin että sen keskikohta on muiden keskikohdassa
+        const otherReelsCenter = (ROWS * ROW_HEIGHT - gap) / 2;
+        const thisReelCenter = symbolHeight / 2;
+        return baseY + otherReelsCenter - thisReelCenter;
+      }
+      return baseY;
+    };
 
     // Rullien sijainnit taustakuvan rullien kohdalla (mitattu kuvan perusteella)
     const reelPositions = [
@@ -261,14 +272,14 @@
       const reelHeight = getReelHeight(i);
       
       reelCont.x = reelPositions[i].x;
-      reelCont.y = reelPositions[i].y;
+      reelCont.y = getAdjustedY(i, reelPositions[i].y);
 
       // Add semi-transparent background for reel area
       const reelBg = new Graphics()
         .rect(0, 0, REEL_WIDTH, reelHeight)
         .fill({ color: 0x000000, alpha: 0.3 });
-      reelBg.x = reelPositions[i].x;
-      reelBg.y = reelPositions[i].y;
+      reelBg.x = reelCont.x;
+      reelBg.y = reelCont.y;
       app.stage.addChild(reelBg);
 
       const mask = new Graphics()
