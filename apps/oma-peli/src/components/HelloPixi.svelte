@@ -12,9 +12,12 @@
   const COLS = 5;
   const ROWS = 3;
 
-  const cellSize = 120;
+  // Symbol dimensions to maintain 760:700 aspect ratio
+  const symbolWidth = 120;
+  const symbolHeight = Math.round(symbolWidth * (700 / 760)); // ≈ 111px
+  const cellSize = symbolWidth; // Keep for compatibility
   const gap = 10;
-  const ROW_HEIGHT = cellSize + gap;
+  const ROW_HEIGHT = symbolHeight + gap;
 
   // Avaimet symboleille
   const SYMBOL_KEYS = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"] as const;
@@ -125,7 +128,7 @@
         const y = r * ROW_HEIGHT + this.offset;
 
         // Taustaruutu (näkyy aina)
-        const box = new Graphics().rect(0, 0, cellSize, cellSize).fill(0xffff00);
+        const box = new Graphics().rect(0, 0, symbolWidth, symbolHeight).fill(0xffff00);
         box.x = 0;
         box.y = y;
         stage.addChild(box);
@@ -137,8 +140,8 @@
         if (!texture) continue;
 
         const sprite = new Sprite(texture);
-        sprite.width = cellSize;
-        sprite.height = cellSize;
+        sprite.width = symbolWidth;
+        sprite.height = symbolHeight;
         sprite.x = 0;
         sprite.y = y;
 
@@ -191,7 +194,7 @@
     symbolTextures = textures;
 
     // 3) Rullien mitat
-    const REEL_WIDTH = cellSize;
+    const REEL_WIDTH = symbolWidth;
     const REEL_HEIGHT = ROWS * ROW_HEIGHT - gap;
 
     const REELS_WIDTH = COLS * REEL_WIDTH + (COLS - 1) * gap;
