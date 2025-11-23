@@ -37,8 +37,12 @@
     j: `${base}/symbols/fries.jpg`
   };
 
+  // Background image URL
+  const BACKGROUND_URL = `${base}/symbols/bg.jpg`;
+
   // Tänne ladatut tekstuurit
   let symbolTextures: Record<SymbolKey, Texture> | null = null;
+  let backgroundTexture: Texture | null = null;
 
   function randomSymbol(): SymbolKey {
     return SYMBOL_KEYS[Math.floor(Math.random() * SYMBOL_KEYS.length)];
@@ -48,7 +52,9 @@
     const grid: SymbolKey[][] = [];
     for (let c = 0; c < COLS; c++) {
       const col: SymbolKey[] = [];
-      for (let r = 0; r < ROWS; r++) {
+      // Middle reel (index 2) only has 1 symbol, others have 3
+      const rowsForThisCol = c === 2 ? 1 : ROWS;
+      for (let r = 0; r < rowsForThisCol; r++) {
         col.push(randomSymbol());
       }
       grid.push(col);
@@ -123,15 +129,15 @@
       const stage = this.container;
       stage.removeChildren();
 
-      for (let r = 0; r < ROWS; r++) {
-        const symKey = gridData[this.index][r];
-        const y = r * ROW_HEIGHT + this.offset;
+      // Get number of rows for this specific reel
+      const rowsForThisReel = this.index === 2 ? 1 : ROWS;
+      const currentGridColumn = gridData[this.index];
 
-        // Taustaruutu (näkyy aina)
-        const box = new Graphics().rect(0, 0, symbolWidth, symbolHeight).fill(0xffff00);
-        box.x = 0;
-        box.y = y;
-        stage.addChild(box);
+      for (let r = 0; r < rowsForThisReel; r++) {
+        const symKey = currentGridColumn[r];
+        if (!symKey) continue; // Skip if no symbol for this row
+        
+        const y = r * ROW_HEIGHT + this.offset;
 
         // Jos tekstuureja ei ole vielä ladattu, älä piirrä kuvaa
         if (!symbolTextures) continue;
@@ -167,6 +173,23 @@
     // 2) Ladataan kuvat VANHALLA HYVÄLLÄ Image()-tavalla
     const textures: Record<SymbolKey, Texture> = {} as any;
 
+    // Load background image first
+    console.log("Ladataan taustakuva:", BACKGROUND_URL);
+    const bgImg = new Image();
+    bgImg.src = BACKGROUND_URL;
+    await new Promise<void>((resolve, reject) => {
+      bgImg.onload = () => {
+        console.log("Taustakuva ladattu ok:", BACKGROUND_URL);
+        resolve();
+      };
+      bgImg.onerror = (err) => {
+        console.error("Taustakuvan lataus epäonnistui:", BACKGROUND_URL, err);
+        reject(err);
+      };
+    });
+    backgroundTexture = Texture.from(bgImg);
+
+    // Load symbol textures
     for (const key of SYMBOL_KEYS) {
       const url = SYMBOL_URLS[key];
       console.log("Ladataan HTMLImage-kuva:", key, url);
@@ -193,28 +216,48 @@
 
     symbolTextures = textures;
 
-    // 3) Rullien mitat
+    // Add background sprite
+    if (backgroundTexture) {
+      const bgSprite = new Sprite(backgroundTexture);
+      // Scale to fit canvas
+      const scaleX = app.renderer.width / bgSprite.texture.width;
+      const scaleY = app.renderer.height / bgSprite.texture.height;
+      const scale = Math.max(scaleX, scaleY); // Cover entire canvas
+      bgSprite.scale.set(scale);
+      bgSprite.x = (app.renderer.width - bgSprite.width) / 2;
+      bgSprite.y = (app.renderer.height - bgSprite.height) / 2;
+      app.stage.addChild(bgSprite);
+    }
+
+    // 3) Rullien mitat ja sijainnit taustakuvan perusteella
     const REEL_WIDTH = symbolWidth;
-    const REEL_HEIGHT = ROWS * ROW_HEIGHT - gap;
+    
+    // Eri korkeudet eri rullille - keskimmäinen rulla (index 2) näyttää vain yhden symbolin
+    const getReelHeight = (reelIndex: number) => {
+      return reelIndex === 2 ? symbolHeight : ROWS * ROW_HEIGHT - gap;
+    };
 
-    const REELS_WIDTH = COLS * REEL_WIDTH + (COLS - 1) * gap;
-    const REELS_HEIGHT = REEL_HEIGHT;
-
-    // Keskitys
-    const startX = (app.renderer.width - REELS_WIDTH) / 2;
-    const startY = (app.renderer.height - REELS_HEIGHT) / 2;
+    // Rullien sijainnit taustakuvan rullien kohdalla (arvioitu)
+    const reelPositions = [
+      { x: 120, y: 150 }, // Vasen rulla
+      { x: 250, y: 150 }, // Toinen rulla  
+      { x: 380, y: 200 }, // Keskimmäinen rulla (korkeammalla)
+      { x: 510, y: 150 }, // Neljäs rulla
+      { x: 640, y: 150 }  // Oikea rulla
+    ];
 
     // 4) LUODAAN RULLAT + MASKIT
     reels = [];
 
     for (let i = 0; i < COLS; i++) {
       const reelCont = new Container();
-
-      reelCont.x = startX + i * (REEL_WIDTH + gap);
-      reelCont.y = startY;
+      const reelHeight = getReelHeight(i);
+      
+      reelCont.x = reelPositions[i].x;
+      reelCont.y = reelPositions[i].y;
 
       const mask = new Graphics()
-        .rect(0, 0, REEL_WIDTH, REEL_HEIGHT)
+        .rect(0, 0, REEL_WIDTH, reelHeight)
         .fill(0xffffff);
 
       mask.x = reelCont.x;
