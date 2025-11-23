@@ -17,18 +17,21 @@
   const ROW_HEIGHT = cellSize + gap;
 
   // Avaimet symboleille
-  const SYMBOL_KEYS = ["a", "b", "c", "d", "e", "f", "g"] as const;
+  const SYMBOL_KEYS = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"] as const;
   type SymbolKey = (typeof SYMBOL_KEYS)[number];
 
   // URL jokaiselle symbolille (static/symbols/...)
   const SYMBOL_URLS: Record<SymbolKey, string> = {
-    a: `${base}/symbols/a.png`,
-    b: `${base}/symbols/b.png`,
-    c: `${base}/symbols/c.png`,
-    d: `${base}/symbols/d.png`,
+    a: `${base}/symbols/marska.jpg`,
+    b: `${base}/symbols/elvar.jpg`,
+    c: `${base}/symbols/lucy.jpg`,
+    d: `${base}/symbols/hotrod.jpg`,
     e: `${base}/symbols/e.png`,
     f: `${base}/symbols/f.png`,
-    g: `${base}/symbols/g.png`
+    g: `${base}/symbols/single.jpg`,
+    h: `${base}/symbols/microfones.jpg`,
+    i: `${base}/symbols/shake.jpg`,
+    j: `${base}/symbols/fries.jpg`
   };
 
   // Tänne ladatut tekstuurit
