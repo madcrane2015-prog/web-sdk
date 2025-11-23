@@ -11,9 +11,9 @@ const config = {
       fallback: 'index.html'
     }),
 
-    // Tämä on GitHub Pages -julkaisun kannalta tärkein osa:
+    // GitHub Pages polku korjattu
     paths: {
-      base: dev ? '' : '/web-sdk/oma-peli'
+      base: dev ? '' : '/web-sdk'
     },
 
     prerender: {
