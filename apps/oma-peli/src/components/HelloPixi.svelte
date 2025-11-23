@@ -322,9 +322,23 @@
 
 <div bind:this={container}></div>
 
+<!-- Läpinäkyvä nappi taustakuvan vihreän SPIN-napin päällä -->
 <button
   on:click={spin}
-  style="margin-top: 20px; padding: 10px 20px; font-size: 22px; cursor: pointer;"
+  style="
+    position: absolute;
+    left: 480px;
+    top: 500px;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    z-index: 1000;
+    font-size: 0;
+  "
+  title="SPIN"
 >
-  SPIN 🎰
+  <!-- Nappi on läpinäkyvä, taustakuvan vihreä ympyrä näkyy -->
 </button>
