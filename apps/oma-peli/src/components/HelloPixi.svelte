@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  import { base } from "$app/paths";
   import {
     Application,
     Graphics,
@@ -21,13 +22,13 @@
 
   // URL jokaiselle symbolille (static/symbols/...)
   const SYMBOL_URLS: Record<SymbolKey, string> = {
-    a: "/symbols/a.png",
-    b: "/symbols/b.png",
-    c: "/symbols/c.png",
-    d: "/symbols/d.png",
-    e: "/symbols/e.png",
-    f: "/symbols/f.png",
-    g: "/symbols/g.png"
+    a: `${base}/symbols/a.png`,
+    b: `${base}/symbols/b.png`,
+    c: `${base}/symbols/c.png`,
+    d: `${base}/symbols/d.png`,
+    e: `${base}/symbols/e.png`,
+    f: `${base}/symbols/f.png`,
+    g: `${base}/symbols/g.png`
   };
 
   // Tänne ladatut tekstuurit

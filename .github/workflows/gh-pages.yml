@@ -16,10 +16,19 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v3
         with:
-          version: 8
+          version: 10.5.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.16.0'
+          cache: 'pnpm'
 
       - name: Install dependencies
         run: pnpm install
+
+      - name: Build pixi-svelte package
+        run: pnpm --filter pixi-svelte build
 
       - name: Build oma-peli
         run: pnpm --filter oma-peli build
