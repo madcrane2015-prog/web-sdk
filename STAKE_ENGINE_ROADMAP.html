@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stake Engine Integraatio Roadmap - Oma-Peli</title>
+    <style>
+        @media print {
+            body { margin: 0; }
+            .page-break { page-break-before: always; }
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            max-width: 210mm;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #00d4aa;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #00d4aa;
+            font-size: 2.5em;
+            margin: 0;
+        }
+        
+        .header .subtitle {
+            font-size: 1.2em;
+            color: #666;
+            margin-top: 10px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border-left: 4px solid #00d4aa;
+            background-color: #f8f9fa;
+        }
+        
+        .section h2 {
+            color: #00d4aa;
+            font-size: 1.5em;
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section h3 {
+            color: #333;
+            font-size: 1.2em;
+            margin-top: 25px;
+            margin-bottom: 10px;
+        }
+        
+        .status-box {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+            margin: 5px 5px 5px 0;
+        }
+        
+        .status-possible { background-color: #d4edda; color: #155724; }
+        .status-missing { background-color: #f8d7da; color: #721c24; }
+        .status-ready { background-color: #d1ecf1; color: #0c5460; }
+        
+        .code-block {
+            background-color: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+        }
+        
+        .timeline {
+            border-left: 3px solid #00d4aa;
+            margin-left: 20px;
+        }
+        
+        .timeline-item {
+            margin-bottom: 20px;
+            padding-left: 30px;
+            position: relative;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -8px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            background-color: #00d4aa;
+            border-radius: 50%;
+        }
+        
+        .timeline-item h4 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        
+        ul {
+            padding-left: 20px;
+        }
+        
+        li {
+            margin-bottom: 8px;
+        }
+        
+        .highlight {
+            background-color: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #ffc107;
+            margin: 15px 0;
+        }
+        
+        .emoji {
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎯 STAKE ENGINE INTEGRAATIO ROADMAP</h1>
+        <div class="subtitle">Oma-Peli: 5-kiekkoinen hedelmäpeli Stake Casinoon</div>
+        <div class="subtitle">Päivätty: 25.11.2025</div>
+    </div>
+
+    <div class="section">
+        <h2><span class="emoji">🎮</span> 1. DEMO-PELI STAKE CASINOSSA</h2>
+        <div>
+            <span class="status-box status-possible">✅ MAHDOLLISTA</span>
+            <span class="status-box status-ready">📍 POLKU: Demo → Testnet → Mainnet</span>
+            <span class="status-box status-ready">🎮 DEMO-TILA: Ei oikeita rahoja, vain testausta</span>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2><span class="emoji">📋</span> 2. NYKYINEN TILA (OMA-PELI)</h2>
+        
+        <h3>✅ VALMIS TOIMINNALLISUUS:</h3>
+        <ul>
+            <li>HelloPixi komponentti (5-kiekkoinen hedelmäpeli)</li>
+            <li>bg.jpg taustakuva (peliautomaatti)</li>
+            <li>10 symbolia (marska, elvar, lucy, hotrod, bubblegum, burger, single, microfones, shake, fries)</li>
+            <li>SPIN-nappi ja ääniefektit</li>
+            <li>GitHub Pages deployment</li>
+            <li>Cross-platform responsiivisuus (iOS/Android/Desktop)</li>
+        </ul>
+
+        <h3>❌ PUUTTUU STAKE-INTEGRAATIOSTA:</h3>
+        <ul>
+            <li>RGS (Remote Game Server) yhteys</li>
+            <li>Autentikointi & käyttäjätili</li>
+            <li>Oikeat panokset & saldot</li>
+            <li>Voitto-logiikat & payout</li>
+            <li>Transaktiot & wallet-yhteys</li>
+        </ul>
+    </div>
+
+    <div class="section page-break">
+        <h2><span class="emoji">🔧</span> 3. INTEGRAATIO VAIHEET</h2>
+
+        <div class="timeline">
+            <div class="timeline-item">
+                <h4>VAIHE A: RGS-YHTEYS</h4>
+                <div class="code-block">// Tarvitsee:
+import { rgsRequest } from 'rgs-requests';
+import { stateGame } from 'state-shared';
+
+// Korvataan random symbolit RGS-vastauksilla:
+const spinResult = await rgsRequest({
+  action: 'spin',
+  bet: currentBet,
+  gameData: { /* pelin tila */ }
+});</div>
+            </div>
+
+            <div class="timeline-item">
+                <h4>VAIHE B: PANOKSET & SALDOT</h4>
+                <div class="code-block">// Integroidaan betting system:
+import { stateBet } from 'state-shared';
+
+// Korvaa nykyinen SPIN-nappi:
+function spin() {
+  if (!stateBet.canBet()) return;
+  const betAmount = stateBet.currentBet();
+  // Kutsu RGS:ää oikealla panoksella
+}</div>
+            </div>
+
+            <div class="timeline-item">
+                <h4>VAIHE C: AUTENTIKOINTI</h4>
+                <div class="code-block">// Stake-autentikointi on jo osittain:
+import { Authenticate } from 'components-shared';
+
+// Laajennetaan:
+- Wallet yhteys (MetaMask, WalletConnect)
+- User balance (ETH, USDC, jne.)
+- Transaction history</div>
+            </div>
+
+            <div class="timeline-item">
+                <h4>VAIHE D: VOITTO-LOGIIKAT</h4>
+                <div class="code-block">// Korvataan nykyinen random grid:
+const gameResult = {
+  symbols: [['a','b','c'], ['d','e','f'], ...], // RGS:ltä
+  winLines: [{ line: 1, payout: 1.5x }],        // Voittolinjat
+  totalWin: 150,                                // Kokonaisvoitto
+  freeSpins: 0                                  // Bonuskierrokset
+};</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2><span class="emoji">📝</span> 4. STAKE ENGINE DEMO-PROSESSI</h2>
+
+        <h3>📧 HAKEMUS STAKELLE:</h3>
+        <ul>
+            <li><strong>Contact:</strong> Stake Developer Relations
+                <ul>
+                    <li>developers@stake.com</li>
+                    <li>Discord: Stake Developers</li>
+                </ul>
+            </li>
+            <li><strong>Demo Application:</strong>
+                <ul>
+                    <li>Game concept (hedelmäpeli)</li>
+                    <li>Technical demo (GitHub Pages link)</li>
+                    <li>RTP % (Return to Player)</li>
+                    <li>Variance level (low/medium/high)</li>
+                </ul>
+            </li>
+            <li><strong>Demo Integration:</strong>
+                <ul>
+                    <li>Test RGS endpoints</li>
+                    <li>Sandbox environment</li>
+                    <li>Demo tokens (ei oikea raha)</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3>✅ DEMO-PELIN EDUT:</h3>
+        <ul>
+            <li>Ei riskiä (demo-tokenit)</li>
+            <li>Feedback Stake-tiimiltä</li>
+            <li>Marketing exposure</li>
+            <li>User testing</li>
+            <li>Proof of concept</li>
+        </ul>
+    </div>
+
+    <div class="section page-break">
+        <h2><span class="emoji">⚡</span> 5. TEKNINEN IMPLEMENTAATIO</h2>
+
+        <h3>LYHYT TERMI (1-2 viikkoa):</h3>
+        <div class="code-block">// Korvaa HelloPixi.svelte random-logiikat:
+
+// NYKYINEN:
+function createGrid(): SymbolKey[][] {
+  return randomSymbols(); // ❌ Ei Stake-integraatiota
+}
+
+// UUSI:
+async function createGrid(): Promise&lt;SymbolKey[][]&gt; {
+  const result = await rgsRequest('spin');
+  return result.gameBoard; // ✅ Stake RGS
+}</div>
+
+        <h3>KESKIPITKÄ TERMI (1 kuukausi):</h3>
+        <ul>
+            <li>Voittolinja-tarkistukset</li>
+            <li>Bonus-ominaisuudet (Free Spins)</li>
+            <li>Multiplier-ominaisuudet</li>
+            <li>Progressive Jackpot (valinnainen)</li>
+        </ul>
+
+        <h3>PITKÄ TERMI (2-3 kuukautta):</h3>
+        <ul>
+            <li>Sertifikaatit (gaming authorities)</li>
+            <li>Fairness-todistukset</li>
+            <li>Mainnet deployment</li>
+            <li>Marketing campaign</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2><span class="emoji">📅</span> 6. SEURAAVAT ASKELEET</h2>
+
+        <div class="highlight">
+            <h3>VÄLITÖN (tänään/huomenna):</h3>
+            <ol>
+                <li><strong>Testaa GitHub Pages:</strong> https://madcrane2015-prog.github.io/web-sdk/oma-peli/</li>
+                <li><strong>Dokumentoi peli:</strong> Kirjoita game design document</li>
+                <li><strong>RTP-suunnittelu:</strong> Päätä palautusprosentti (esim. 96%)</li>
+            </ol>
+        </div>
+
+        <h3>LYHYT TERMI (viikko):</h3>
+        <ol>
+            <li><strong>Stake-yhteydenotto:</strong> Lähetä demo-hakemus</li>
+            <li><strong>RGS-integraatio:</strong> Aloita rgs-requests käyttö</li>
+            <li><strong>Voitto-logiikka:</strong> Suunnittele voittolinjat</li>
+        </ol>
+
+        <h3>SEURAAVAT VAIHTOEHDOT:</h3>
+        <ul>
+            <li>📧 <strong>Demo-hakemuksen</strong> kirjoittaminen Stakelle</li>
+            <li>🔧 <strong>RGS-integraation</strong> tekninen toteutus</li>
+            <li>🎯 <strong>Voitto-logiikan</strong> suunnittelu</li>
+            <li>📊 <strong>RTP-laskennan</strong> implementointi</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2><span class="emoji">🔗</span> LINKIT & RESURSSIT</h2>
+        <ul>
+            <li><strong>Oma-peli Demo:</strong> https://madcrane2015-prog.github.io/web-sdk/oma-peli/</li>
+            <li><strong>GitHub Repository:</strong> https://github.com/madcrane2015-prog/web-sdk</li>
+            <li><strong>Localhost:</strong> http://localhost:3010/ (kehitysympäristö)</li>
+            <li><strong>Stake Developer Contact:</strong> developers@stake.com</li>
+        </ul>
+    </div>
+
+    <div style="text-align: center; margin-top: 50px; color: #666; border-top: 1px solid #ddd; padding-top: 20px;">
+        <p>🎮 <strong>Oma-Peli Stake Engine Roadmap</strong> | Mad Crane Productions | 2025</p>
+    </div>
+</body>
+</html>
