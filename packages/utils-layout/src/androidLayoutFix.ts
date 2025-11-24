@@ -5,14 +5,16 @@
 
 // Detect browser and platform
 const getUserAgent = () => typeof navigator !== 'undefined' ? navigator.userAgent : '';
-const isIOS = () => /iPad|iPhone|iPod/.test(getUserAgent()) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-const isAndroid = () => /Android/.test(getUserAgent());
-const isMacOS = () => /Mac OS X/.test(getUserAgent()) && !isIOS();
-const isSafari = () => /Safari/.test(getUserAgent()) && !/Chrome/.test(getUserAgent());
-const isWebKit = () => /WebKit/.test(getUserAgent());
+const isIOS = () => typeof navigator !== 'undefined' && (/iPad|iPhone|iPod/.test(getUserAgent()) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
+const isAndroid = () => typeof navigator !== 'undefined' && /Android/.test(getUserAgent());
+const isMacOS = () => typeof navigator !== 'undefined' && /Mac OS X/.test(getUserAgent()) && !isIOS();
+const isSafari = () => typeof navigator !== 'undefined' && /Safari/.test(getUserAgent()) && !/Chrome/.test(getUserAgent());
+const isWebKit = () => typeof navigator !== 'undefined' && /WebKit/.test(getUserAgent());
 const isMobile = () => isIOS() || isAndroid();
 
 export const applyCrossPlatformLayoutFixes = () => {
+	// Only run in browser environment
+	if (typeof window === 'undefined') return;
 	// Fix for mobile viewport height issues (iOS Safari and Android Chrome)
 	const setViewportHeight = () => {
 		const vh = window.innerHeight * 0.01;
@@ -75,7 +77,7 @@ export const applyCrossPlatformLayoutFixes = () => {
 	}
 
 	// Linux-specific fixes for font rendering and scrolling
-	if (navigator.platform.includes('Linux')) {
+	if (typeof navigator !== 'undefined' && navigator.platform && navigator.platform.includes('Linux')) {
 		document.body.style.setProperty('font-smooth', 'always');
 		document.body.style.setProperty('-webkit-font-smoothing', 'antialiased');
 		document.body.style.setProperty('-moz-osx-font-smoothing', 'grayscale');

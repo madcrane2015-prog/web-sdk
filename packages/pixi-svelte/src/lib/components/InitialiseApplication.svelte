@@ -15,9 +15,11 @@
 	let initialised = $state(false);
 
 	const initialiseApplication = async () => {
+		console.log('PIXI: Starting initialization...');
 		PIXI.Assets.reset();
 
 		await preloadFont();
+		console.log('PIXI: Creating application...');
 		context.stateApp.pixiApplication = new PIXI.Application<PIXI.Renderer<HTMLCanvasElement>>();
 		await context.stateApp.pixiApplication.init({
 			autoDensity: true,
@@ -26,13 +28,15 @@
 			multiView: false,
 			antialias: true,
 			clearBeforeRender: true,
-			preference: 'webgpu',
+			preference: 'webgl',
 			powerPreference: 'high-performance',
 			resolution: devicePixelRatio.current,
 			resizeTo: window,
 		});
 
+		console.log('PIXI: Application created, adding to DOM...');
 		wrap.appendChild(context.stateApp.pixiApplication.canvas);
+		console.log('PIXI: Canvas added to DOM, initialization complete!');
 
 		// to prevent that you can't scroll the page with touch on the canvas. https://github.com/pixijs/pixijs/issues/4824
 		context.stateApp.pixiApplication.renderer.events.autoPreventDefault = false;

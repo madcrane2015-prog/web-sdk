@@ -2,7 +2,6 @@
 	import { type Snippet } from 'svelte';
 	import { GlobalStyle } from 'components-ui-html';
 	import { Authenticate, LoaderStakeEngine, LoaderExample, LoadI18n, AndroidLayoutFix } from 'components-shared';
-	import Game from '../components/Game.svelte';
 	import { setContext } from '../game/context';
 
 	import messagesMap from '../i18n/messagesMap';
@@ -24,7 +23,7 @@
 <GlobalStyle>
 	<Authenticate>
 		<LoadI18n {messagesMap}>
-			<Game />
+			{@render props.children()}
 		</LoadI18n>
 	</Authenticate>
 </GlobalStyle>
@@ -36,6 +35,4 @@
 	<!-- '/loader.gif' is served from static folder of sveltekit -->
 	<!-- File location: apps/oma-peli/static/loader.gif -->
 {/if}
-
-{@render props.children()}
 

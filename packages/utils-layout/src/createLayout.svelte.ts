@@ -53,9 +53,18 @@ export const createLayout = (layoutOptions: {
 	}
 
 	// Initialize stable canvas sizes and set up reactive updates
-	$effect(() => {
+	if (typeof window !== 'undefined') {
+		// Initial update
 		updateCanvasSizes();
-	});
+		
+		// Set up event listeners for window resize
+		const handleResize = () => {
+			updateCanvasSizes();
+		};
+		
+		window.addEventListener('resize', handleResize);
+		window.addEventListener('orientationchange', handleResize);
+	}
 
 	const canvasSizes = () => stableCanvasSizes; // Use debounced stable sizes instead of direct window dimensions
 	const canvasRatio = () => getRatio(canvasSizes());

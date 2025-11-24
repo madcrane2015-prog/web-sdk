@@ -1,11 +1,9 @@
 <script lang="ts">
-	import { SpineProvider, SpineTrack, Container, Sprite } from 'pixi-svelte';
-	import { FadeContainer, LoadingProgress } from 'components-pixi';
+	import { Text, Container } from 'pixi-svelte';
+	import { FadeContainer } from 'components-pixi';
 	import { MainContainer } from 'components-layout';
 
 	import { getContext } from '../game/context';
-	import TransitionAnimation from './TransitionAnimation.svelte';
-	import PressToContinue from './PressToContinue.svelte';
 
 	type Props = {
 		onloaded: () => void;
@@ -14,42 +12,59 @@
 	const props: Props = $props();
 	const context = getContext();
 
-	let loadingType = $state<'start' | 'transition'>('start');
+	// Wait for assets to actually load before proceeding
+	let gameStarted = $state(false);
+	
+	$effect(() => {
+		if (context.stateApp.loaded && !gameStarted) {
+			gameStarted = true;
+			setTimeout(() => props.onloaded(), 500);
+		}
+	});
 </script>
 
-<!-- logo and loading progress -->
-<FadeContainer show={loadingType === 'start'}>
+<!-- Loading screen shown until assets are loaded -->
+<FadeContainer show={!context.stateApp.loaded}>
 	<MainContainer>
 		<Container
 			x={context.stateLayoutDerived.mainLayout().width * 0.5}
 			y={context.stateLayoutDerived.mainLayout().height * 0.5}
 		>
-			<SpineProvider key="loader" width={300}>
-				<SpineTrack trackIndex={0} animationName={'title_screen'} loop timeScale={3} />
-			</SpineProvider>
+			<Text
+				text="LINES GAME LOADING..."
+				style={{
+					fontFamily: 'Arial',
+					fontSize: 32,
+					fill: 0xffffff,
+					fontWeight: 'bold'
+				}}
+				anchor={{ x: 0.5, y: 0.5 }}
+			/>
 			{#if !context.stateApp.loaded}
-				<LoadingProgress y={250} width={1967 * 0.2} height={346 * 0.2}>
-					{#snippet background(sizes)}
-						<Sprite key="progressBarBackground.png" {...sizes} />
-					{/snippet}
-					{#snippet progress(sizes)}
-						<Sprite key="progressBar.png" {...sizes} />
-					{/snippet}
-					{#snippet frame(sizes)}
-						<Sprite key="progressBarFrame.png" {...sizes} />
-					{/snippet}
-				</LoadingProgress>
+				<Container y={80}>
+					<Text
+						text="Loading assets..."
+						style={{
+							fontFamily: 'Arial',
+							fontSize: 16,
+							fill: 0xcccccc
+						}}
+						anchor={{ x: 0.5, y: 0.5 }}
+					/>
+					<Text
+						text={`${Math.round(context.stateApp.loadingProgress)}%`}
+						style={{
+							fontFamily: 'Arial',
+							fontSize: 14,
+							fill: 0x888888
+						}}
+						anchor={{ x: 0.5, y: 0.5 }}
+						y={30}
+					/>
+				</Container>
 			{/if}
 		</Container>
 	</MainContainer>
 </FadeContainer>
 
-<!-- press to continue -->
-<FadeContainer show={loadingType === 'start' && context.stateApp.loaded}>
-	<PressToContinue onpress={() => (loadingType = 'transition')} />
-</FadeContainer>
 
-<!-- transition between the loading screen and the game -->
-<FadeContainer show={loadingType === 'transition'}>
-	<TransitionAnimation oncomplete={props.onloaded} />
-</FadeContainer>

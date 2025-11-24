@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { crossPlatformLayoutCSS } from 'utils-layout';
+	import { crossPlatformLayoutCSS } from '../../../utils-layout/src/androidLayoutFix';
 
 	onMount(() => {
 		// Inject cross-platform layout fixes CSS

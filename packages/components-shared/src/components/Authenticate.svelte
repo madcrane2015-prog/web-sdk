@@ -12,6 +12,16 @@
 	let authenticated = $state(false);
 
 	const authenticate = async () => {
+		// Skip authentication in development mode
+		if (import.meta.env.DEV || window.location.hostname === 'localhost') {
+			console.log('Development mode: Skipping RGS authentication');
+			// Set some default development values
+			stateBet.betAmount = 1.0;
+			stateBet.wageredBetAmount = 1.0;
+			stateBet.activeBetModeKey = 'normal';
+			return;
+		}
+
 		try {
 			const authenticateData = await requestAuthenticate({
 				rgsUrl: stateUrlDerived.rgsUrl(),
@@ -101,8 +111,16 @@
 				};
 			}
 		} catch (error) {
-			console.error(error);
-			stateModal.modal = { name: 'error', error };
+			if (import.meta.env.DEV || window.location.hostname === 'localhost') {
+				console.warn('Development mode: RGS authentication failed (expected):', error);
+				// Set default development values
+				stateBet.betAmount = 1.0;
+				stateBet.wageredBetAmount = 1.0;
+				stateBet.activeBetModeKey = 'normal';
+			} else {
+				console.error(error);
+				stateModal.modal = { name: 'error', error };
+			}
 		}
 	};
 
