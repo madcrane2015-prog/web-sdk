@@ -79,6 +79,11 @@
   // Taustakuvan URL (fyysinen peliautomaatti)
   const BACKGROUND_URL = `${base}/symbols/bg.jpg`;
   
+  // Debug: log the paths to see what's happening
+  console.log("🔍 DEBUG - Base path:", base);
+  console.log("🔍 DEBUG - Background URL:", BACKGROUND_URL);
+  console.log("🔍 DEBUG - Sample symbol URL:", `${base}/symbols/marska.jpg`);
+  
   // ===== ÄÄNIEFEKTIT =====
   // Äänitiedostojen URLit
   const SOUND_URLS = {
@@ -286,18 +291,18 @@
     const textures: Record<SymbolKey, Texture> = {} as any;
 
     // TAUSTAKUVAN LATAUS
-    console.log("Ladataan taustakuva:", BACKGROUND_URL);
+    console.log("🖼️ Ladataan taustakuva:", BACKGROUND_URL);
     const bgImg = new Image();
     bgImg.src = BACKGROUND_URL;
     
     // Odotetaan että taustakuva latautuu
     await new Promise<void>((resolve, reject) => {
       bgImg.onload = () => {
-        console.log("Taustakuva ladattu ok:", BACKGROUND_URL, bgImg.width, "x", bgImg.height);
+        console.log("✅ Taustakuva ladattu ok:", BACKGROUND_URL, bgImg.width, "x", bgImg.height);
         resolve();
       };
       bgImg.onerror = (err) => {
-        console.error("Taustakuvan lataus epäonnistui:", BACKGROUND_URL, err);
+        console.error("❌ Taustakuvan lataus epäonnistui:", BACKGROUND_URL, err);
         reject(err);
       };
     });
