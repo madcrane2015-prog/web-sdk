@@ -5,6 +5,24 @@ import type { PixiPoint, Sizes } from './types';
 export const REM = 16;
 export const MIN_CLICKABLE_SIZE = 3 * REM; // 44 x 44 is minimum clickable size
 
+// Cross-platform font loading with fallbacks
+export const loadWebFonts = (families: string[], options: Partial<WebFont.Config> = {}) => {
+	const defaultConfig: WebFont.Config = {
+		google: {
+			families: families
+		},
+		timeout: 3000, // 3 second timeout
+		loading: () => console.log('Fonts loading started'),
+		active: () => console.log('All fonts loaded successfully'),
+		inactive: () => console.warn('Font loading failed or timed out, using fallbacks'),
+		fontloading: (familyName: string) => console.debug(`Loading font: ${familyName}`),
+		fontactive: (familyName: string) => console.debug(`Font loaded: ${familyName}`),
+		fontinactive: (familyName: string) => console.warn(`Font failed to load: ${familyName}`)
+	};
+
+	WebFont.load({ ...defaultConfig, ...options });
+};
+
 export const getPointValues = ({
 	point,
 	defaultValue,
@@ -24,7 +42,8 @@ export const anchorToPivot = ({ anchor, sizes }: { anchor: PixiPoint; sizes: Siz
 };
 
 /**
- * Detects if WebGL is enabled.
+ * Detects if WebGL is enabled with enhanced cross-platform support.
+ * Supports iOS, Android, macOS, Windows, and Linux
  * Inspired from http://www.browserleaks.com/webgl#howto-detect-webgl
  *
  * @return { number } -1 for not Supported,
@@ -33,28 +52,54 @@ export const anchorToPivot = ({ anchor, sizes }: { anchor: PixiPoint; sizes: Siz
  */
 export function detectWebGL() {
 	// Check for the WebGL rendering context
-	if (window && !!window.WebGLRenderingContext) {
-		let canvas = document.createElement('canvas'),
-			names = ['webgl', 'experimental-webgl', 'moz-webgl', 'webkit-3d'],
-			context = false;
+	if (typeof window !== 'undefined' && window.WebGLRenderingContext) {
+		let canvas = document.createElement('canvas');
+		let names = ['webgl2', 'webgl', 'experimental-webgl', 'moz-webgl', 'webkit-3d'];
+		let context = false;
 
-		for (const i in names) {
+		for (const name of names) {
 			try {
-				// @ts-ignore
-				context = canvas.getContext(names[i]);
+				// @ts-ignore - WebGL context types vary across browsers
+				context = canvas.getContext(name, {
+					failIfMajorPerformanceCaveat: false, // Allow software rendering as fallback
+					alpha: false, // Better performance for games
+					antialias: true,
+					preserveDrawingBuffer: false,
+					powerPreference: 'high-performance' // Prefer dedicated GPU on dual-GPU systems
+				});
+				
 				// @ts-ignore
 				if (context && typeof context.getParameter === 'function') {
-					// WebGL is enabled.
-					return 1;
+					// Additional validation to ensure WebGL is truly working
+					try {
+						// @ts-ignore
+						const vendor = context.getParameter(context.VENDOR);
+						const renderer = context.getParameter(context.RENDERER);
+						
+						// Check for software rendering that might indicate issues
+						if (renderer && renderer.toLowerCase().includes('software')) {
+							console.warn('WebGL is using software rendering, performance may be limited');
+						}
+						
+						// WebGL is enabled and working
+						return 1;
+					} catch (e) {
+						// getParameter failed, context might be lost
+						console.warn('WebGL context validation failed:', e);
+						return 0;
+					}
 				}
-			} catch (e) {}
+			} catch (e) {
+				// Context creation failed
+				console.debug('WebGL context creation failed for:', name, e);
+			}
 		}
 
-		// WebGL is supported, but disabled.
+		// WebGL is supported, but disabled or failed to initialize
 		return 0;
 	}
 
-	// WebGL not supported.
+	// WebGL not supported at all
 	return -1;
 }
 

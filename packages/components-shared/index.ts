@@ -14,6 +14,7 @@ import OptionsGrid from './src/components/OptionsGrid.svelte';
 import OptionsToggle from './src/components/OptionsToggle.svelte';
 import DropdownToggle from './src/components/DropdownToggle.svelte';
 import AmountFadeProvider from './src/components/AmountFadeProvider.svelte';
+import AndroidLayoutFix from './src/components/AndroidLayoutFix.svelte';
 
 export * from './src/context';
 export * from './src/types';
@@ -35,4 +36,5 @@ export {
 	OptionsToggle,
 	DropdownToggle,
 	AmountFadeProvider,
+	AndroidLayoutFix,
 };

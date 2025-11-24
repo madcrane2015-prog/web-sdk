@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { type Snippet } from 'svelte';
 	import { GlobalStyle } from 'components-ui-html';
-	import { Authenticate, LoaderStakeEngine, LoaderExample, LoadI18n } from 'components-shared';
+	import { Authenticate, LoaderStakeEngine, LoaderExample, LoadI18n, AndroidLayoutFix } from 'components-shared';
 	import Game from '../components/Game.svelte';
 	import { setContext } from '../game/context';
 
@@ -18,6 +18,8 @@
 
 	setContext();
 </script>
+
+<AndroidLayoutFix />
 
 <GlobalStyle>
 	<Authenticate>

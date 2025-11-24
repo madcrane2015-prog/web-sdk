@@ -10,11 +10,13 @@ This is a **TurboRepo monorepo** for building casino games using **Svelte 5**, *
 
 **EmitterEvents**: Internal events broadcast by BookEvent handlers to coordinate UI components. Use `eventEmitter.broadcast()` for sync and `eventEmitter.broadcastAsync()` for async operations.
 
-**Context System**: Four main contexts are set at app entry (`context.ts`):
+**Context System**: Four main contexts are set at app entry (`src/routes/+layout.svelte`):
 - `ContextEventEmitter`: Event communication system
 - `ContextXstate`: Finite state machine for betting logic (`rendering`, `idle`, `betting`, `autobet`)
 - `ContextLayout`: Responsive canvas sizing and layout types
 - `ContextApp`: PIXI application and asset management
+
+**Entry Point**: Each game app uses SvelteKit with `src/routes/+layout.svelte` as the main entry that calls `setContext()` and renders `<Game />`.
 
 ## Key Development Patterns
 
@@ -54,29 +56,34 @@ Each EmitterEvent should follow Single Responsibility Principle.
 
 ## Essential Commands
 
+**Development**: Use TurboRepo filtering for all operations
 ```bash
 # Development
 pnpm run dev --filter=lines
 pnpm run storybook --filter=lines
 
-# Building
+# Building (note dependencies)
 pnpm run build --filter=lines
 pnpm run build --filter=pixi-svelte  # Required after pixi-svelte changes
 
-# Testing
-# Use Storybook for component testing:
+# Testing in Storybook (primary testing method)
 # - COMPONENTS/<Component>/component: Test individual components
+# - COMPONENTS/<Component>/emitterEvent: Test EmitterEvent handlers
 # - MODE_BASE/bookEvent/<eventType>: Test BookEvent handlers
-# - MODE_BASE/book/random: Test full game flow
+# - MODE_BASE/book/random: Test full game flow with random books
 ```
+
+**Critical Build Dependencies**: Always rebuild `pixi-svelte` after changes (uses built version per package.json main field). Build cascade: `pixi-svelte` → `components-*` → `apps/*`.
 
 ## Critical Development Guidelines
 
-1. **Always set context** before rendering components via `setContext()` in entry files
-2. **Use TurboRepo filtering**: `--filter=<package-name>` for targeted operations
-3. **Rebuild pixi-svelte** after changes (uses built version per package.json main field)
-4. **Test atomically** in Storybook before integrating into game flow
-5. **Type safety**: Add BookEvent types to `typesBookEvent.ts` and EmitterEvent types to component modules
+1. **Always set context** before rendering components via `setContext()` in `src/routes/+layout.svelte`
+2. **Use TurboRepo filtering**: `--filter=<package-name>` for targeted operations (never run global commands)
+3. **Rebuild pixi-svelte** after any changes (other packages depend on built version: `dist/index.js`)
+4. **Test atomically** in Storybook before integrating - create individual stories for each component/event
+5. **Type safety**: Add BookEvent types to `typesBookEvent.ts`, EmitterEvent types to component modules
+6. **Event-driven flow**: BookEvent → EmitterEvent(s) → Component handlers (never direct prop passing)
+7. **Task breakdown**: Split complex BookEvents into atomic EmitterEvents following Single Responsibility Principle
 
 ## Working with State
 
