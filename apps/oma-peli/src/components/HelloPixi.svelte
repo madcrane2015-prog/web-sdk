@@ -287,7 +287,7 @@
     container.appendChild(app.canvas);
 
     // ===== 2) KUVIEN LATAUS JA TEKSTUURIEN LUONTI =====
-    // Käytetään PIXI.Texture.fromURL modernin latauksen takaamiseksi
+    // Käytetään PIXI.Assets.load modernin latauksen takaamiseksi
     const textures: Record<SymbolKey, Texture> = {} as any;
 
     try {
@@ -295,7 +295,7 @@
       debugInfo.push(`Loading background: ${BACKGROUND_URL}`);
       
       // TAUSTAKUVAN LATAUS
-      backgroundTexture = await Texture.fromURL(BACKGROUND_URL);
+      backgroundTexture = await Texture.from(BACKGROUND_URL);
       debugInfo.push("✅ Background loaded");
       
       loadingStatus = "Loading symbols...";
@@ -306,7 +306,7 @@
         debugInfo.push(`Loading symbol ${key}: ${url}`);
         
         try {
-          const texture = await Texture.fromURL(url);
+          const texture = await Texture.from(url);
           textures[key] = texture;
           debugInfo.push(`✅ Symbol ${key} loaded`);
         } catch (error) {
