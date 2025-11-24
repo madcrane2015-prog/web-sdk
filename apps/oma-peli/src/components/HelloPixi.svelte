@@ -95,6 +95,11 @@
   // Ladatut tekstuurit (kuvat muutettuna PixiJS muotoon)
   let symbolTextures: Record<SymbolKey, Texture> | null = null;
   let backgroundTexture: Texture | null = null;
+  
+  // Debug tila - näyttää lataustilanteen
+  let loadingStatus = "Initializing...";
+  let errorMessage = "";
+  let debugInfo: string[] = [];
 
   // ===== APUFUNKTIOT =====
   // Palauttaa satunnaisen symbolin a-j väliltä
@@ -282,53 +287,46 @@
     container.appendChild(app.canvas);
 
     // ===== 2) KUVIEN LATAUS JA TEKSTUURIEN LUONTI =====
-    // Käytetään vanhaa Image() menetelmää varman toimivuuden takaamiseksi
+    // Käytetään PIXI.Texture.fromURL modernin latauksen takaamiseksi
     const textures: Record<SymbolKey, Texture> = {} as any;
 
-    // TAUSTAKUVAN LATAUS
-    const bgImg = new Image();
-    bgImg.src = BACKGROUND_URL;
-    
-    // Odotetaan että taustakuva latautuu
-    await new Promise<void>((resolve, reject) => {
-      bgImg.onload = () => {
-        resolve();
-      };
-      bgImg.onerror = (err) => {
-        console.error("Taustakuvan lataus epäonnistui:", BACKGROUND_URL, err);
-        reject(err);
-      };
-    });
-    
-    // Luo PixiJS tekstuuri taustakuvasta
-    backgroundTexture = Texture.from(bgImg);
+    try {
+      loadingStatus = "Loading background...";
+      debugInfo.push(`Loading background: ${BACKGROUND_URL}`);
+      
+      // TAUSTAKUVAN LATAUS
+      backgroundTexture = await Texture.fromURL(BACKGROUND_URL);
+      debugInfo.push("✅ Background loaded");
+      
+      loadingStatus = "Loading symbols...";
+      
+      // SYMBOLIEN KUVIEN LATAUS
+      for (const key of SYMBOL_KEYS) {
+        const url = SYMBOL_URLS[key];
+        debugInfo.push(`Loading symbol ${key}: ${url}`);
+        
+        try {
+          const texture = await Texture.fromURL(url);
+          textures[key] = texture;
+          debugInfo.push(`✅ Symbol ${key} loaded`);
+        } catch (error) {
+          const errorMsg = `❌ Failed to load symbol ${key} from ${url}: ${error}`;
+          debugInfo.push(errorMsg);
+          console.error(errorMsg);
+          throw new Error(errorMsg);
+        }
+      }
 
-    // SYMBOLIEN KUVIEN LATAUS
-    for (const key of SYMBOL_KEYS) {
-      const url = SYMBOL_URLS[key];
-
-      const img = new Image();
-      img.src = url;
-
-      // Odotetaan että jokainen kuva latautuu
-      await new Promise<void>((resolve, reject) => {
-        img.onload = () => {
-          resolve();
-        };
-        img.onerror = (err) => {
-          console.error("Kuvan lataus epäonnistui:", key, url, err);
-          reject(err);
-        };
-      });
-
-      // Luo PixiJS tekstuuri HTML kuvasta
-      textures[key] = Texture.from(img);
-    }
-
-    // Tallenna ladatut tekstuurit muuttujaan (käytettävissä koko komponentissa)
-    symbolTextures = textures;
-    
-    // ===== 3) ÄÄNIEN LATAUS =====
+      // Tallenna ladatut tekstuurit muuttujaan (käytettävissä koko komponentissa)
+      symbolTextures = textures;
+      loadingStatus = "Assets loaded successfully!";
+      
+    } catch (error) {
+      errorMessage = `Asset loading failed: ${error}`;
+      debugInfo.push(errorMessage);
+      console.error(errorMessage);
+      return; // Lopeta lataus jos virhe
+    }    // ===== 3) ÄÄNIEN LATAUS =====
     // Luodaan HTML5 Audio elementit ääniefektejä varten
     console.log("Ladataan ääniefektit...");
     
@@ -527,6 +525,42 @@
 <!-- ================================================================ -->
 <!-- HTML TEMPLATE - Pelin visuaalinen rakenne                        -->
 <!-- ================================================================ -->
+
+<!-- Debug-tiedot (näytetään vain jos ladataan tai virhe) -->
+{#if loadingStatus !== "Assets loaded successfully!" || errorMessage}
+  <div style="
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    background: rgba(0,0,0,0.8);
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    font-family: monospace;
+    font-size: 12px;
+    z-index: 2000;
+    max-width: 400px;
+    max-height: 300px;
+    overflow-y: auto;
+  ">
+    <h3>🎰 Oma-peli Debug</h3>
+    <p><strong>Status:</strong> {loadingStatus}</p>
+    {#if errorMessage}
+      <p style="color: red;"><strong>Error:</strong> {errorMessage}</p>
+    {/if}
+    <p><strong>Base:</strong> {base}</p>
+    <p><strong>BG URL:</strong> {BACKGROUND_URL}</p>
+    <p><strong>Sample:</strong> {SYMBOL_URLS.a}</p>
+    {#if debugInfo.length > 0}
+      <details>
+        <summary>Log ({debugInfo.length})</summary>
+        {#each debugInfo as info}
+          <div>{info}</div>
+        {/each}
+      </details>
+    {/if}
+  </div>
+{/if}
 
 <!-- PixiJS canvas sijoitetaan tähän div-elementtiin -->
 <div bind:this={container}></div>
