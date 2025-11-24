@@ -64,32 +64,27 @@
 
   // URL jokaiselle symbolille (static/symbols/...)
   const SYMBOL_URLS: Record<SymbolKey, string> = {
-    a: `${base}/oma-peli/symbols/marska.jpg`,     // Mukautettu symboli
-    b: `${base}/oma-peli/symbols/elvar.jpg`,      // Mukautettu symboli
-    c: `${base}/oma-peli/symbols/lucy.jpg`,       // Mukautettu symboli
-    d: `${base}/oma-peli/symbols/hotrod.jpg`,     // Mukautettu symboli
-    e: `${base}/oma-peli/symbols/bubblegum.jpg`,  // Mukautettu symboli
-    f: `${base}/oma-peli/symbols/burger.jpg`,     // Mukautettu symboli
-    g: `${base}/oma-peli/symbols/single.jpg`,     // Mukautettu symboli
-    h: `${base}/oma-peli/symbols/microfones.jpg`, // Mukautettu symboli
-    i: `${base}/oma-peli/symbols/shake.jpg`,      // Mukautettu symboli
-    j: `${base}/oma-peli/symbols/fries.jpg`       // Mukautettu symboli
+    a: `${base}/symbols/marska.jpg`,     // Mukautettu symboli
+    b: `${base}/symbols/elvar.jpg`,      // Mukautettu symboli
+    c: `${base}/symbols/lucy.jpg`,       // Mukautettu symboli
+    d: `${base}/symbols/hotrod.jpg`,     // Mukautettu symboli
+    e: `${base}/symbols/bubblegum.jpg`,  // Mukautettu symboli
+    f: `${base}/symbols/burger.jpg`,     // Mukautettu symboli
+    g: `${base}/symbols/single.jpg`,     // Mukautettu symboli
+    h: `${base}/symbols/microfones.jpg`, // Mukautettu symboli
+    i: `${base}/symbols/shake.jpg`,      // Mukautettu symboli
+    j: `${base}/symbols/fries.jpg`       // Mukautettu symboli
   };
 
   // Taustakuvan URL (fyysinen peliautomaatti)
-  const BACKGROUND_URL = `${base}/oma-peli/symbols/bg.jpg`;
-  
-  // Debug: log the paths to see what's happening
-  console.log("🔍 DEBUG - Base path:", base);
-  console.log("🔍 DEBUG - Background URL:", BACKGROUND_URL);
-  console.log("🔍 DEBUG - Sample symbol URL:", `${base}/symbols/marska.jpg`);
+  const BACKGROUND_URL = `${base}/symbols/bg.jpg`;
   
   // ===== ÄÄNIEFEKTIT =====
   // Äänitiedostojen URLit
   const SOUND_URLS = {
-    spin: `${base}/oma-peli/sounds/spin.mp3`,     // SPIN-napin ääni (whirr)
-    stop: `${base}/oma-peli/sounds/stop.mp3`,     // Kiekon pysähtymisääni (chunk)
-    win: `${base}/oma-peli/sounds/win.mp3`        // Voittoääni (tulevaisuudessa)
+    spin: `${base}/sounds/spin.mp3`,     // SPIN-napin ääni (whirr)
+    stop: `${base}/sounds/stop.mp3`,     // Kiekon pysähtymisääni (chunk)
+    win: `${base}/sounds/win.mp3`        // Voittoääni (tulevaisuudessa)
   };
   
   // Äänien hallinta
@@ -291,30 +286,26 @@
     const textures: Record<SymbolKey, Texture> = {} as any;
 
     // TAUSTAKUVAN LATAUS
-    console.log("🖼️ Ladataan taustakuva:", BACKGROUND_URL);
     const bgImg = new Image();
     bgImg.src = BACKGROUND_URL;
     
     // Odotetaan että taustakuva latautuu
     await new Promise<void>((resolve, reject) => {
       bgImg.onload = () => {
-        console.log("✅ Taustakuva ladattu ok:", BACKGROUND_URL, bgImg.width, "x", bgImg.height);
         resolve();
       };
       bgImg.onerror = (err) => {
-        console.error("❌ Taustakuvan lataus epäonnistui:", BACKGROUND_URL, err);
+        console.error("Taustakuvan lataus epäonnistui:", BACKGROUND_URL, err);
         reject(err);
       };
     });
     
     // Luo PixiJS tekstuuri taustakuvasta
     backgroundTexture = Texture.from(bgImg);
-    console.log("Taustakuvan tekstuuri luotu:", backgroundTexture);
 
     // SYMBOLIEN KUVIEN LATAUS
     for (const key of SYMBOL_KEYS) {
       const url = SYMBOL_URLS[key];
-      console.log("Ladataan symboli:", key, url);
 
       const img = new Image();
       img.src = url;
@@ -322,7 +313,6 @@
       // Odotetaan että jokainen kuva latautuu
       await new Promise<void>((resolve, reject) => {
         img.onload = () => {
-          console.log("Kuva ladattu ok:", key, url);
           resolve();
         };
         img.onerror = (err) => {
@@ -333,7 +323,6 @@
 
       // Luo PixiJS tekstuuri HTML kuvasta
       textures[key] = Texture.from(img);
-      console.log("Tekstuuri luotu:", key, textures[key]);
     }
 
     // Tallenna ladatut tekstuurit muuttujaan (käytettävissä koko komponentissa)
