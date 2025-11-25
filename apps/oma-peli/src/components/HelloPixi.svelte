@@ -63,21 +63,25 @@
   type SymbolKey = (typeof SYMBOL_KEYS)[number];
 
   // URL jokaiselle symbolille (static/symbols/...)
+  // GitHub Pages: käytä suoria polkuja, localhost: käytä base-polkuja
+  const isGitHubPages = typeof window !== 'undefined' && window.location.hostname.includes('github.io');
+  const symbolPath = isGitHubPages ? '/web-sdk/oma-peli/symbols' : `${base}/symbols`;
+  
   const SYMBOL_URLS: Record<SymbolKey, string> = {
-    a: `${base}/symbols/marska.jpg`,     // Mukautettu symboli
-    b: `${base}/symbols/elvar.jpg`,      // Mukautettu symboli
-    c: `${base}/symbols/lucy.jpg`,       // Mukautettu symboli
-    d: `${base}/symbols/hotrod.jpg`,     // Mukautettu symboli
-    e: `${base}/symbols/bubblegum.jpg`,  // Mukautettu symboli
-    f: `${base}/symbols/burger.jpg`,     // Mukautettu symboli
-    g: `${base}/symbols/single.jpg`,     // Mukautettu symboli
-    h: `${base}/symbols/microfones.jpg`, // Mukautettu symboli
-    i: `${base}/symbols/shake.jpg`,      // Mukautettu symboli
-    j: `${base}/symbols/fries.jpg`       // Mukautettu symboli
+    a: `${symbolPath}/marska.jpg`,     // Mukautettu symboli
+    b: `${symbolPath}/elvar.jpg`,      // Mukautettu symboli
+    c: `${symbolPath}/lucy.jpg`,       // Mukautettu symboli
+    d: `${symbolPath}/hotrod.jpg`,     // Mukautettu symboli
+    e: `${symbolPath}/bubblegum.jpg`,  // Mukautettu symboli
+    f: `${symbolPath}/burger.jpg`,     // Mukautettu symboli
+    g: `${symbolPath}/single.jpg`,     // Mukautettu symboli
+    h: `${symbolPath}/microfones.jpg`, // Mukautettu symboli
+    i: `${symbolPath}/shake.jpg`,      // Mukautettu symboli
+    j: `${symbolPath}/fries.jpg`       // Mukautettu symboli
   };
 
   // Taustakuvan URL (fyysinen peliautomaatti)
-  const BACKGROUND_URL = `${base}/symbols/bg.jpg`;
+  const BACKGROUND_URL = `${symbolPath}/bg.jpg`;
   
   // ===== ÄÄNIEFEKTIT =====
   // Äänitiedostojen URLit
