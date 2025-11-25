@@ -1,0 +1,63 @@
+name: Deploy oma-peli to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+    paths: 
+      - 'apps/oma-peli/**'
+      - '.github/workflows/deploy-oma-peli.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}oma-peli
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: latest
+          
+      - name: Install dependencies
+        run: pnpm install
+        
+      - name: Build pixi-svelte
+        run: pnpm --filter pixi-svelte build
+        
+      - name: Build oma-peli
+        run: pnpm --filter oma-peli build
+        
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+        with:
+          static_site_generator: sveltekit
+          
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './apps/oma-peli/build'
+          
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
