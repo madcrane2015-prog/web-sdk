@@ -36,7 +36,8 @@ jobs:
           set +e  # Don't exit on first error
           
           echo "Building games..."
-          games=("lines" "cluster" "scatter" "ways" "price" "number-picker" "oma-peli")
+          games=("lines" "cluster" "scatter" "ways" "price" "number-picker")
+          # oma-peli excluded - deployed by separate workflow
           failed_builds=()
           
           for game in "${games[@]}"; do
@@ -60,7 +61,8 @@ jobs:
           mkdir -p deploy
           
           # Copy each game's build to deployment directory
-          games=("lines" "cluster" "scatter" "ways" "price" "number-picker" "oma-peli")
+          games=("lines" "cluster" "scatter" "ways" "price" "number-picker")
+          # oma-peli excluded - deployed by separate workflow
           
           for game in "${games[@]}"; do
             if [ -d "apps/$game/build" ]; then
