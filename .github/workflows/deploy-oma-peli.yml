@@ -9,9 +9,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
   group: "pages-oma-peli"
@@ -23,7 +21,7 @@ jobs:
     
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}oma-peli
+      url: https://madcrane2015-prog.github.io/web-sdk/oma-peli
     
     steps:
       - name: Checkout
@@ -50,19 +48,10 @@ jobs:
           cd apps/oma-peli
           npm run build -- --base=/web-sdk/oma-peli/
         
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
+      - name: Deploy to GitHub Pages  
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
-          static_site_generator: sveltekit
-          
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: './apps/oma-peli/build'
-          name: github-pages-oma-peli
-          
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
-        with:
-          artifact_name: github-pages-oma-peli
+          folder: ./apps/oma-peli/build
+          target-folder: oma-peli
+          branch: gh-pages
+          clean: false
