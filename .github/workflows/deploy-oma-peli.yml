@@ -46,7 +46,9 @@ jobs:
         run: pnpm --filter pixi-svelte build
         
       - name: Build oma-peli
-        run: pnpm --filter oma-peli build
+        run: |
+          cd apps/oma-peli
+          npm run build -- --base=/web-sdk/oma-peli/
         
       - name: Setup Pages
         uses: actions/configure-pages@v4
