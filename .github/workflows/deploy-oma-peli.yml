@@ -47,6 +47,20 @@ jobs:
         run: |
           cd apps/oma-peli
           npm run build -- --base=/web-sdk/oma-peli/
+          
+      - name: Verify symbols in build
+        run: |
+          ls -la apps/oma-peli/build/symbols/ || echo "Symbols directory not found"
+          
+      - name: Copy symbols to build directory (if missing)
+        run: |
+          if [ ! -d "apps/oma-peli/build/symbols" ]; then
+            echo "Symbols directory missing, copying manually..."
+            mkdir -p apps/oma-peli/build/symbols
+            cp -r apps/oma-peli/static/symbols/* apps/oma-peli/build/symbols/
+          else
+            echo "Symbols directory already exists"
+          fi
         
       - name: Deploy to GitHub Pages  
         uses: JamesIves/github-pages-deploy-action@v4
