@@ -26,7 +26,7 @@ yarn-error.log*
 
 #svelte-kit
 .svelte-kit
-build
+# build - temporarily enabled for GitHub Pages
 out/
 dist
 

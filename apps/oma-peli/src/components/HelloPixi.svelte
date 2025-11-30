@@ -300,17 +300,17 @@
       debugInfo.push(`Loading background: ${BACKGROUND_URL}`);
       
       // TAUSTAKUVAN LATAUS - lataa ensin Assets.cache:een, sitten luo tekstuuri
-      await Assets.load({background: BACKGROUND_URL});
-      backgroundTexture = Texture.from(BACKGROUND_URL);
+      await Assets.load([{alias: 'background', src: BACKGROUND_URL}]);
+      backgroundTexture = Texture.from('background');
       console.log("✅ Background texture created:", backgroundTexture.width, "x", backgroundTexture.height);
       debugInfo.push("✅ Background loaded");
       
       loadingStatus = "Loading symbols...";
       
       // SYMBOLIEN KUVIEN LATAUS - lataa ensin kaikki Assets.cache:een
-      const assetManifest: Record<string, string> = {};
+      const assetManifest: Array<{alias: string, src: string}> = [];
       for (const key of SYMBOL_KEYS) {
-        assetManifest[key] = SYMBOL_URLS[key];
+        assetManifest.push({alias: key, src: SYMBOL_URLS[key]});
       }
       await Assets.load(assetManifest);
       
@@ -320,7 +320,7 @@
         debugInfo.push(`Loading symbol ${key}: ${url}`);
         
         try {
-          const texture = Texture.from(url);
+          const texture = Texture.from(key); // Käytä aliasta
           textures[key] = texture;
           console.log(`✅ Symbol ${key} loaded:`, texture.width, "x", texture.height);
           debugInfo.push(`✅ Symbol ${key} loaded`);
