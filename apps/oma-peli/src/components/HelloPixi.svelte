@@ -20,7 +20,8 @@
     Graphics,      // Geometristen muotojen piirtäminen
     Container,     // Elementtien ryhmittely
     Sprite,        // Kuvien näyttäminen
-    Texture        // Kuvatekstuurit
+    Texture,       // Kuvatekstuurit
+    Assets         // Modernit Asset lataukset
   } from "pixi.js";
 
   // ===== PELIN PERUSKONFIGURAATIO =====
@@ -298,19 +299,27 @@
       loadingStatus = "Loading background...";
       debugInfo.push(`Loading background: ${BACKGROUND_URL}`);
       
-      // TAUSTAKUVAN LATAUS
-      backgroundTexture = await Texture.from(BACKGROUND_URL);
+      // TAUSTAKUVAN LATAUS - lataa ensin Assets.cache:een, sitten luo tekstuuri
+      await Assets.load({background: BACKGROUND_URL});
+      backgroundTexture = Texture.from(BACKGROUND_URL);
       debugInfo.push("✅ Background loaded");
       
       loadingStatus = "Loading symbols...";
       
-      // SYMBOLIEN KUVIEN LATAUS
+      // SYMBOLIEN KUVIEN LATAUS - lataa ensin kaikki Assets.cache:een
+      const assetManifest: Record<string, string> = {};
+      for (const key of SYMBOL_KEYS) {
+        assetManifest[key] = SYMBOL_URLS[key];
+      }
+      await Assets.load(assetManifest);
+      
+      // Luo tekstuurit cache:sta
       for (const key of SYMBOL_KEYS) {
         const url = SYMBOL_URLS[key];
         debugInfo.push(`Loading symbol ${key}: ${url}`);
         
         try {
-          const texture = await Texture.from(url);
+          const texture = Texture.from(url);
           textures[key] = texture;
           debugInfo.push(`✅ Symbol ${key} loaded`);
         } catch (error) {
