@@ -46,7 +46,7 @@ jobs:
       - name: Build oma-peli
         run: |
           cd apps/oma-peli
-          npm run build -- --base=/web-sdk/oma-peli/
+          npm run build
           
       - name: Verify symbols in build
         run: |
