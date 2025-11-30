@@ -1,0 +1,19 @@
+# Estä hakukoneiden pääsy
+Header set X-Robots-Tag "noindex, nofollow, noarchive, nosnippet"
+
+# Estä suora pääsy tiedostoihin
+<Files "*.js">
+    Order Deny,Allow
+    Deny from all
+</Files>
+
+<Files "*.map">
+    Order Deny,Allow
+    Deny from all
+</Files>
+
+# Salli vain index.html
+<Files "index.html">
+    Order Allow,Deny
+    Allow from all
+</Files>
