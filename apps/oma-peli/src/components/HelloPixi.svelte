@@ -302,6 +302,7 @@
       // TAUSTAKUVAN LATAUS - lataa ensin Assets.cache:een, sitten luo tekstuuri
       await Assets.load({background: BACKGROUND_URL});
       backgroundTexture = Texture.from(BACKGROUND_URL);
+      console.log("✅ Background texture created:", backgroundTexture.width, "x", backgroundTexture.height);
       debugInfo.push("✅ Background loaded");
       
       loadingStatus = "Loading symbols...";
@@ -321,6 +322,7 @@
         try {
           const texture = Texture.from(url);
           textures[key] = texture;
+          console.log(`✅ Symbol ${key} loaded:`, texture.width, "x", texture.height);
           debugInfo.push(`✅ Symbol ${key} loaded`);
         } catch (error) {
           const errorMsg = `❌ Failed to load symbol ${key} from ${url}: ${error}`;
