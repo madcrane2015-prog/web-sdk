@@ -59,8 +59,8 @@
   const gap = 10;
   const ROW_HEIGHT = symbolHeight + gap;
 
-  // Avaimet symboleille
-  const SYMBOL_KEYS = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"] as const;
+  // Avaimet symboleille - kaikki uudet rockabilly-teemalliset symbolit
+  const SYMBOL_KEYS = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n"] as const;
   type SymbolKey = (typeof SYMBOL_KEYS)[number];
 
   // URL jokaiselle symbolille (static/symbols/...)
@@ -69,16 +69,20 @@
   const symbolPath = isGitHubPages ? '/web-sdk/oma-peli/symbols' : `${base}/symbols`;
   
   const SYMBOL_URLS: Record<SymbolKey, string> = {
-    a: `${symbolPath}/marska.jpg`,     // Mukautettu symboli
-    b: `${symbolPath}/elvar.jpg`,      // Mukautettu symboli
-    c: `${symbolPath}/lucy.jpg`,       // Mukautettu symboli
-    d: `${symbolPath}/hotrod.jpg`,     // Mukautettu symboli
-    e: `${symbolPath}/bubblegum.jpg`,  // Mukautettu symboli
-    f: `${symbolPath}/burger.jpg`,     // Mukautettu symboli
-    g: `${symbolPath}/single.jpg`,     // Mukautettu symboli
-    h: `${symbolPath}/microfones.jpg`, // Mukautettu symboli
-    i: `${symbolPath}/shake.jpg`,      // Mukautettu symboli
-    j: `${symbolPath}/fries.jpg`       // Mukautettu symboli
+    a: `${symbolPath}/Blue_hotrod.jpg`,      // Sininen hotrod
+    b: `${symbolPath}/Blue_jacket.jpg`,      // Sininen takki
+    c: `${symbolPath}/Blue_rollers.jpg`,     // Siniset rullat
+    d: `${symbolPath}/Blue_speakers.jpg`,    // Siniset kaiuttimet
+    e: `${symbolPath}/Premium_blonde.jpg`,   // Premium blondi
+    f: `${symbolPath}/Premium_brunette.jpg`, // Premium brunette
+    g: `${symbolPath}/Premium_rocker.jpg`,   // Premium rocker
+    h: `${symbolPath}/Red_bubblegum.jpg`,    // Punainen purukumi
+    i: `${symbolPath}/Red_burger.jpg`,       // Punainen hampurilainen
+    j: `${symbolPath}/Red_fries.jpg`,        // Punaiset ranskalaiset
+    k: `${symbolPath}/Red_milkshake.jpg`,    // Punainen milkshake
+    l: `${symbolPath}/Scatter.jpg`,          // Scatter symboli
+    m: `${symbolPath}/Emptyslot.jpg`,        // Tyhjä ruutu
+    n: `${symbolPath}/bg.jpg`                // Taustakuva (ei käytetä pelissä)
   };
 
   // Taustakuvan URL (fyysinen peliautomaatti)
