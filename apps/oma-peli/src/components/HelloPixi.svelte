@@ -53,8 +53,8 @@
   const CANVAS_HEIGHT = 800;  // Korkeus pikseleinä (neliö muoto)
   
   // Kiekkojen koko ja sijainti
-  const SCALE_MULTIPLIER = 1.25; // Symbolien koko kerroin (1.0 = normaali)
-  const OFFSET_X = -10;       // Kaikkien kiekkojen X-siirtymä (+ = oikealle)
+  const SCALE_MULTIPLIER = 1.0; // Symbolien koko kerroin (1.0 = normaali)
+  const OFFSET_X = -50;       // Kaikkien kiekkojen X-siirtymä (+ = oikealle)
   const OFFSET_Y = 60;        // Kaikkien kiekkojen Y-siirtymä (+ = alaspäin)
   
   // SPIN-napin sijainti (asetetaan taustakuvan vihreän napin päälle)
@@ -566,9 +566,9 @@
       const col = position.col;
       const row = position.row;
       
-      // Laske ruudun sijainti näytöllä
-      const baseX = 180 + col * (symbolWidth + gap);
-      const baseY = 120 + row * (symbolHeight + gap);
+      // Laske ruudun sijainti näytöllä - korjatut koordinaatit
+      const baseX = 120 + col * (symbolWidth + 15); // Vasemmemmalle ja enemmän tilaa
+      const baseY = 120 + row * (symbolHeight + 10);
       
       // Keskikiekko (indeksi 6) on hieman korkeammalla
       const adjustedY = reelIndex === 6 ? baseY + 55 : baseY;
