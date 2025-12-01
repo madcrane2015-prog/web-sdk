@@ -21,7 +21,9 @@
     Container,     // Elementtien ryhmittely
     Sprite,        // Kuvien näyttäminen
     Texture,       // Kuvatekstuurit
-    Assets         // Modernit Asset lataukset
+    Assets,        // Modernit Asset lataukset
+    Text,          // Tekstin näyttäminen
+    TextStyle      // Tekstin tyylit
   } from "pixi.js";
 
   // ===== PELIN PERUSKONFIGURAATIO =====
@@ -497,13 +499,35 @@
       reelCont.x = baseX + OFFSET_X;
       reelCont.y = adjustedY + OFFSET_Y;
 
-      // Lisää läpinäkyvä tausta kiekon alueelle (debug/visualisointi)
+      // Lisää värillinen tausta kiekon alueelle (debug/visualisointi) - jokainen kiekko eri väri
+      const colors = [
+        0xff0000, 0x00ff00, 0x0000ff, // Sarake 0: punainen, vihreä, sininen
+        0xffff00, 0xff00ff, 0x00ffff, // Sarake 1: keltainen, magenta, cyan
+        0xffa500,                     // Keskikiekko: oranssi
+        0x800080, 0x008000, 0x000080, // Sarake 3: violetti, tumma vihreä, tumma sininen
+        0xff8000, 0x8000ff, 0x0080ff  // Sarake 4: oranssinpunainen, sinipurppura, siniturkoosi
+      ];
+      
       const reelBg = new Graphics()
         .rect(0, 0, symbolWidth, symbolHeight)      // Yhden symbolin koko
-        .fill({ color: 0x000000, alpha: 0.1 }); // Musta, 10% läpinäkyvyys
+        .fill({ color: colors[reelIndex], alpha: 0.3 }); // Eri väri jokaiselle kiekolle, 30% läpinäkyvyys
       reelBg.x = reelCont.x;
       reelBg.y = reelCont.y;
       app.stage.addChild(reelBg);  // Lisää tausta näytölle
+
+      // Lisää kiekon numero tekstinä debug-tarkoituksessa
+      const style = new TextStyle({
+        fontFamily: 'Arial',
+        fontSize: 20,
+        fill: 0xffffff,
+        fontWeight: 'bold',
+        stroke: { color: 0x000000, width: 2 }
+      });
+      
+      const reelText = new Text({ text: reelIndex.toString(), style });
+      reelText.x = reelCont.x + 5;
+      reelText.y = reelCont.y + 5;
+      app.stage.addChild(reelText);  // Lisää numero näytölle
 
       // Luo maski joka rajaa kiekon näkyvän alueen
       const mask = new Graphics()
