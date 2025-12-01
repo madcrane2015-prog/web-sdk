@@ -60,7 +60,7 @@
   const ROW_HEIGHT = symbolHeight + gap;
 
   // Avaimet symboleille - kaikki uudet rockabilly-teemalliset symbolit
-  const SYMBOL_KEYS = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n"] as const;
+  const SYMBOL_KEYS = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m"] as const;
   type SymbolKey = (typeof SYMBOL_KEYS)[number];
 
   // URL jokaiselle symbolille (static/symbols/...)
@@ -81,8 +81,7 @@
     j: `${symbolPath}/Red_fries.jpg`,        // Punaiset ranskalaiset
     k: `${symbolPath}/Red_milkshake.jpg`,    // Punainen milkshake
     l: `${symbolPath}/Scatter.jpg`,          // Scatter symboli
-    m: `${symbolPath}/Emptyslot.jpg`,        // Tyhjä ruutu
-    n: `${symbolPath}/bg.jpg`                // Taustakuva (ei käytetä pelissä)
+    m: `${symbolPath}/Emptyslot.jpg`,        // Tyhjä ruutu (nyt mukana satunnaispelauksessa)
   };
 
   // Taustakuvan URL (fyysinen peliautomaatti)
