@@ -9,6 +9,19 @@
   - SPIN-napin joka on sijoitettu taustakuvan vihreän napin päälle
   - Säädettävät parametrit kohdistusta ja kokoa varten
 -->
+
+<style>
+  @keyframes winPulse {
+    0%, 100% { 
+      transform: translate(-50%, -50%) scale(1); 
+      box-shadow: 0 0 30px rgba(255, 215, 0, 0.8);
+    }
+    50% { 
+      transform: translate(-50%, -50%) scale(1.05); 
+      box-shadow: 0 0 40px rgba(255, 215, 0, 1.0);
+    }
+  }
+</style>
 <script lang="ts">
   // Svelte lifecycle ja routing
   import { onMount } from "svelte";
@@ -145,6 +158,72 @@
     if (col === 4) return 10 + row;
     return -1; // Virhe
   }
+
+  // ===== VOITTOLOGIIKKA =====
+  type WinResult = {
+    symbol: SymbolKey;
+    count: number;
+    payout: number;
+    positions: number[]; // Voittavien kiekkojen indeksit
+  };
+
+  // Symbolien kertoimet (kuinka paljon 5+ symbolia maksaa)
+  const SYMBOL_PAYOUTS: Record<SymbolKey, number> = {
+    // Blue series - matalin arvo
+    a: 5,   // Blue_hotrod
+    b: 5,   // Blue_jacket  
+    c: 5,   // Blue_rollers
+    d: 5,   // Blue_speakers
+    // Premium series - keskiarvo
+    e: 15,  // Premium_blonde
+    f: 15,  // Premium_brunette
+    g: 15,  // Premium_rocker
+    // Red series - korkeampi arvo
+    h: 25,  // Red_bubblegum
+    i: 25,  // Red_burger
+    j: 25,  // Red_fries
+    k: 25,  // Red_milkshake
+    // Erikoissymbolit - korkein arvo
+    l: 100, // Scatter
+    m: 50   // Emptyslot (bonus)
+  };
+
+  // Tarkista voitot nykyisistä symboleista
+  function checkWins(): WinResult[] {
+    const wins: WinResult[] = [];
+    
+    // Laske jokaisen symbolin määrä
+    const symbolCounts: Record<SymbolKey, number[]> = {} as any;
+    
+    for (let i = 0; i < TOTAL_REELS; i++) {
+      const symbol = reelData[i];
+      if (!symbolCounts[symbol]) {
+        symbolCounts[symbol] = [];
+      }
+      symbolCounts[symbol].push(i);
+    }
+    
+    // Tarkista onko vähintään 5 samaa symbolia
+    for (const symbol of SYMBOL_KEYS) {
+      const positions = symbolCounts[symbol] || [];
+      if (positions.length >= 5) {
+        const payout = SYMBOL_PAYOUTS[symbol] * (positions.length - 4); // 5=1x, 6=2x, jne.
+        wins.push({
+          symbol,
+          count: positions.length,
+          payout,
+          positions
+        });
+      }
+    }
+    
+    return wins;
+  }
+
+  // Kokonaisvoitto
+  let totalWin = 0;
+  let currentWins: WinResult[] = [];
+  let isShowingWin = false;
   
   // Äänen toisto (jos äänet on käytössä)
   function playSound(soundKey: keyof typeof SOUND_URLS) {
@@ -561,12 +640,35 @@
       r.update(); // Päivitä kiekon tila
       r.draw();   // Piirrä kiekko uudelleen
     }
+    
+    // Tarkista voitot kun kaikki kiekot ovat pysähtyneet
+    if (!isShowingWin && reels.every(r => r.state === "stopped")) {
+      const wins = checkWins();
+      if (wins.length > 0) {
+        currentWins = wins;
+        totalWin = wins.reduce((sum, win) => sum + win.payout, 0);
+        isShowingWin = true;
+        
+        console.log(`🎉 VOITTO! ${totalWin} pistettä!`);
+        wins.forEach(win => {
+          console.log(`${win.count}x ${win.symbol} = ${win.payout} pistettä`);
+        });
+        
+        // Soita voittoääni
+        playSound('win');
+      }
+    }
   }
 
   // ===================================================================
   // SPIN NAPPI - Käynnistää uuden pyöräytyksen
   // ===================================================================
   function spin() {
+    // Nollaa voittotiedot
+    currentWins = [];
+    totalWin = 0;
+    isShowingWin = false;
+    
     reelData = createReelData();                     // Luo uudet symbolit 13 kiekolle
     reels.forEach((r, i) => r.start(60 + i * 10));  // Käynnistä kiekot porrastetusti
     // Viive kaava: 1. kiekko = 60 framea, 2. = 70, 3. = 80, jne.
@@ -615,6 +717,53 @@
         {/each}
       </details>
     {/if}
+  </div>
+{/if}
+
+<!-- Voittonäyttö -->
+{#if totalWin > 0 && isShowingWin}
+  <div style="
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(45deg, #ffd700, #ffed4a);
+    color: #333;
+    padding: 20px;
+    border-radius: 15px;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    z-index: 3000;
+    border: 3px solid #ffb700;
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.8);
+    animation: winPulse 2s infinite;
+  ">
+    <h2 style="margin: 0 0 10px 0; font-size: 2em;">🎉 VOITTO! 🎉</h2>
+    <div style="font-size: 1.5em; font-weight: bold; margin: 10px 0;">
+      {totalWin} pistettä
+    </div>
+    
+    {#each currentWins as win}
+      <div style="margin: 5px 0; font-size: 1.1em;">
+        {win.count} × {win.symbol} = {win.payout} pistettä
+      </div>
+    {/each}
+    
+    <button 
+      on:click={() => { isShowingWin = false; }}
+      style="
+        margin-top: 15px;
+        padding: 8px 16px;
+        background: #333;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 1em;
+      "
+    >
+      Jatka pelaamista
+    </button>
   </div>
 {/if}
 
