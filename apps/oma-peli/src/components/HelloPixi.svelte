@@ -25,8 +25,9 @@
   } from "pixi.js";
 
   // ===== PELIN PERUSKONFIGURAATIO =====
-  const COLS = 5; // Kiekkojen määrä vaakasuunnassa
-  const ROWS = 3; // Rivien määrä per kiekko (paitsi keskimmäinen)
+  const COLS = 5; // Sarakkeiden määrä vaakasuunnassa  
+  const ROWS = 3; // Rivien määrä per sarake
+  const TOTAL_REELS = 13; // Yhteensä 13 erillistä kiekkoa (joka ruutu oma kiekko)
 
   // ===== SÄÄDETTÄVÄT PARAMETRIT =====
   // Näitä arvoja voi muuttaa pelin ulkonäön säätämiseksi
@@ -110,24 +111,37 @@
   let debugInfo: string[] = [];
 
   // ===== APUFUNKTIOT =====
-  // Palauttaa satunnaisen symbolin a-j väliltä
+  // Palauttaa satunnaisen symbolin
   function randomSymbol(): SymbolKey {
     return SYMBOL_KEYS[Math.floor(Math.random() * SYMBOL_KEYS.length)];
   }
 
-  // Luo uuden pelilaudan (5 saraketta, 3+1+3+3+3 symbolia)
-  function createGrid(): SymbolKey[][] {
-    const grid: SymbolKey[][] = [];
-    for (let c = 0; c < COLS; c++) {
-      const col: SymbolKey[] = [];
-      // Keskimmäinen kiekko (index 2) näyttää vain 1 symbolin, muut 3
-      const rowsForThisCol = c === 2 ? 1 : ROWS;
-      for (let r = 0; r < rowsForThisCol; r++) {
-        col.push(randomSymbol());
-      }
-      grid.push(col);
+  // Luo 13 erillistä kiekkoa (jokaiselle ruudulle oma kiekko)
+  function createReelData(): SymbolKey[] {
+    const reelData: SymbolKey[] = [];
+    for (let i = 0; i < TOTAL_REELS; i++) {
+      reelData.push(randomSymbol());
     }
-    return grid;
+    return reelData;
+  }
+
+  // Muuntaa reel-indeksin (0-12) koordinaateiksi (col, row)
+  function getReelPosition(reelIndex: number): {col: number, row: number} {
+    if (reelIndex < 3) return {col: 0, row: reelIndex}; // Sarake 0: ruudut 0,1,2
+    if (reelIndex < 6) return {col: 1, row: reelIndex - 3}; // Sarake 1: ruudut 3,4,5
+    if (reelIndex === 6) return {col: 2, row: 0}; // Keskikiekko: ruutu 6
+    if (reelIndex < 10) return {col: 3, row: reelIndex - 7}; // Sarake 3: ruudut 7,8,9
+    return {col: 4, row: reelIndex - 10}; // Sarake 4: ruudut 10,11,12
+  }
+
+  // Muuntaa koordinaatit (col, row) reel-indeksiksi (0-12)
+  function getReelIndex(col: number, row: number): number {
+    if (col === 0) return row;
+    if (col === 1) return 3 + row;
+    if (col === 2) return 6; // Keskikiekko on aina indeksi 6
+    if (col === 3) return 7 + row;
+    if (col === 4) return 10 + row;
+    return -1; // Virhe
   }
   
   // Äänen toisto (jos äänet on käytössä)
@@ -141,21 +155,21 @@
     });
   }
 
-  // Alkutilan pelilauta (luodaan heti)
-  let gridData: SymbolKey[][] = createGrid();
+  // Alkutilan pelidata (13 erillistä kiekkoa)
+  let reelData: SymbolKey[] = createReelData();
 
   // PixiJS sovelluksen pääkomponentit
   let container: HTMLDivElement;  // HTML-elementti johon peli sijoitetaan
   let app: Application;           // Pelin pääsovellus
-  let reels: Reel[] = [];        // Kaikki kiekot (5 kpl)
+  let reels: Reel[] = [];        // Kaikki kiekot (13 kpl)
 
   // ===================================================================
-  // REEL LUOKKA - Yksittäisen kiekon toiminta
+  // REEL LUOKKA - Yksittäisen kiekon toiminta (yksi ruutu = yksi kiekko)
   // ===================================================================
-  // Tämä luokka hallinnoi yhden kiekon pyörimistä ja symbolien näyttämistä
+  // Tämä luokka hallinnoi yhden kiekon pyörimistä ja yhden symbolin näyttämistä
   class Reel {
-    index: number;          // Kiekon numero (0-4, 0=vasen, 2=keski, 4=oikea)
-    container: Container;   // PixiJS kontti johon symbolit piirretään
+    index: number;          // Kiekon numero (0-12)
+    container: Container;   // PixiJS kontti johon symboli piirretään
     offset = 0;            // Nykyinen scrollaus-offset (0 = normaali asema)
     speed = 0;             // Nykyinen pyörimisnopeus (pikseleitä per frame)
     targetSpeed = 30;      // Tavoitenopeus (saavutetaan kiihdytyksen jälkeen)
@@ -169,7 +183,7 @@
 
     // Konstruktori: luo uuden kiekon
     constructor(index: number, container: Container) {
-      this.index = index;      // Tallenna kiekon numero
+      this.index = index;      // Tallenna kiekon numero (0-12)
       this.container = container; // Tallenna PixiJS kontti
     }
 
@@ -233,47 +247,38 @@
       if (this.speed > 0) {
         this.offset += this.speed; // Lisätään offsettia
 
-        // Jos offset ylittää yhden rivin korkeuden, vieritä symboleja
+        // Jos offset ylittää yhden symbolin korkeuden, vaihda uusi symboli
         if (this.offset >= ROW_HEIGHT) {
-          this.offset = 0;                              // Nollaa offset
-          gridData[this.index].unshift(randomSymbol()); // Lisää uusi symboli ylään
-          gridData[this.index].pop();                   // Poista viimeinen symboli
+          this.offset = 0;                    // Nollaa offset
+          reelData[this.index] = randomSymbol(); // Aseta uusi satunnainen symboli tälle kiekolle
         }
       }
     }
 
-    // Piirrä kiekon symbolit näytölle
+    // Piirrä kiekon symboli näytölle
     draw() {
       const stage = this.container;
       stage.removeChildren(); // Poista vanhat spritet
 
-      // Selvitä tämän kiekon rivimäärä (keskikiekko 1, muut 3)
-      const rowsForThisReel = this.index === 2 ? 1 : ROWS;
-      const currentGridColumn = gridData[this.index]; // Nykyiset symbolit tässä kiekossa
+      // Hae tämän kiekon symboli
+      const symbol = reelData[this.index];
+      if (!symbol || !symbolTextures || !symbolTextures[symbol]) return;
 
-      // Käy läpi kaikki rivit ja piirrä symbolit
-      for (let r = 0; r < rowsForThisReel; r++) {
-        const symKey = currentGridColumn[r];  // Hae symbolin avain (a-j)
-        if (!symKey) continue;               // Ohita jos ei symbolia
-        
-        // Laske Y-koordinaatti (scroll offset + bounce offset)
-        const y = r * ROW_HEIGHT + this.offset + this.bounceOffset;
+      // Hae symbolin tekstuuri
+      const texture = symbolTextures[symbol];
+      if (!texture) return;
 
-        // Varmista että tekstuurit on ladattu
-        if (!symbolTextures) continue;
+      // Laske Y-koordinaatti (scroll offset + bounce offset)
+      const y = this.offset + this.bounceOffset;
 
-        const texture = symbolTextures[symKey]; // Hae tekstuuri
-        if (!texture) continue;                // Ohita jos tekstuuria ei löydy
+      // Luo sprite ja aseta koko/sijainti
+      const sprite = new Sprite(texture);
+      sprite.width = symbolWidth;   // Aseta leveys
+      sprite.height = symbolHeight; // Aseta korkeus
+      sprite.x = 0;                // X-koordinaatti (suhteessa konttiin)
+      sprite.y = y;                // Y-koordinaatti (sisältää offsetit)
 
-        // Luo sprite ja aseta koko/sijainti
-        const sprite = new Sprite(texture);
-        sprite.width = symbolWidth;   // Aseta leveys
-        sprite.height = symbolHeight; // Aseta korkeus
-        sprite.x = 0;                // X-koordinaatti (suhteessa konttiin)
-        sprite.y = y;                // Y-koordinaatti (sisältää offsetit)
-
-        stage.addChild(sprite); // Lisää sprite näytölle
-      }
+      stage.addChild(sprite); // Lisää sprite näytölle
     }
   } // Reel luokan loppu
 
@@ -474,26 +479,35 @@
     // ===== 5) KIEKKOJEN LUONTI JA MASKIEN ASETUS =====
     reels = []; // Tyhjennetään kiekko-array
 
-    for (let i = 0; i < COLS; i++) {
+    for (let reelIndex = 0; reelIndex < TOTAL_REELS; reelIndex++) {
+      // Laske tämän kiekon sijainti ruudukossa  
+      const position = getReelPosition(reelIndex);
+      const col = position.col;
+      const row = position.row;
+      
+      // Laske ruudun sijainti näytöllä
+      const baseX = 180 + col * (symbolWidth + gap);
+      const baseY = 120 + row * (symbolHeight + gap);
+      
+      // Keskikiekko (indeksi 6) on hieman korkeammalla
+      const adjustedY = reelIndex === 6 ? baseY + 55 : baseY;
+      
       // Luo PixiJS kontti tälle kiekolle
       const reelCont = new Container();
-      const reelHeight = getReelHeight(i); // Hae kiekon korkeus
-      
-      // Aseta kiekon sijainti
-      reelCont.x = reelPositions[i].x;
-      reelCont.y = getAdjustedY(i, reelPositions[i].y);
+      reelCont.x = baseX + OFFSET_X;
+      reelCont.y = adjustedY + OFFSET_Y;
 
       // Lisää läpinäkyvä tausta kiekon alueelle (debug/visualisointi)
       const reelBg = new Graphics()
-        .rect(0, 0, REEL_WIDTH, reelHeight)      // Piirrrä suorakulmio
-        .fill({ color: 0x000000, alpha: 0.3 }); // Musta, 30% läpinäkyvyys
+        .rect(0, 0, symbolWidth, symbolHeight)      // Yhden symbolin koko
+        .fill({ color: 0x000000, alpha: 0.1 }); // Musta, 10% läpinäkyvyys
       reelBg.x = reelCont.x;
       reelBg.y = reelCont.y;
       app.stage.addChild(reelBg);  // Lisää tausta näytölle
 
-      // Luo maski joka rajaa kiekon näkyvän alueen (estaa ylimääräisten symbolien näkymisen)
+      // Luo maski joka rajaa kiekon näkyvän alueen
       const mask = new Graphics()
-        .rect(0, 0, REEL_WIDTH, reelHeight)  // Sama koko kuin kiekko
+        .rect(0, 0, symbolWidth, symbolHeight)  // Yhden symbolin koko
         .fill(0xffffff);                    // Valkoinen (maskin väri ei vaikuta)
 
       mask.x = reelCont.x;  // Sama sijainti kuin kiekko
@@ -506,7 +520,7 @@
       app.stage.addChild(reelCont); // Sitten kiekko
 
       // Luo Reel-olio ja lisää listaan
-      reels.push(new Reel(i, reelCont));
+      reels.push(new Reel(reelIndex, reelCont));
     }
 
     // ===== 6) PELISILMUKAN KÄYNNISTYS =====
@@ -529,11 +543,11 @@
   // SPIN NAPPI - Käynnistää uuden pyöräytyksen
   // ===================================================================
   function spin() {
-    gridData = createGrid();                        // Luo uudet symbolit
-    reels.forEach((r, i) => r.start(60 + i * 20));  // Käynnistä kiekot porrastetusti
-    // Viive kaava: 1. kiekko = 60 framea, 2. = 80, 3. = 100, jne.
+    reelData = createReelData();                     // Luo uudet symbolit 13 kiekolle
+    reels.forEach((r, i) => r.start(60 + i * 10));  // Käynnistä kiekot porrastetusti
+    // Viive kaava: 1. kiekko = 60 framea, 2. = 70, 3. = 80, jne.
     // Kaikki kiekot pyörivät vähintään 60 framea ennen hidastuksen alkua
-    // Tämä luo kauniin "aaltomaisen" pysähtymisen vasemmalta oikealle
+    // Tämä luo kauniin "aaltomaisen" pysähtymisen
     
     // Soita "whirr" SPIN-ääni
     playSound('spin');
