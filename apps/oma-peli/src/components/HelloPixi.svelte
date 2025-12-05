@@ -60,6 +60,10 @@
   const OFFSET_X = -30;       // Kaikkien kiekkojen X-siirtymä (+ = oikealle)
   const OFFSET_Y = -10;        // Kaikkien kiekkojen Y-siirtymä (+ = alaspäin)
   
+  // KESKIKIEKON (indeksi 6) erikoiskohdistus
+  const MIDDLE_REEL_Y_OFFSET = 160; // Keskikiekon Y-siirtymä (+ = alaspäin, - = ylöspäin)
+  const MIDDLE_REEL_X_OFFSET = 0;   // Keskikiekon X-siirtymä (+ = oikealle, - = vasemmalle)
+  
   // SPIN-napin sijainti (uudelle 1445x1000 taustalle)
   const BUTTON_X = 700;       // Napin X-koordinaatti
   const BUTTON_Y = 850;       // Napin Y-koordinaatti
@@ -611,12 +615,13 @@
       const baseX = 300 + col * (symbolWidth + 20); // Keskemmälle uudella taustalla
       const baseY = 250 + row * (symbolHeight + 15); // Alemmas uudella taustalla
       
-      // Keskikiekko (indeksi 6) korjattu pystykohdistus - samalla linjalla keskimmäisen rivin kanssa
-      const adjustedY = reelIndex === 6 ? baseY + 140 : baseY;
+      // Keskikiekko (indeksi 6) erikoiskohdistus - käytä parametreja
+      const adjustedX = reelIndex === 6 ? baseX + MIDDLE_REEL_X_OFFSET : baseX;
+      const adjustedY = reelIndex === 6 ? baseY + MIDDLE_REEL_Y_OFFSET : baseY;
       
       // Luo PixiJS kontti tälle kiekolle
       const reelCont = new Container();
-      reelCont.x = baseX + OFFSET_X;
+      reelCont.x = adjustedX + OFFSET_X;
       reelCont.y = adjustedY + OFFSET_Y;
 
       // Lisää värillinen tausta kiekon alueelle (debug/visualisointi) - jokainen kiekko eri väri
