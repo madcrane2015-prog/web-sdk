@@ -118,7 +118,7 @@ export default {
 				{ '5': 2 },
 			],
 		},
-		h: { // Mid value
+		h: { // WILD - Red_bubblegum substitutes any symbol
 			paytable: [
 				{ '13': 1000 },
 				{ '12': 400 },
@@ -130,6 +130,7 @@ export default {
 				{ '6': 5 },
 				{ '5': 2.5 },
 			],
+			special_properties: ['wild'],
 		},
 		i: { // Mid value
 			paytable: [
@@ -196,6 +197,10 @@ export default {
 				{ '5': 10 },
 			],
 			special_properties: ['wild', 'multiplier'],
+		},
+		emptyslot: { // Special symbol - only on middle reel (reel 6)
+			paytable: [], // No payout - special symbol
+			special_properties: ['scatter'],
 		},
 	},
 	// Reel strips for 13 individual reels
@@ -268,16 +273,17 @@ export default {
 				{ name: 'f' }, { name: 'g' }, { name: 'h' }, { name: 'i' }, { name: 'j' },
 				{ name: 'k' }, { name: 'l' }, { name: 'm' }, { name: 'a' }, { name: 'b' },
 			],
-			// Reel 6 (middle reel)
+			// Reel 6 (middle reel) - ONLY emptyslot and h (Red_bubblegum)
 			[
-				{ name: 'g' }, { name: 'h' }, { name: 'i' }, { name: 'j' }, { name: 'k' },
-				{ name: 'l' }, { name: 'm' }, { name: 'a' }, { name: 'b' }, { name: 'c' },
-				{ name: 'd' }, { name: 'e' }, { name: 'f' },
-				{ name: 'g' }, { name: 'h' }, { name: 'i' }, { name: 'j' }, { name: 'k' },
-				{ name: 'l' }, { name: 'a' }, { name: 'b' }, { name: 'c' }, { name: 'd' },
-				{ name: 'e' }, { name: 'f' },
-				{ name: 'g' }, { name: 'h' }, { name: 'i' }, { name: 'j' }, { name: 'k' },
-				{ name: 'l' }, { name: 'm' }, { name: 'a' }, { name: 'b' }, { name: 'c' },
+				{ name: 'emptyslot' }, { name: 'h' }, { name: 'emptyslot' }, { name: 'h' },
+				{ name: 'emptyslot' }, { name: 'h' }, { name: 'emptyslot' }, { name: 'h' },
+				{ name: 'emptyslot' }, { name: 'h' }, { name: 'emptyslot' }, { name: 'h' },
+				{ name: 'emptyslot' }, { name: 'h' }, { name: 'emptyslot' }, { name: 'h' },
+				{ name: 'emptyslot' }, { name: 'h' }, { name: 'emptyslot' }, { name: 'h' },
+				{ name: 'emptyslot' }, { name: 'h' }, { name: 'emptyslot' }, { name: 'h' },
+				{ name: 'emptyslot' }, { name: 'h' }, { name: 'emptyslot' }, { name: 'h' },
+				{ name: 'emptyslot' }, { name: 'h' }, { name: 'emptyslot' }, { name: 'h' },
+				{ name: 'emptyslot' }, { name: 'h' }, { name: 'emptyslot' },
 			],
 			// Reel 7
 			[

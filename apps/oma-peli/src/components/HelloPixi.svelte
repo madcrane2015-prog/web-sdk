@@ -65,8 +65,8 @@
   const MIDDLE_REEL_X_OFFSET = 0;   // Keskikiekon X-siirtymä (+ = oikealle, - = vasemmalle)
   
   // SPIN-napin sijainti (uudelle 1445x1000 taustalle)
-  const BUTTON_X = 700;       // Napin X-koordinaatti
-  const BUTTON_Y = 850;       // Napin Y-koordinaatti
+  const BUTTON_X = 720;       // Napin X-koordinaatti
+  const BUTTON_Y = 750;       // Napin Y-koordinaatti
   
   // LOGO-asetukset (helppo säätää)
   const LOGO_SCALE = 0.8;     // Logon koko kerroin (1.0 = alkuperäinen koko)
@@ -76,7 +76,7 @@
   // Taustakuvan (bg.jpg) säädöt
   const BACKGROUND_Y_SHIFT = -40;  // Pystysiirtymä (+ = alaspäin, - = ylöspäin)
   const BACKGROUND_SCALE = 1.0;    // Koon kerroin (1.0 = normaali)
-  const BACKGROUND_FIT_MODE = "height" as const; // Skaalaustyyppi: "width", "height", "min"
+  const BACKGROUND_FIT_MODE: "width" | "height" | "min" = "height"; // Skaalaustyyppi: "width", "height", "min"
   // =====================================
 
   // Symbol dimensions to fit background reels properly
@@ -88,7 +88,7 @@
   const ROW_HEIGHT = symbolHeight + gap;
 
   // Avaimet symboleille - kaikki uudet rockabilly-teemalliset symbolit
-  const SYMBOL_KEYS = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m"] as const;
+  const SYMBOL_KEYS = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "emptyslot"] as const;
   type SymbolKey = (typeof SYMBOL_KEYS)[number];
 
   // URL jokaiselle symbolille (static/symbols/...)
@@ -109,7 +109,7 @@
     j: `${symbolPath}/Red_fries.jpg`,        // Punaiset ranskalaiset
     k: `${symbolPath}/Red_milkshake.jpg`,    // Punainen milkshake
     l: `${symbolPath}/Scatter.jpg`,          // Scatter symboli
-    m: `${symbolPath}/Emptyslot.jpg`,        // Tyhjä ruutu (nyt mukana satunnaispelauksessa)
+    emptyslot: `${symbolPath}/Emptyslot.jpg`, // Tyhjä ruutu - VAIN keskikiekolla!
   };
 
   // Uudet kuvien URLit
@@ -142,16 +142,27 @@
   let debugInfo: string[] = [];
 
   // ===== APUFUNKTIOT =====
-  // Palauttaa satunnaisen symbolin
-  function randomSymbol(): SymbolKey {
-    return SYMBOL_KEYS[Math.floor(Math.random() * SYMBOL_KEYS.length)];
+  // Palauttaa satunnaisen symbolin tietylle kiekolle
+  function randomSymbol(reelIndex: number): SymbolKey {
+    // Reel 6 (keskikiekko) - VAIN emptyslot ja h (Red_bubblegum)
+    if (reelIndex === 6) {
+      const symbol = Math.random() < 0.5 ? 'emptyslot' : 'h';
+      console.log(`Reel ${reelIndex} (MIDDLE): ${symbol}`);
+      return symbol;
+    }
+    
+    // Muut kiekot - kaikki symbolit PAITSI emptyslot (a-l = 12 symbolia)
+    const availableSymbols = SYMBOL_KEYS.filter(s => s !== 'emptyslot');
+    const symbol = availableSymbols[Math.floor(Math.random() * availableSymbols.length)];
+    console.log(`Reel ${reelIndex} (NORMAL): ${symbol}, available: ${availableSymbols.length}`);
+    return symbol;
   }
 
   // Luo 13 erillistä kiekkoa (jokaiselle ruudulle oma kiekko)
   function createReelData(): SymbolKey[] {
     const reelData: SymbolKey[] = [];
     for (let i = 0; i < TOTAL_REELS; i++) {
-      reelData.push(randomSymbol());
+      reelData.push(randomSymbol(i)); // Välitä kiekon indeksi
     }
     return reelData;
   }
@@ -201,7 +212,7 @@
     k: 25,  // Red_milkshake
     // Erikoissymbolit - korkein arvo
     l: 100, // Scatter
-    m: 50   // Emptyslot (bonus)
+    emptyslot: 0 // Musta ruutu - ei maksa voittoa
   };
 
   // Tarkista voitot nykyisistä symboleista käyttäen StakeEngine paytableja
@@ -211,8 +222,17 @@
     // Laske jokaisen symbolin määrä
     const symbolCounts: Record<SymbolKey, number[]> = {} as any;
     
+    // Laske wild-symbolit (h = Red_bubblegum)
+    const wildPositions: number[] = [];
+    
     for (let i = 0; i < TOTAL_REELS; i++) {
       const symbol = reelData[i];
+      
+      // Kerää wild-positiot erikseen
+      if (symbol === 'h') {
+        wildPositions.push(i);
+      }
+      
       if (!symbolCounts[symbol]) {
         symbolCounts[symbol] = [];
       }
@@ -221,11 +241,19 @@
     
     // Tarkista jokainen symboli config.ts paytablen mukaan
     for (const symbol of SYMBOL_KEYS) {
+      // Älä käsittele wild-symbolia kahdesti
+      if (symbol === 'h') continue;
+      
+      // Älä käsittele emptyslotia - se ei voi voittaa
+      if (symbol === 'emptyslot') continue;
+      
       const positions = symbolCounts[symbol] || [];
-      const count = positions.length;
+      // Lisää wild-symbolit tähän symboliin (wild korvaa minkä tahansa symbolin PAITSI emptyslot)
+      const totalCount = positions.length + wildPositions.length;
+      const allPositions = [...positions, ...wildPositions];
       
       // Tarkista onko vähintään config.minMatchingSymbols (5) symbolia
-      if (count >= config.minMatchingSymbols) {
+      if (totalCount >= config.minMatchingSymbols) {
         // Hae payout config.ts:stä
         const symbolConfig = config.symbols[symbol];
         let payout = 0;
@@ -233,7 +261,7 @@
         if (symbolConfig && symbolConfig.paytable) {
           // Etsi oikea payout paytablesta
           for (const payEntry of symbolConfig.paytable) {
-            const countStr = count.toString() as keyof typeof payEntry;
+            const countStr = totalCount.toString() as keyof typeof payEntry;
             if (payEntry[countStr] !== undefined) {
               payout = payEntry[countStr] as number;
               break;
@@ -244,11 +272,36 @@
         if (payout > 0) {
           wins.push({
             symbol,
-            count: positions.length,
+            count: totalCount,
             payout,
-            positions
+            positions: allPositions
           });
         }
+      }
+    }
+    
+    // Tarkista myös pelkät wild-symbolit
+    if (wildPositions.length >= config.minMatchingSymbols) {
+      const symbolConfig = config.symbols['h'];
+      let payout = 0;
+      
+      if (symbolConfig && symbolConfig.paytable) {
+        for (const payEntry of symbolConfig.paytable) {
+          const countStr = wildPositions.length.toString() as keyof typeof payEntry;
+          if (payEntry[countStr] !== undefined) {
+            payout = payEntry[countStr] as number;
+            break;
+          }
+        }
+      }
+      
+      if (payout > 0) {
+        wins.push({
+          symbol: 'h',
+          count: wildPositions.length,
+          payout,
+          positions: wildPositions
+        });
       }
     }
     
@@ -259,6 +312,7 @@
   let totalWin = 0;
   let currentWins: WinResult[] = [];
   let isShowingWin = false;
+  let showPaytable = false; // Paytable-näkyvyys
   
   // Äänen toisto (jos äänet on käytössä)
   function playSound(soundKey: keyof typeof SOUND_URLS) {
@@ -271,6 +325,47 @@
     });
   }
 
+  // Korostaa voittavat symbolit
+  function highlightWinningSymbols(wins: WinResult[]) {
+    // Poista vanhat korostukset
+    winHighlights.forEach(h => app.stage.removeChild(h));
+    winHighlights = [];
+
+    // Lisää uudet korostukset
+    wins.forEach(win => {
+      win.positions.forEach(pos => {
+        const reel = reels[pos];
+        const highlight = new Graphics()
+          .rect(0, 0, symbolWidth, symbolHeight)
+          .fill({ color: 0xffff00, alpha: 0 }) // Läpinäkyvä täyttö
+          .stroke({ color: 0xffd700, width: 4 }); // Kultainen reunus
+        
+        highlight.x = reel.container.x;
+        highlight.y = reel.container.y;
+        app.stage.addChild(highlight);
+        winHighlights.push(highlight);
+
+        // Pulssi-animaatio
+        let pulseAlpha = 0;
+        let pulseDirection = 1;
+        const pulseSpeed = 0.05;
+        
+        app.ticker.add(() => {
+          pulseAlpha += pulseDirection * pulseSpeed;
+          if (pulseAlpha >= 0.4) pulseDirection = -1;
+          if (pulseAlpha <= 0) pulseDirection = 1;
+          highlight.alpha = 0.5 + pulseAlpha;
+        });
+      });
+    });
+  }
+
+  // Poista voittokorostukset
+  function clearWinHighlights() {
+    winHighlights.forEach(h => app.stage.removeChild(h));
+    winHighlights = [];
+  }
+
   // Alkutilan pelidata (13 erillistä kiekkoa)
   let reelData: SymbolKey[] = createReelData();
 
@@ -278,6 +373,7 @@
   let container: HTMLDivElement;  // HTML-elementti johon peli sijoitetaan
   let app: Application;           // Pelin pääsovellus
   let reels: Reel[] = [];        // Kaikki kiekot (13 kpl)
+  let winHighlights: Graphics[] = []; // Voittavien symbolien korostukset
 
   // ===================================================================
   // REEL LUOKKA - Yksittäisen kiekon toiminta (yksi ruutu = yksi kiekko)
@@ -366,7 +462,7 @@
         // Jos offset ylittää yhden symbolin korkeuden, vaihda uusi symboli
         if (this.offset >= ROW_HEIGHT) {
           this.offset = 0;                    // Nollaa offset
-          reelData[this.index] = randomSymbol(); // Aseta uusi satunnainen symboli tälle kiekolle
+          reelData[this.index] = randomSymbol(this.index); // Aseta uusi satunnainen symboli tälle kiekolle (välitä kiekon indeksi!)
         }
       }
     }
@@ -732,6 +828,9 @@
           console.log(`${win.count}x ${win.symbol} = ${win.payout} pistettä`);
         });
         
+        // Korostaa voittavat symbolit
+        highlightWinningSymbols(wins);
+        
         // Soita voittoääni
         playSound('win');
       }
@@ -746,6 +845,7 @@
     currentWins = [];
     totalWin = 0;
     isShowingWin = false;
+    clearWinHighlights(); // Poista voittokorostukset
     
     reelData = createReelData();                     // Luo uudet symbolit 13 kiekolle
     reels.forEach((r, i) => r.start(60 + i * 10));  // Käynnistä kiekot porrastetusti
@@ -845,8 +945,114 @@
   </div>
 {/if}
 
+<!-- Paytable-näyttö -->
+{#if showPaytable}
+  <div style="
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.95);
+    color: white;
+    padding: 30px;
+    border-radius: 15px;
+    font-family: Arial, sans-serif;
+    z-index: 3000;
+    border: 3px solid #ffd700;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+  ">
+    <h2 style="margin: 0 0 20px 0; text-align: center; color: #ffd700;">💰 PAYTABLE</h2>
+    
+    <div style="margin-bottom: 15px; text-align: center; color: #aaa;">
+      Voitto vaatii vähintään {config.minMatchingSymbols} samaa symbolia
+    </div>
+    
+    <div style="display: grid; gap: 10px;">
+      {#each Object.entries(config.symbols) as [symbol, data]}
+        <div style="
+          background: rgba(255, 255, 255, 0.1);
+          padding: 10px;
+          border-radius: 8px;
+          border-left: 4px solid {
+            symbol === 'm' ? '#ff0000' :
+            ['l', 'k', 'j'].includes(symbol) ? '#ffd700' :
+            ['i', 'h', 'g', 'f'].includes(symbol) ? '#00ff00' :
+            '#00bfff'
+          };
+        ">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
+            <span style="font-size: 1.5em; font-weight: bold;">{symbol.toUpperCase()}</span>
+            <span style="color: #aaa; font-size: 0.9em;">
+              {symbol === 'm' ? '⭐ WILD/SPECIAL' :
+               ['l', 'k', 'j'].includes(symbol) ? '👑 HIGH' :
+               ['i', 'h', 'g', 'f'].includes(symbol) ? '💎 MID' :
+               '🎵 LOW'}
+            </span>
+          </div>
+          {#if data.paytable}
+            <div style="display: flex; flex-wrap: wrap; gap: 8px; font-size: 0.85em;">
+              {#each data.paytable as entry}
+                {#each Object.entries(entry) as [count, payout]}
+                  <span style="background: rgba(0,0,0,0.3); padding: 3px 8px; border-radius: 4px;">
+                    {count}× = {payout}x
+                  </span>
+                {/each}
+              {/each}
+            </div>
+          {/if}
+        </div>
+      {/each}
+    </div>
+    
+    <div style="margin-top: 20px; text-align: center; font-size: 0.9em; color: #aaa;">
+      RTP: {(config.rtp * 100).toFixed(0)}% | Max Win: {config.betModes.base.max_win}x
+    </div>
+    
+    <button 
+      on:click={() => { showPaytable = false; }}
+      style="
+        margin-top: 20px;
+        width: 100%;
+        padding: 10px;
+        background: #ffd700;
+        color: #333;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 1em;
+        font-weight: bold;
+      "
+    >
+      Sulje
+    </button>
+  </div>
+{/if}
+
 <!-- PixiJS canvas sijoitetaan tähän div-elementtiin -->
 <div bind:this={container}></div>
+
+<!-- Paytable-nappi vasemmassa yläkulmassa -->
+<button
+  on:click={() => { showPaytable = !showPaytable; }}
+  style="
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    padding: 10px 15px;
+    background-color: rgba(255, 215, 0, 0.3);
+    border: 2px solid rgba(255, 215, 0, 0.7);
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    color: white;
+    text-shadow: 0 0 5px rgba(0,0,0,0.8);
+    z-index: 1000;
+  "
+>
+  💰 PAYTABLE
+</button>
 
 <!-- Mykistysnappi oikeassa yläkulmassa -->
 <button
