@@ -27,6 +27,9 @@
   import { onMount } from "svelte";
   import { base } from "$app/paths";
   
+  // StakeEngine math configuration
+  import config from "../game/config";
+  
   // PixiJS kirjaston komponentit pelimoottoria varten
   import {
     Application,    // Pelin pääsovellus
@@ -48,23 +51,28 @@
   // Näitä arvoja voi muuttaa pelin ulkonäön säätämiseksi
   // Kaikki muutokset päivittyvät automaattisesti dev-palvelimessa
   
-  // Canvas (peliruudun) koko
-  const CANVAS_WIDTH = 800;   // Leveys pikseleinä
-  const CANVAS_HEIGHT = 800;  // Korkeus pikseleinä (neliö muoto)
+  // Canvas (peliruudun) koko - uusi kuvasuhde 1445x1000
+  const CANVAS_WIDTH = 1445;   // Leveys pikseleinä
+  const CANVAS_HEIGHT = 1000;  // Korkeus pikseleinä
   
-  // Kiekkojen koko ja sijainti
-  const SCALE_MULTIPLIER = 1.25; // Symbolien koko kerroin (1.0 = normaali)
-  const OFFSET_X = -65;       // Kaikkien kiekkojen X-siirtymä (+ = oikealle)
-  const OFFSET_Y = 60;        // Kaikkien kiekkojen Y-siirtymä (+ = alaspäin)
+  // Kiekkojen koko ja sijainti - uudelle 1445x1000 taustalle
+  const SCALE_MULTIPLIER = 1.75; // Symbolien koko kerroin (1.0 = normaali)
+  const OFFSET_X = -30;       // Kaikkien kiekkojen X-siirtymä (+ = oikealle)
+  const OFFSET_Y = -10;        // Kaikkien kiekkojen Y-siirtymä (+ = alaspäin)
   
-  // SPIN-napin sijainti (asetetaan taustakuvan vihreän napin päälle)
-  const BUTTON_X = 370;       // Napin X-koordinaatti
-  const BUTTON_Y = 600;       // Napin Y-koordinaatti
+  // SPIN-napin sijainti (uudelle 1445x1000 taustalle)
+  const BUTTON_X = 700;       // Napin X-koordinaatti
+  const BUTTON_Y = 850;       // Napin Y-koordinaatti
+  
+  // LOGO-asetukset (helppo säätää)
+  const LOGO_SCALE = 0.8;     // Logon koko kerroin (1.0 = alkuperäinen koko)
+  const LOGO_X = 50;          // Logon X-siirtymä keskikohdasta (+ = oikealle, - = vasemmalle)
+  const LOGO_Y = 30;          // Logon Y-koordinaatti (+ = alaspäin, - = ylöspäin)
   
   // Taustakuvan (bg.jpg) säädöt
   const BACKGROUND_Y_SHIFT = -40;  // Pystysiirtymä (+ = alaspäin, - = ylöspäin)
   const BACKGROUND_SCALE = 1.0;    // Koon kerroin (1.0 = normaali)
-  const BACKGROUND_FIT_MODE = "heigth"; // Skaalaustyyppi: "width", "height", "min"
+  const BACKGROUND_FIT_MODE = "height" as const; // Skaalaustyyppi: "width", "height", "min"
   // =====================================
 
   // Symbol dimensions to fit background reels properly
@@ -100,8 +108,10 @@
     m: `${symbolPath}/Emptyslot.jpg`,        // Tyhjä ruutu (nyt mukana satunnaispelauksessa)
   };
 
-  // Taustakuvan URL (fyysinen peliautomaatti)
-  const BACKGROUND_URL = `${symbolPath}/bg.jpg`;
+  // Uudet kuvien URLit
+  const BACKGROUND_URL = `${symbolPath}/bg_base.jpg`;    // Uusi taustakuva (1445x1000)
+  const REEL_FRAMES_URL = `${symbolPath}/ReelFrames.png`; // Kiekkojen kehykset
+  const LOGO_URL = `${symbolPath}/RockABillyReels_logo.png`; // Pelin logo
   
   // ===== ÄÄNIEFEKTIT =====
   // Äänitiedostojen URLit
@@ -119,6 +129,8 @@
   // Ladatut tekstuurit (kuvat muutettuna PixiJS muotoon)
   let symbolTextures: Record<SymbolKey, Texture> | null = null;
   let backgroundTexture: Texture | null = null;
+  let reelFramesTexture: Texture | null = null;
+  let logoTexture: Texture | null = null;
   
   // Debug tila - näyttää lataustilanteen
   let loadingStatus = "Initializing...";
@@ -188,7 +200,7 @@
     m: 50   // Emptyslot (bonus)
   };
 
-  // Tarkista voitot nykyisistä symboleista
+  // Tarkista voitot nykyisistä symboleista käyttäen StakeEngine paytableja
   function checkWins(): WinResult[] {
     const wins: WinResult[] = [];
     
@@ -203,17 +215,36 @@
       symbolCounts[symbol].push(i);
     }
     
-    // Tarkista onko vähintään 5 samaa symbolia
+    // Tarkista jokainen symboli config.ts paytablen mukaan
     for (const symbol of SYMBOL_KEYS) {
       const positions = symbolCounts[symbol] || [];
-      if (positions.length >= 5) {
-        const payout = SYMBOL_PAYOUTS[symbol] * (positions.length - 4); // 5=1x, 6=2x, jne.
-        wins.push({
-          symbol,
-          count: positions.length,
-          payout,
-          positions
-        });
+      const count = positions.length;
+      
+      // Tarkista onko vähintään config.minMatchingSymbols (5) symbolia
+      if (count >= config.minMatchingSymbols) {
+        // Hae payout config.ts:stä
+        const symbolConfig = config.symbols[symbol];
+        let payout = 0;
+        
+        if (symbolConfig && symbolConfig.paytable) {
+          // Etsi oikea payout paytablesta
+          for (const payEntry of symbolConfig.paytable) {
+            const countStr = count.toString() as keyof typeof payEntry;
+            if (payEntry[countStr] !== undefined) {
+              payout = payEntry[countStr] as number;
+              break;
+            }
+          }
+        }
+        
+        if (payout > 0) {
+          wins.push({
+            symbol,
+            count: positions.length,
+            payout,
+            positions
+          });
+        }
       }
     }
     
@@ -385,14 +416,24 @@
     const textures: Record<SymbolKey, Texture> = {} as any;
 
     try {
-      loadingStatus = "Loading background...";
+      loadingStatus = "Loading background and UI images...";
       debugInfo.push(`Loading background: ${BACKGROUND_URL}`);
+      debugInfo.push(`Loading reel frames: ${REEL_FRAMES_URL}`);
+      debugInfo.push(`Loading logo: ${LOGO_URL}`);
       
-      // TAUSTAKUVAN LATAUS - lataa ensin Assets.cache:een, sitten luo tekstuuri
-      await Assets.load([{alias: 'background', src: BACKGROUND_URL}]);
+      // TAUSTAKUVAN JA UI-KUVIEN LATAUS
+      await Assets.load([
+        {alias: 'background', src: BACKGROUND_URL},
+        {alias: 'reelframes', src: REEL_FRAMES_URL},
+        {alias: 'logo', src: LOGO_URL}
+      ]);
       backgroundTexture = Texture.from('background');
+      reelFramesTexture = Texture.from('reelframes');
+      logoTexture = Texture.from('logo');
       console.log("✅ Background texture created:", backgroundTexture.width, "x", backgroundTexture.height);
-      debugInfo.push("✅ Background loaded");
+      console.log("✅ Reel frames texture created:", reelFramesTexture.width, "x", reelFramesTexture.height);
+      console.log("✅ Logo texture created:", logoTexture.width, "x", logoTexture.height);
+      debugInfo.push("✅ All UI images loaded");
       
       loadingStatus = "Loading symbols...";
       
@@ -566,12 +607,12 @@
       const col = position.col;
       const row = position.row;
       
-      // Laske ruudun sijainti näytöllä - korjatut koordinaatit
-      const baseX = 120 + col * (symbolWidth + 15); // Vasemmemmalle ja enemmän tilaa
-      const baseY = 120 + row * (symbolHeight + 10);
+      // Laske ruudun sijainti näytöllä - uudet koordinaatit 1445x1000 taustalle
+      const baseX = 300 + col * (symbolWidth + 20); // Keskemmälle uudella taustalla
+      const baseY = 250 + row * (symbolHeight + 15); // Alemmas uudella taustalla
       
       // Keskikiekko (indeksi 6) korjattu pystykohdistus - samalla linjalla keskimmäisen rivin kanssa
-      const adjustedY = reelIndex === 6 ? baseY + 125 : baseY;
+      const adjustedY = reelIndex === 6 ? baseY + 140 : baseY;
       
       // Luo PixiJS kontti tälle kiekolle
       const reelCont = new Container();
@@ -624,6 +665,38 @@
 
       // Luo Reel-olio ja lisää listaan
       reels.push(new Reel(reelIndex, reelCont));
+    }
+    
+    // ===== 6) REEL KEHYKSET =====
+    // Lisää kiekkojen kehykset kaikkien kiekkojen päälle
+    if (reelFramesTexture) {
+      const reelFramesSprite = new Sprite(reelFramesTexture);
+      
+      // Aseta kehysten koko ja sijainti
+      const framesScale = 1.0; // Säädä tarpeen mukaan
+      reelFramesSprite.scale.set(framesScale);
+      
+      // Keskitä kehykset kiekkojen päälle
+      reelFramesSprite.x = 250; // Säädä kiekkojen mukaan
+      reelFramesSprite.y = 200; // Säädä kiekkojen mukaan
+      
+      app.stage.addChild(reelFramesSprite);
+      console.log("Reel frames lisätty:", reelFramesSprite.width.toFixed(0), "x", reelFramesSprite.height.toFixed(0));
+    }
+    
+    // ===== 7) PELIN LOGO (PÄÄLLIMMÄINEN LAYER) =====
+    if (logoTexture) {
+      const logoSprite = new Sprite(logoTexture);
+      
+      // Käytä määriteltyjä logo-asetuksia
+      logoSprite.scale.set(LOGO_SCALE);
+      
+      // Sijoita logo käyttäjän asetusten mukaan
+      logoSprite.x = (app.renderer.width - logoSprite.width) / 2 + LOGO_X; // Keskitetty + X-siirtymä
+      logoSprite.y = LOGO_Y; // Käyttäjän määrittelemä Y-koordinaatti
+      
+      app.stage.addChild(logoSprite); // Päällimmäinen layer
+      console.log("Logo lisätty päällimmäiseen layeriin:", logoSprite.width.toFixed(0), "x", logoSprite.height.toFixed(0));
     }
 
     // ===== 6) PELISILMUKAN KÄYNNISTYS =====
