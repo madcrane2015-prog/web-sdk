@@ -21,6 +21,18 @@
       box-shadow: 0 0 40px rgba(255, 215, 0, 1.0);
     }
   }
+  
+  .bet-btn-minus:hover {
+    background: #ff6666 !important;
+  }
+  
+  .bet-btn-plus:hover {
+    background: #66ff66 !important;
+  }
+  
+  .bet-btn-max:hover {
+    background: #ffed4e !important;
+  }
 </style>
 <script lang="ts">
   // Svelte lifecycle ja routing
@@ -126,7 +138,7 @@
   };
   
   // Äänien hallinta
-  let soundEnabled = true;              // Voi käyttäjä halutessaan mykistää
+  let soundEnabled = $state(true);              // Voi käyttäjä halutessaan mykistää
   let audioElements: Record<string, HTMLAudioElement> = {};
 
   // ===== PELIN TILA JA MUUTTUJAT =====
@@ -137,9 +149,15 @@
   let logoTexture: Texture | null = null;
   
   // Debug tila - näyttää lataustilanteen
-  let loadingStatus = "Initializing...";
-  let errorMessage = "";
+  let loadingStatus = $state("Initializing...");
+  let errorMessage = $state("");
   let debugInfo: string[] = [];
+  
+  // Credit järjestelmä
+  let balance = $state(1000); // Aloitussaldo
+  let betAmount = $state(10);  // Panoksen määrä per spin
+  const MIN_BET = 1;
+  const MAX_BET = 100;
 
   // ===== APUFUNKTIOT =====
   // Palauttaa satunnaisen symbolin tietylle kiekolle
@@ -309,10 +327,10 @@
   }
 
   // Kokonaisvoitto
-  let totalWin = 0;
-  let currentWins: WinResult[] = [];
-  let isShowingWin = false;
-  let showPaytable = false; // Paytable-näkyvyys
+  let totalWin = $state(0);
+  let currentWins = $state<WinResult[]>([]);
+  let isShowingWin = $state(false);
+  let showPaytable = $state(false); // Paytable-näkyvyys
   
   // Äänen toisto (jos äänet on käytössä)
   function playSound(soundKey: keyof typeof SOUND_URLS) {
@@ -823,7 +841,10 @@
         totalWin = wins.reduce((sum, win) => sum + win.payout, 0);
         isShowingWin = true;
         
-        console.log(`🎉 VOITTO! ${totalWin} pistettä!`);
+        // Lisää voitto saldoon
+        addWinToBalance(totalWin);
+        
+        console.log(`🎉 VOITTO! ${totalWin} pistettä! Uusi saldo: ${balance}`);
         wins.forEach(win => {
           console.log(`${win.count}x ${win.symbol} = ${win.payout} pistettä`);
         });
@@ -841,6 +862,15 @@
   // SPIN NAPPI - Käynnistää uuden pyöräytyksen
   // ===================================================================
   function spin() {
+    // Tarkista että on tarpeeksi saldoa
+    if (balance < betAmount) {
+      alert(`Not enough credits! Balance: ${balance}, Bet: ${betAmount}`);
+      return;
+    }
+    
+    // Vähennä panos saldosta
+    balance -= betAmount;
+    
     // Nollaa voittotiedot
     currentWins = [];
     totalWin = 0;
@@ -855,6 +885,28 @@
     
     // Soita "whirr" SPIN-ääni
     playSound('spin');
+  }
+  
+  // Lisää voitto saldoon
+  function addWinToBalance(winAmount: number) {
+    balance += winAmount;
+  }
+  
+  // Bet kontrollit
+  function increaseBet() {
+    if (betAmount < MAX_BET) {
+      betAmount = Math.min(betAmount + 1, MAX_BET);
+    }
+  }
+  
+  function decreaseBet() {
+    if (betAmount > MIN_BET) {
+      betAmount = Math.max(betAmount - 1, MIN_BET);
+    }
+  }
+  
+  function maxBet() {
+    betAmount = MAX_BET;
   }
 </script>
 
@@ -1033,13 +1085,125 @@
 <!-- PixiJS canvas sijoitetaan tähän div-elementtiin -->
 <div bind:this={container}></div>
 
-<!-- Paytable-nappi vasemmassa yläkulmassa -->
+<!-- Credit ja Bet näyttö (oikeassa yläkulmassa) -->
+<div style="
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.85);
+  color: #ffd700;
+  padding: 15px 20px;
+  border-radius: 10px;
+  font-family: 'Courier New', monospace;
+  font-size: 18px;
+  font-weight: bold;
+  border: 2px solid #ffd700;
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.5);
+  z-index: 1500;
+  min-width: 180px;
+">
+  <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+    <span style="color: #fff;">CREDITS:</span>
+    <span style="color: #ffd700;">{balance.toLocaleString()}</span>
+  </div>
+  <div style="display: flex; justify-content: space-between; border-top: 1px solid #555; padding-top: 8px;">
+    <span style="color: #fff;">BET:</span>
+    <span style="color: #00ff00;">{betAmount}</span>
+  </div>
+</div>
+
+<!-- Bet kontrollit (vasemmassa alakulmassa) -->
+<div style="
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  background: rgba(0, 0, 0, 0.85);
+  padding: 15px;
+  border-radius: 10px;
+  border: 2px solid #00ff00;
+  z-index: 1500;
+">
+  <div style="color: white; font-size: 14px; margin-bottom: 10px; text-align: center; font-weight: bold;">
+    BET CONTROLS
+  </div>
+  <div style="display: flex; gap: 10px; align-items: center;">
+    <button
+      on:click={decreaseBet}
+      style="
+        padding: 8px 15px;
+        background: #ff4444;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: bold;
+        transition: background 0.2s;
+      "
+      class="bet-btn-minus"
+    >
+      -
+    </button>
+    
+    <div style="
+      color: #00ff00;
+      font-family: 'Courier New', monospace;
+      font-size: 20px;
+      font-weight: bold;
+      min-width: 60px;
+      text-align: center;
+      background: rgba(0, 255, 0, 0.1);
+      padding: 5px 10px;
+      border-radius: 5px;
+    ">
+      {betAmount}
+    </div>
+    
+    <button
+      on:click={increaseBet}
+      style="
+        padding: 8px 15px;
+        background: #44ff44;
+        color: #000;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: bold;
+        transition: background 0.2s;
+      "
+      class="bet-btn-plus"
+    >
+      +
+    </button>
+    
+    <button
+      on:click={maxBet}
+      style="
+        padding: 8px 12px;
+        background: #ffd700;
+        color: #000;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: bold;
+        transition: background 0.2s;
+      "
+      class="bet-btn-max"
+    >
+      MAX
+    </button>
+  </div>
+</div>
+
+<!-- Paytable-nappi oikeassa reunassa credit-näytön alla -->
 <button
   on:click={() => { showPaytable = !showPaytable; }}
   style="
     position: absolute;
-    top: 10px;
-    left: 10px;
+    top: 130px;
+    right: 20px;
     padding: 10px 15px;
     background-color: rgba(255, 215, 0, 0.3);
     border: 2px solid rgba(255, 215, 0, 0.7);
@@ -1049,6 +1213,7 @@
     color: white;
     text-shadow: 0 0 5px rgba(0,0,0,0.8);
     z-index: 1000;
+    min-width: 180px;
   "
 >
   💰 PAYTABLE
