@@ -298,9 +298,9 @@
     
     console.log(`Generated ${allPaths.length} possible paths (should be 81)`);
     
-    // Laske voittolinjat symboleittain ja pituuksittain
-    // Avain: "symboli-pituus", Arvo: määrä voittolinjoja
-    const winCounts = new Map<string, {symbol: SymbolKey, length: number, count: number, examplePath: number[]}>();
+    // Laske voittolinjat: jokainen polku arvioidaan erikseen
+    // Ryhmitellään voitot symbolin ja pituuden mukaan laskemista varten
+    const winCounts = new Map<string, {symbol: SymbolKey, length: number, lineCount: number, examplePath: number[]}>();
     
     for (const path of allPaths) {
       const symbols = path.map(idx => reelData[idx]);
@@ -337,32 +337,33 @@
       
       // Tarkista onko vähintään 3 symbolia (voittoon tarvitaan 3, 4 tai 5)
       if (matchLength >= 3) {
-        
         // Laske tämä voittolinja
         const winKey = `${winSymbol}-${matchLength}`;
         const existing = winCounts.get(winKey);
         if (existing) {
-          existing.count++;
+          existing.lineCount++;
         } else {
           winCounts.set(winKey, {
             symbol: winSymbol,
             length: matchLength,
-            count: 1,
+            lineCount: 1,
             examplePath: path.slice(0, matchLength)
           });
         }
       }
     }
     
-    // Muunna voittolinjat voittoiksi (yksi voitto per symboli-pituus yhdistelmä)
+    // Muunna voittolinjat voittoiksi
+    // 81-ways: voitto = (payout per symboli) × (linjojen määrä)
     const foundWinCombos: WinResult[] = [];
     
     for (const [key, winData] of winCounts.entries()) {
       const payoutMultiplier = SYMBOL_PAYTABLE[winData.symbol]?.[winData.length as 3 | 4 | 5];
       
       if (payoutMultiplier !== undefined && payoutMultiplier > 0) {
-        // Laske voitto: payout x bet (EI kerrotaan linjojen määrällä!)
-        const basePayout = payoutMultiplier * betAmount;
+        // 81-ways: Laske voitto = payout × bet × linjojen määrä
+        const singleLinePayout = payoutMultiplier * betAmount;
+        const basePayout = singleLinePayout * winData.lineCount;
         
         // Arvotaan satunnainen kerroin (1x, 2x tai 3x)
         const multipliers = [1, 2, 3];
@@ -370,7 +371,7 @@
         
         const finalPayout = basePayout * randomMultiplier;
         
-        console.log(`Win: ${winData.length}x ${winData.symbol} on ${winData.count} lines = ${finalPayout} (base: ${basePayout}, multiplier: ${randomMultiplier}x)`);
+        console.log(`Win: ${winData.length}x ${winData.symbol} on ${winData.lineCount} ways = ${finalPayout} (single line: ${singleLinePayout}, total base: ${basePayout}, multiplier: ${randomMultiplier}x)`);
         
         foundWinCombos.push({
           symbol: winData.symbol,
