@@ -166,6 +166,7 @@
   let winPopupShownAt = $state(0); // Timestamp kun popup tuli näkyviin
   let isProcessingAutoPlay = false; // Lukko estää päällekkäiset kutsut
   let autoPlayTimeoutId: number | null = null; // Tallenna timeout ID
+  let winsCheckedForCurrentSpin = false; // Estää voittojen tarkistuksen useaan kertaan
 
   // RTP-seuranta
   let totalRounds = $state(0);
@@ -920,8 +921,9 @@
       r.draw();   // Piirrä kiekko uudelleen
     }
     
-    // Tarkista voitot kun kaikki kiekot ovat pysähtyneet
-    if (!isShowingWin && reels.every(r => r.state === "stopped")) {
+    // Tarkista voitot kun kaikki kiekot ovat pysähtyneet JA voittoja ei ole vielä tarkistettu
+    if (!isShowingWin && !winsCheckedForCurrentSpin && reels.every(r => r.state === "stopped")) {
+      winsCheckedForCurrentSpin = true; // Merkitse että voitot on tarkistettu
       const wins = checkWins();
       console.log(`Checking wins, found ${wins.length} wins`);
       
@@ -1008,6 +1010,7 @@
     currentWins = [];
     totalWin = 0;
     isShowingWin = false;
+    winsCheckedForCurrentSpin = false; // Salli voittojen tarkistus uudelle spinille
     clearWinHighlights(); // Poista voittokorostukset
     
     reelData = createReelData();                     // Luo uudet symbolit 13 kiekolle
