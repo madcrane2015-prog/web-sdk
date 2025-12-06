@@ -164,6 +164,8 @@
   let autoPlayRoundsLeft = $state(0);
   let showAutoPlayMenu = $state(false);
   let winPopupShownAt = $state(0); // Timestamp kun popup tuli näkyviin
+  let isProcessingAutoPlay = false; // Lukko estää päällekkäiset kutsut
+  let autoPlayTimeoutId: number | null = null; // Tallenna timeout ID
 
   // RTP-seuranta
   let totalRounds = $state(0);
@@ -955,23 +957,31 @@
         playSound('win');
         
         // Jos autoplay on päällä, odota 1.5s ja sulje popup automaattisesti
-        if (isAutoPlaying) {
-          setTimeout(() => {
-            if (isShowingWin) {
+        if (isAutoPlaying && !isProcessingAutoPlay) {
+          isProcessingAutoPlay = true; // Lukitse
+          autoPlayTimeoutId = window.setTimeout(() => {
+            if (isShowingWin && isAutoPlaying) {
               console.log('Autoplay: Auto-closing win popup after 1.5s');
               isShowingWin = false;
               clearWinHighlights();
-              // Jatka seuraavaan kierrokseen
-              setTimeout(executeAutoPlay, 200);
             }
+            // Jatka seuraavaan kierrokseen
+            autoPlayTimeoutId = window.setTimeout(() => {
+              isProcessingAutoPlay = false; // Vapauta lukko
+              executeAutoPlay();
+            }, 200);
           }, 1500);
         }
       } else {
         console.log('No wins found this spin');
         // Jos autoplay on päällä ja ei voittoja, jatka seuraavaan kierrokseen
         // MUTTA odota 1 sekunti että pelaaja näkee tulokset
-        if (isAutoPlaying) {
-          setTimeout(executeAutoPlay, 1000);
+        if (isAutoPlaying && !isProcessingAutoPlay) {
+          isProcessingAutoPlay = true; // Lukitse
+          autoPlayTimeoutId = window.setTimeout(() => {
+            isProcessingAutoPlay = false; // Vapauta lukko
+            executeAutoPlay();
+          }, 1000);
         }
       }
     }
@@ -986,6 +996,12 @@
       alert(`Not enough credits! Balance: ${balance}, Bet: ${betAmount}`);
       stopAutoPlay();
       return;
+    }
+    
+    // Tyhjennä mahdollinen autoplay timeout
+    if (autoPlayTimeoutId !== null) {
+      clearTimeout(autoPlayTimeoutId);
+      autoPlayTimeoutId = null;
     }
     
     // Vähennä panos saldosta
@@ -1045,6 +1061,11 @@
   function stopAutoPlay() {
     isAutoPlaying = false;
     autoPlayRoundsLeft = 0;
+    isProcessingAutoPlay = false; // Vapauta lukko
+    if (autoPlayTimeoutId !== null) {
+      clearTimeout(autoPlayTimeoutId);
+      autoPlayTimeoutId = null;
+    }
   }
 
   function executeAutoPlay() {
