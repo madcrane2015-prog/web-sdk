@@ -172,7 +172,9 @@
   let totalRounds = $state(0);
   let totalWagered = $state(0);
   let totalWon = $state(0);
+  let totalWins = $state(0); // Voittojen määrä
   let currentRTP = $derived(totalWagered > 0 ? (totalWon / totalWagered * 100).toFixed(2) : "0.00");
+  let hitFrequency = $derived(totalRounds > 0 ? (totalWins / totalRounds * 100).toFixed(2) : "0.00");
 
   // ===== APUFUNKTIOT =====
   // Symbol weights for weighted random distribution
@@ -1065,6 +1067,9 @@
   function addWinToBalance(winAmount: number) {
     balance += winAmount;
     totalWon += winAmount;
+    if (winAmount > 0) {
+      totalWins++;
+    }
   }
   
   // Bet kontrollit
@@ -1123,6 +1128,7 @@
       totalRounds = 0;
       totalWagered = 0;
       totalWon = 0;
+      totalWins = 0;
     }
   }
 </script>
@@ -1485,6 +1491,18 @@
     <span style="color: #ffd700;">RTP:</span>
     <span style="color: {parseFloat(currentRTP) >= 95 ? '#00ff00' : parseFloat(currentRTP) >= 85 ? '#ffff00' : '#ff6666'};">
       {currentRTP}%
+    </span>
+  </div>
+  <div style="
+    display: flex; 
+    justify-content: space-between; 
+    margin-top: 8px;
+    font-weight: bold;
+    font-size: 16px;
+  ">
+    <span style="color: #aaa;">Hit Freq:</span>
+    <span style="color: {parseFloat(hitFrequency) >= 30 ? '#00ff00' : parseFloat(hitFrequency) >= 20 ? '#ffff00' : '#ff6666'};">
+      {hitFrequency}%
     </span>
   </div>
   <button
