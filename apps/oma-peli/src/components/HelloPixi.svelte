@@ -175,7 +175,28 @@
   let currentRTP = $derived(totalWagered > 0 ? (totalWon / totalWagered * 100).toFixed(2) : "0.00");
 
   // ===== APUFUNKTIOT =====
-  // Palauttaa satunnaisen symbolin tietylle kiekolle
+  // Symbol weights for weighted random distribution
+  const SYMBOL_WEIGHTS: Record<SymbolKey, number> = {
+    // Red tier - 48% of symbols (cheap, frequent)
+    'k': 0.18,   // Red_milkshake (18%)
+    'j': 0.15,   // Red_fries (15%)
+    'i': 0.15,   // Red_burger (15%)
+    // Blue tier - 32% of symbols (mid)
+    'c': 0.09,   // Blue_rollers (9%)
+    'd': 0.09,   // Blue_speakers (9%)
+    'b': 0.07,   // Blue_jacket (7%)
+    'a': 0.07,   // Blue_hotrod (7%)
+    // Premium tier - 12% of symbols (expensive, rare)
+    'f': 0.04,   // Premium_brunette (4%)
+    'e': 0.03,   // Premium_blonde (3%)
+    'g': 0.025,  // Premium_rocker (2.5%)
+    'l': 0.025,  // Premium_pin (2.5%)
+    // Wild and empty (special handling)
+    'h': 0.08,   // Red_bubblegum (Wild) - only on middle reel
+    'emptyslot': 0
+  };
+
+  // Palauttaa satunnaisen symbolin tietylle kiekolle (weighted distribution)
   function randomSymbol(reelIndex: number): SymbolKey {
     // Reel 6 (keskikiekko) - VAIN emptyslot ja h (Red_bubblegum)
     if (reelIndex === 6) {
@@ -184,11 +205,27 @@
       return symbol;
     }
     
-    // Muut kiekot - kaikki symbolit PAITSI emptyslot (a-l = 12 symbolia)
-    const availableSymbols = SYMBOL_KEYS.filter(s => s !== 'emptyslot');
-    const symbol = availableSymbols[Math.floor(Math.random() * availableSymbols.length)];
-    console.log(`Reel ${reelIndex} (NORMAL): ${symbol}, available: ${availableSymbols.length}`);
-    return symbol;
+    // Muut kiekot - weighted distribution (NO Wild on other reels)
+    const rand = Math.random();
+    let cumulative = 0;
+    
+    // Get symbols without Wild and empty
+    const availableSymbols = SYMBOL_KEYS.filter(s => s !== 'emptyslot' && s !== 'h');
+    
+    // Calculate total weight
+    const totalWeight = availableSymbols.reduce((sum, sym) => sum + SYMBOL_WEIGHTS[sym], 0);
+    
+    // Weighted selection
+    for (const symbol of availableSymbols) {
+      cumulative += SYMBOL_WEIGHTS[symbol] / totalWeight;
+      if (rand < cumulative) {
+        console.log(`Reel ${reelIndex} (WEIGHTED): ${symbol}`);
+        return symbol;
+      }
+    }
+    
+    // Fallback (should never happen)
+    return 'k';
   }
 
   // Luo 13 erillistä kiekkoa (jokaiselle ruudulle oma kiekko)
@@ -229,24 +266,25 @@
   };
 
   // Paytable - symbolien voitot 3x, 4x, 5x osumille (kertoimet x Bet)
-  // Säädöt: Base RTP ~60%, Bonus RTP ~36%, Total ~96%
+  // Säädöt: Base RTP ~68%, Bonus RTP ~36%, Total ~104%
+  // Halpojen symbolien määrä lisätty (48% Red, 32% Blue, 12% Premium)
   const SYMBOL_PAYTABLE: Record<SymbolKey, {3?: number, 4?: number, 5?: number}> = {
-    // Red series - alhaisin arvo
-    k: { 3: 0.025, 4: 0.06, 5: 0.24 },   // Red_milkshake
-    j: { 3: 0.025, 4: 0.1, 5: 0.48 },    // Red_fries
-    i: { 3: 0.025, 4: 0.1, 5: 0.48 },    // Red_burger
+    // Red series - alhaisin arvo (PALJON ENEMMÄN NÄITÄ KIEKOILLA!)
+    k: { 3: 0.15, 4: 0.5, 5: 2.4 },      // Red_milkshake (18% kiekoilla)
+    j: { 3: 0.25, 4: 1, 5: 5 },          // Red_fries (15% kiekoilla)
+    i: { 3: 0.25, 4: 1, 5: 5 },          // Red_burger (15% kiekoilla)
     // Blue series - keskiarvo
-    c: { 3: 0.06, 4: 0.15, 5: 0.9 },     // Blue_rollers
-    d: { 3: 0.06, 4: 0.15, 5: 0.9 },     // Blue_speakers (microphone)
-    b: { 3: 0.08, 4: 0.3, 5: 1.5 },      // Blue_jacket
-    a: { 3: 0.08, 4: 0.3, 5: 1.5 },      // Blue_hotrod
-    // Premium series - korkein arvo
-    f: { 3: 0.15, 4: 0.6, 5: 3 },        // Premium_brunette
-    e: { 3: 0.3, 4: 1.2, 5: 6 },         // Premium_blonde
-    g: { 3: 0.45, 4: 1.8, 5: 9 },        // Premium_rocker (Rockabilly)
+    c: { 3: 0.75, 4: 2.5, 5: 10 },       // Blue_rollers (9% kiekoilla)
+    d: { 3: 0.75, 4: 2.5, 5: 10 },       // Blue_speakers (9% kiekoilla)
+    b: { 3: 1, 4: 3.5, 5: 12.5 },        // Blue_jacket (7% kiekoilla)
+    a: { 3: 1, 4: 3.5, 5: 12.5 },        // Blue_hotrod (7% kiekoilla)
+    // Premium series - korkein arvo (VÄHEMMÄN NÄITÄ)
+    f: { 3: 1.5, 4: 7.5, 5: 25 },        // Premium_brunette (4% kiekoilla)
+    e: { 3: 2.5, 4: 10, 5: 37.5 },       // Premium_blonde (3% kiekoilla)
+    g: { 3: 2.5, 4: 12.5, 5: 50 },       // Premium_rocker (2.5% kiekoilla)
     // Erikoissymbolit
-    h: {},                               // Red_bubblegum (WILD - korvaa muita, ei voittoa itsessään)
-    l: {},                               // Scatter - erillinen free spins logiikka
+    h: {},                               // Red_bubblegum (WILD - 50% middle reel, 0% others)
+    l: { 3: 2.5, 4: 12.5, 5: 50 },       // Premium_pin (2.5% kiekoilla)
     emptyslot: {}                        // Tyhjä ruutu - ei voittoa
   };
 
