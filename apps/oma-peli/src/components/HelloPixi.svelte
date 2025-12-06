@@ -953,8 +953,25 @@
         
         // Soita voittoääni
         playSound('win');
+        
+        // Jos autoplay on päällä, odota 1.5s ja sulje popup automaattisesti
+        if (isAutoPlaying) {
+          setTimeout(() => {
+            if (isShowingWin) {
+              console.log('Autoplay: Auto-closing win popup after 1.5s');
+              isShowingWin = false;
+              clearWinHighlights();
+              // Jatka seuraavaan kierrokseen
+              setTimeout(executeAutoPlay, 200);
+            }
+          }, 1500);
+        }
       } else {
         console.log('No wins found this spin');
+        // Jos autoplay on päällä ja ei voittoja, jatka heti
+        if (isAutoPlaying) {
+          setTimeout(executeAutoPlay, 500);
+        }
       }
     }
   }
@@ -1035,47 +1052,13 @@
       return;
     }
 
-    // Tarkista että kaikki kiekot ovat pysähtyneet
-    const allStopped = reels.every(r => !r.spinning);
-    
-    if (!allStopped) {
-      // Odota 100ms ja yritä uudelleen
-      setTimeout(executeAutoPlay, 100);
-      return;
-    }
-    
-    // Jos on voittopopup näkyvissä, odota että voitot on käsitelty
-    if (isShowingWin) {
-      const timeShown = Date.now() - winPopupShownAt;
-      const minDisplayTime = 1500; // Näytä popup vähintään 1.5 sekuntia
-      
-      if (timeShown < minDisplayTime) {
-        // Odota vielä
-        console.log(`Autoplay: Waiting for wins to be processed (${timeShown}ms / ${minDisplayTime}ms)`);
-        setTimeout(executeAutoPlay, 100);
-        return;
-      }
-      
-      // Nyt voitot on käsitelty, voidaan sulkea popup ja jatkaa
-      console.log('Autoplay: Wins processed, closing popup and continuing...');
-      isShowingWin = false;
-      clearWinHighlights();
-      // Odota 200ms että tila päivittyy
-      setTimeout(executeAutoPlay, 200);
-      return;
-    }
-
-    // Pyöräytä
+    // Pyöräytä (update() jatkaa automaattisesti kun voitot on käsitelty)
+    console.log(`Autoplay: Starting spin ${autoPlayRoundsLeft} rounds left`);
     spin();
     autoPlayRoundsLeft--;
-
-    // Odota että kiekot pysähtyvät ja voitot käsitellään
-    // Tämä funktio kutsuu itseään uudelleen 100ms välein kunnes kaikki on valmista
-    if (isAutoPlaying && autoPlayRoundsLeft > 0) {
-      setTimeout(executeAutoPlay, 100);
-    } else {
-      stopAutoPlay();
-    }
+    
+    // ÄLÄ kutsu executeAutoPlay() täällä!
+    // update() funktio kutsuu sitä automaattisesti kun voitot on käsitelty
   }
 
   // Nollaa RTP-tilastot
