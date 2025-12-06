@@ -210,118 +210,180 @@
     count: number;
     payout: number;
     positions: number[]; // Voittavien kiekkojen indeksit
+    multiplier?: number; // Satunnainen kerroin (1x, 2x, 3x)
   };
 
-  // Symbolien kertoimet (kuinka paljon 5+ symbolia maksaa)
-  const SYMBOL_PAYOUTS: Record<SymbolKey, number> = {
-    // Blue series - matalin arvo
-    a: 5,   // Blue_hotrod
-    b: 5,   // Blue_jacket  
-    c: 5,   // Blue_rollers
-    d: 5,   // Blue_speakers
-    // Premium series - keskiarvo
-    e: 15,  // Premium_blonde
-    f: 15,  // Premium_brunette
-    g: 15,  // Premium_rocker
-    // Red series - korkeampi arvo
-    h: 25,  // Red_bubblegum
-    i: 25,  // Red_burger
-    j: 25,  // Red_fries
-    k: 25,  // Red_milkshake
-    // Erikoissymbolit - korkein arvo
-    l: 100, // Scatter
-    emptyslot: 0 // Musta ruutu - ei maksa voittoa
+  // Paytable - symbolien voitot 3x, 4x, 5x osumille (kertoimet x Bet)
+  const SYMBOL_PAYTABLE: Record<SymbolKey, {3?: number, 4?: number, 5?: number}> = {
+    // Red series - alhaisin arvo
+    k: { 3: 0.3, 4: 1, 5: 5 },      // Red_milkshake
+    j: { 3: 0.5, 4: 2, 5: 10 },     // Red_fries
+    i: { 3: 0.5, 4: 2, 5: 10 },     // Red_burger
+    // Blue series - keskiarvo
+    c: { 3: 1.5, 4: 5, 5: 20 },     // Blue_rollers
+    d: { 3: 1.5, 4: 5, 5: 20 },     // Blue_speakers (microphone)
+    b: { 3: 2, 4: 7, 5: 25 },       // Blue_jacket
+    a: { 3: 2, 4: 7, 5: 25 },       // Blue_hotrod
+    // Premium series - korkein arvo
+    f: { 3: 3, 4: 15, 5: 50 },      // Premium_brunette
+    e: { 3: 5, 4: 20, 5: 75 },      // Premium_blonde
+    g: { 3: 5, 4: 25, 5: 100 },     // Premium_rocker (Rockabilly)
+    // Erikoissymbolit
+    h: {},                          // Red_bubblegum (WILD - korvaa muita, ei voittoa itsessään)
+    l: {},                          // Scatter - erillinen free spins logiikka
+    emptyslot: {}                   // Tyhjä ruutu - ei voittoa
   };
 
-  // Tarkista voitot nykyisistä symboleista käyttäen StakeEngine paytableja
+  // Tarkista voitot 81-ways järjestelmällä
   function checkWins(): WinResult[] {
     const wins: WinResult[] = [];
     
-    // Laske jokaisen symbolin määrä
-    const symbolCounts: Record<SymbolKey, number[]> = {} as any;
-    
-    // Laske wild-symbolit (h = Red_bubblegum)
-    const wildPositions: number[] = [];
-    
+    // 1. Tarkista scatter-symbolit (l) - voivat olla missä tahansa
+    const scatterPositions: number[] = [];
     for (let i = 0; i < TOTAL_REELS; i++) {
-      const symbol = reelData[i];
-      
-      // Kerää wild-positiot erikseen
-      if (symbol === 'h') {
-        wildPositions.push(i);
+      if (reelData[i] === 'l') {
+        scatterPositions.push(i);
       }
-      
-      if (!symbolCounts[symbol]) {
-        symbolCounts[symbol] = [];
-      }
-      symbolCounts[symbol].push(i);
     }
     
-    // Tarkista jokainen symboli config.ts paytablen mukaan
-    for (const symbol of SYMBOL_KEYS) {
-      // Älä käsittele wild-symbolia kahdesti
-      if (symbol === 'h') continue;
+    // Scatter-voitot ja free spinsit
+    if (scatterPositions.length >= 5) {
+      const freeSpins = 8 + (scatterPositions.length - 5); // 5 scatters = 8 free spins, 12 scatters = 15 free spins
+      console.log(`🎰 SCATTER WIN! ${scatterPositions.length} scatters = ${freeSpins} FREE SPINS!`);
       
-      // Älä käsittele emptyslotia - se ei voi voittaa
-      if (symbol === 'emptyslot') continue;
-      
-      const positions = symbolCounts[symbol] || [];
-      // Lisää wild-symbolit tähän symboliin (wild korvaa minkä tahansa symbolin PAITSI emptyslot)
-      const totalCount = positions.length + wildPositions.length;
-      const allPositions = [...positions, ...wildPositions];
-      
-      // Tarkista onko vähintään config.minMatchingSymbols (5) symbolia
-      if (totalCount >= config.minMatchingSymbols) {
-        // Hae payout config.ts:stä
-        const symbolConfig = config.symbols[symbol];
-        let payout = 0;
-        
-        if (symbolConfig && symbolConfig.paytable) {
-          // Etsi oikea payout paytablesta
-          for (const payEntry of symbolConfig.paytable) {
-            const countStr = totalCount.toString() as keyof typeof payEntry;
-            if (payEntry[countStr] !== undefined) {
-              payout = payEntry[countStr] as number;
-              break;
+      // Scatter ei maksa voittoa, vain free spins (voit lisätä tämän myöhemmin)
+      wins.push({
+        symbol: 'l',
+        count: scatterPositions.length,
+        payout: 0, // Scatterit eivät maksa rahaa, vain free spinsejä
+        positions: scatterPositions
+      });
+    }
+    
+    // 2. Rakenna grid symboleista (5 saraketta x 3 riviä, keskisarake vain 1 rivi)
+    const grid: SymbolKey[][] = [
+      [reelData[0], reelData[1], reelData[2]],        // Sarake 0 (vasen)
+      [reelData[3], reelData[4], reelData[5]],        // Sarake 1
+      [reelData[6]],                                   // Sarake 2 (keskikiekko, vain 1 symboli)
+      [reelData[7], reelData[8], reelData[9]],        // Sarake 3
+      [reelData[10], reelData[11], reelData[12]]      // Sarake 4 (oikea)
+    ];
+    
+    // 3. Etsi kaikki 81-ways voitot
+    // Ways = kaikki mahdolliset polut vasemmalta oikealle
+    // 3x3x1x3x3 = 81 mahdollista polkua
+    
+    // Käy läpi kaikki mahdolliset polut
+    const allPaths: number[][] = [];
+    
+    // Generoi kaikki 81 polkua
+    for (let r0 = 0; r0 < 3; r0++) {           // Sarake 0: 3 riviä
+      for (let r1 = 0; r1 < 3; r1++) {         // Sarake 1: 3 riviä
+        for (let r2 = 0; r2 < 1; r2++) {       // Sarake 2: 1 rivi (keskikiekko)
+          for (let r3 = 0; r3 < 3; r3++) {     // Sarake 3: 3 riviä
+            for (let r4 = 0; r4 < 3; r4++) {   // Sarake 4: 3 riviä
+              const path = [
+                getReelIndex(0, r0),
+                getReelIndex(1, r1),
+                getReelIndex(2, r2),
+                getReelIndex(3, r3),
+                getReelIndex(4, r4)
+              ];
+              allPaths.push(path);
             }
           }
         }
+      }
+    }
+    
+    console.log(`Generated ${allPaths.length} possible paths (should be 81)`);
+    
+    // Laske voittolinjat symboleittain ja pituuksittain
+    // Avain: "symboli-pituus", Arvo: määrä voittolinjoja
+    const winCounts = new Map<string, {symbol: SymbolKey, length: number, count: number, examplePath: number[]}>();
+    
+    for (const path of allPaths) {
+      const symbols = path.map(idx => reelData[idx]);
+      
+      // Ohita jos ensimmäinen symboli on emptyslot tai scatter
+      if (symbols[0] === 'emptyslot' || symbols[0] === 'l') continue;
+      
+      // Määritä voittosymboli: jos ensimmäinen on wild, etsi ensimmäinen ei-wild
+      let winSymbol: SymbolKey | null = null;
+      
+      for (let i = 0; i < symbols.length; i++) {
+        if (symbols[i] !== 'h' && symbols[i] !== 'emptyslot' && symbols[i] !== 'l') {
+          winSymbol = symbols[i];
+          break;
+        }
+      }
+      
+      // Jos kaikki symbolit ovat wildeja, emptyslotteja tai scattereita, ohita
+      if (!winSymbol) continue;
+      
+      // Laske kuinka monta peräkkäistä symbolia (winSymbol tai wild) vasemmalta
+      let matchLength = 0;
+      
+      for (let i = 0; i < symbols.length; i++) {
+        const currentSymbol = symbols[i];
         
-        if (payout > 0) {
-          wins.push({
-            symbol,
-            count: totalCount,
-            payout,
-            positions: allPositions
+        // Hyväksy vain winSymbol tai wild (h)
+        if (currentSymbol === winSymbol || currentSymbol === 'h') {
+          matchLength++;
+        } else {
+          break; // Katko heti kun tulee jotain muuta
+        }
+      }
+      
+      // Tarkista onko vähintään 3 symbolia (voittoon tarvitaan 3, 4 tai 5)
+      if (matchLength >= 3) {
+        
+        // Laske tämä voittolinja
+        const winKey = `${winSymbol}-${matchLength}`;
+        const existing = winCounts.get(winKey);
+        if (existing) {
+          existing.count++;
+        } else {
+          winCounts.set(winKey, {
+            symbol: winSymbol,
+            length: matchLength,
+            count: 1,
+            examplePath: path.slice(0, matchLength)
           });
         }
       }
     }
     
-    // Tarkista myös pelkät wild-symbolit
-    if (wildPositions.length >= config.minMatchingSymbols) {
-      const symbolConfig = config.symbols['h'];
-      let payout = 0;
+    // Muunna voittolinjat voittoiksi (yksi voitto per symboli-pituus yhdistelmä)
+    const foundWinCombos: WinResult[] = [];
+    
+    for (const [key, winData] of winCounts.entries()) {
+      const payoutMultiplier = SYMBOL_PAYTABLE[winData.symbol]?.[winData.length as 3 | 4 | 5];
       
-      if (symbolConfig && symbolConfig.paytable) {
-        for (const payEntry of symbolConfig.paytable) {
-          const countStr = wildPositions.length.toString() as keyof typeof payEntry;
-          if (payEntry[countStr] !== undefined) {
-            payout = payEntry[countStr] as number;
-            break;
-          }
-        }
-      }
-      
-      if (payout > 0) {
-        wins.push({
-          symbol: 'h',
-          count: wildPositions.length,
-          payout,
-          positions: wildPositions
+      if (payoutMultiplier !== undefined && payoutMultiplier > 0) {
+        // Laske voitto: payout x bet (EI kerrotaan linjojen määrällä!)
+        const basePayout = payoutMultiplier * betAmount;
+        
+        // Arvotaan satunnainen kerroin (1x, 2x tai 3x)
+        const multipliers = [1, 2, 3];
+        const randomMultiplier = multipliers[Math.floor(Math.random() * multipliers.length)];
+        
+        const finalPayout = basePayout * randomMultiplier;
+        
+        console.log(`Win: ${winData.length}x ${winData.symbol} on ${winData.count} lines = ${finalPayout} (base: ${basePayout}, multiplier: ${randomMultiplier}x)`);
+        
+        foundWinCombos.push({
+          symbol: winData.symbol,
+          count: winData.length,
+          payout: finalPayout,
+          positions: winData.examplePath,
+          multiplier: randomMultiplier
         });
       }
     }
+    
+    // Lisää kaikki löydetyt voitot
+    wins.push(...foundWinCombos);
     
     return wins;
   }
@@ -331,6 +393,23 @@
   let currentWins = $state<WinResult[]>([]);
   let isShowingWin = $state(false);
   let showPaytable = $state(false); // Paytable-näkyvyys
+  
+  // Symbolin nimen muunnos näyttöä varten
+  const SYMBOL_NAMES: Record<SymbolKey, string> = {
+    a: "Hot Rod",
+    b: "Jacket",
+    c: "Roller Skates",
+    d: "Microphone",
+    e: "Blonde",
+    f: "Brunette",
+    g: "Rockabilly",
+    h: "WILD",
+    i: "Burger",
+    j: "Fries",
+    k: "Milkshake",
+    l: "SCATTER",
+    emptyslot: "Empty"
+  };
   
   // Äänen toisto (jos äänet on käytössä)
   function playSound(soundKey: keyof typeof SOUND_URLS) {
@@ -836,17 +915,23 @@
     // Tarkista voitot kun kaikki kiekot ovat pysähtyneet
     if (!isShowingWin && reels.every(r => r.state === "stopped")) {
       const wins = checkWins();
+      console.log(`Checking wins, found ${wins.length} wins`);
+      
       if (wins.length > 0) {
         currentWins = wins;
         totalWin = wins.reduce((sum, win) => sum + win.payout, 0);
-        isShowingWin = true;
         
-        // Lisää voitto saldoon
+        // Lisää voitto saldoon VAIN KERRAN
         addWinToBalance(totalWin);
         
+        // Näytä voitto-popup
+        isShowingWin = true;
+        
         console.log(`🎉 VOITTO! ${totalWin} pistettä! Uusi saldo: ${balance}`);
+        console.log(`isShowingWin set to: ${isShowingWin}, totalWin: ${totalWin}`);
         wins.forEach(win => {
-          console.log(`${win.count}x ${win.symbol} = ${win.payout} pistettä`);
+          const multiplierText = win.multiplier ? ` (${win.multiplier}x multiplier)` : '';
+          console.log(`${win.count}x ${win.symbol} = ${win.payout} pistettä${multiplierText}`);
         });
         
         // Korostaa voittavat symbolit
@@ -854,6 +939,8 @@
         
         // Soita voittoääni
         playSound('win');
+      } else {
+        console.log('No wins found this spin');
       }
     }
   }
@@ -871,7 +958,7 @@
     // Vähennä panos saldosta
     balance -= betAmount;
     
-    // Nollaa voittotiedot
+    // Nollaa voittotiedot JA sulje popup
     currentWins = [];
     totalWin = 0;
     isShowingWin = false;
@@ -955,8 +1042,8 @@
   <div style="
     position: fixed;
     top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    right: 30px;
+    transform: translateY(-50%);
     background: linear-gradient(45deg, #ffd700, #ffed4a);
     color: #333;
     padding: 20px;
@@ -967,6 +1054,7 @@
     border: 3px solid #ffb700;
     box-shadow: 0 0 30px rgba(255, 215, 0, 0.8);
     animation: winPulse 2s infinite;
+    max-width: 350px;
   ">
     <h2 style="margin: 0 0 10px 0; font-size: 2em;">🎉 VOITTO! 🎉</h2>
     <div style="font-size: 1.5em; font-weight: bold; margin: 10px 0;">
@@ -975,12 +1063,19 @@
     
     {#each currentWins as win}
       <div style="margin: 5px 0; font-size: 1.1em;">
-        {win.count} × {win.symbol} = {win.payout} pistettä
+        {win.count} × {SYMBOL_NAMES[win.symbol]} = {win.payout} pistettä
+        {#if win.multiplier && win.multiplier > 1}
+          <span style="color: #ffd700; font-weight: bold;"> ({win.multiplier}x kerroin!)</span>
+        {/if}
       </div>
     {/each}
     
     <button 
-      on:click={() => { isShowingWin = false; }}
+      on:click={() => { 
+        isShowingWin = false;
+        clearWinHighlights();
+        console.log('Win popup closed, ready for next spin');
+      }}
       style="
         margin-top: 15px;
         padding: 8px 16px;
@@ -1015,51 +1110,50 @@
     max-height: 80vh;
     overflow-y: auto;
   ">
-    <h2 style="margin: 0 0 20px 0; text-align: center; color: #ffd700;">💰 PAYTABLE</h2>
+    <h2 style="margin: 0 0 20px 0; text-align: center; color: #ffd700;">💰 PAYTABLE (81 WAYS)</h2>
     
     <div style="margin-bottom: 15px; text-align: center; color: #aaa;">
-      Voitto vaatii vähintään {config.minMatchingSymbols} samaa symbolia
+      Voitot muodostuvat 81 ways -järjestelmällä (vasemmalta oikealle)<br/>
+      Vähintään 3 symbolia tarvitaan voittoon<br/>
+      <span style="color: #ffd700;">Satunnainen 1x-3x kerroin lisätään voittoihin!</span>
     </div>
     
     <div style="display: grid; gap: 10px;">
-      {#each Object.entries(config.symbols) as [symbol, data]}
-        <div style="
-          background: rgba(255, 255, 255, 0.1);
-          padding: 10px;
-          border-radius: 8px;
-          border-left: 4px solid {
-            symbol === 'm' ? '#ff0000' :
-            ['l', 'k', 'j'].includes(symbol) ? '#ffd700' :
-            ['i', 'h', 'g', 'f'].includes(symbol) ? '#00ff00' :
-            '#00bfff'
-          };
-        ">
-          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
-            <span style="font-size: 1.5em; font-weight: bold;">{symbol.toUpperCase()}</span>
-            <span style="color: #aaa; font-size: 0.9em;">
-              {symbol === 'm' ? '⭐ WILD/SPECIAL' :
-               ['l', 'k', 'j'].includes(symbol) ? '👑 HIGH' :
-               ['i', 'h', 'g', 'f'].includes(symbol) ? '💎 MID' :
-               '🎵 LOW'}
-            </span>
-          </div>
-          {#if data.paytable}
-            <div style="display: flex; flex-wrap: wrap; gap: 8px; font-size: 0.85em;">
-              {#each data.paytable as entry}
-                {#each Object.entries(entry) as [count, payout]}
-                  <span style="background: rgba(0,0,0,0.3); padding: 3px 8px; border-radius: 4px;">
-                    {count}× = {payout}x
-                  </span>
-                {/each}
-              {/each}
-            </div>
-          {/if}
-        </div>
-      {/each}
+      <!-- Premium Symbols -->
+      <div style="background: rgba(255, 255, 255, 0.1); padding: 10px; border-radius: 8px; border-left: 4px solid #ffd700;">
+        <div style="font-size: 1.2em; font-weight: bold; color: #ffd700; margin-bottom: 5px;">👑 PREMIUM SYMBOLS</div>
+        <div style="margin: 5px 0;">g (Rockabilly): 3x=5 | 4x=25 | 5x=100</div>
+        <div style="margin: 5px 0;">e (Blonde): 3x=5 | 4x=20 | 5x=75</div>
+        <div style="margin: 5px 0;">f (Brunette): 3x=3 | 4x=15 | 5x=50</div>
+      </div>
+      
+      <!-- Blue Symbols -->
+      <div style="background: rgba(255, 255, 255, 0.1); padding: 10px; border-radius: 8px; border-left: 4px solid #00bfff;">
+        <div style="font-size: 1.2em; font-weight: bold; color: #00bfff; margin-bottom: 5px;">💎 BLUE SYMBOLS</div>
+        <div style="margin: 5px 0;">a (Hot Rod): 3x=2 | 4x=7 | 5x=25</div>
+        <div style="margin: 5px 0;">b (Jacket): 3x=2 | 4x=7 | 5x=25</div>
+        <div style="margin: 5px 0;">c (Roller Skates): 3x=1.5 | 4x=5 | 5x=20</div>
+        <div style="margin: 5px 0;">d (Microphone): 3x=1.5 | 4x=5 | 5x=20</div>
+      </div>
+      
+      <!-- Red Symbols -->
+      <div style="background: rgba(255, 255, 255, 0.1); padding: 10px; border-radius: 8px; border-left: 4px solid #ff6666;">
+        <div style="font-size: 1.2em; font-weight: bold; color: #ff6666; margin-bottom: 5px;">🎵 RED SYMBOLS</div>
+        <div style="margin: 5px 0;">i (Burger): 3x=0.5 | 4x=2 | 5x=10</div>
+        <div style="margin: 5px 0;">j (Fries): 3x=0.5 | 4x=2 | 5x=10</div>
+        <div style="margin: 5px 0;">k (Milkshake): 3x=0.3 | 4x=1 | 5x=5</div>
+      </div>
+      
+      <!-- Special Symbols -->
+      <div style="background: rgba(255, 255, 255, 0.1); padding: 10px; border-radius: 8px; border-left: 4px solid #ff00ff;">
+        <div style="font-size: 1.2em; font-weight: bold; color: #ff00ff; margin-bottom: 5px;">⭐ SPECIAL SYMBOLS</div>
+        <div style="margin: 5px 0;">h (WILD) - Korvaa kaikki muut symbolit (paitsi Scatter)</div>
+        <div style="margin: 5px 0;">l (SCATTER) - 5-12 symbolia = 8-15 FREE SPINS</div>
+      </div>
     </div>
     
     <div style="margin-top: 20px; text-align: center; font-size: 0.9em; color: #aaa;">
-      RTP: {(config.rtp * 100).toFixed(0)}% | Max Win: {config.betModes.base.max_win}x
+      Kaikki voitot kerrotaan panoksella (Bet) | Satunnainen 1x-3x kerroin lisätään
     </div>
     
     <button 
