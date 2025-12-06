@@ -159,6 +159,17 @@
   const MIN_BET = 1;
   const MAX_BET = 100;
 
+  // Autoplay-toiminnallisuus
+  let isAutoPlaying = $state(false);
+  let autoPlayRoundsLeft = $state(0);
+  let showAutoPlayMenu = $state(false);
+
+  // RTP-seuranta
+  let totalRounds = $state(0);
+  let totalWagered = $state(0);
+  let totalWon = $state(0);
+  let currentRTP = $derived(totalWagered > 0 ? (totalWon / totalWagered * 100).toFixed(2) : "0.00");
+
   // ===== APUFUNKTIOT =====
   // Palauttaa satunnaisen symbolin tietylle kiekolle
   function randomSymbol(reelIndex: number): SymbolKey {
@@ -953,11 +964,16 @@
     // Tarkista että on tarpeeksi saldoa
     if (balance < betAmount) {
       alert(`Not enough credits! Balance: ${balance}, Bet: ${betAmount}`);
+      stopAutoPlay();
       return;
     }
     
     // Vähennä panos saldosta
     balance -= betAmount;
+    
+    // Päivitä RTP-tilastot
+    totalRounds++;
+    totalWagered += betAmount;
     
     // Nollaa voittotiedot JA sulje popup
     currentWins = [];
@@ -978,6 +994,7 @@
   // Lisää voitto saldoon
   function addWinToBalance(winAmount: number) {
     balance += winAmount;
+    totalWon += winAmount;
   }
   
   // Bet kontrollit
@@ -995,6 +1012,55 @@
   
   function maxBet() {
     betAmount = MAX_BET;
+  }
+
+  // Autoplay funktiot
+  function startAutoPlay(rounds: number) {
+    isAutoPlaying = true;
+    autoPlayRoundsLeft = rounds;
+    showAutoPlayMenu = false;
+    executeAutoPlay();
+  }
+
+  function stopAutoPlay() {
+    isAutoPlaying = false;
+    autoPlayRoundsLeft = 0;
+  }
+
+  function executeAutoPlay() {
+    if (!isAutoPlaying || autoPlayRoundsLeft <= 0) {
+      stopAutoPlay();
+      return;
+    }
+
+    // Tarkista että kaikki kiekot ovat pysähtyneet ennen seuraavaa kierrosta
+    const allStopped = reels.every(r => !r.spinning);
+    if (!allStopped) {
+      // Odota 100ms ja yritä uudelleen
+      setTimeout(executeAutoPlay, 100);
+      return;
+    }
+
+    // Pyöräytä
+    spin();
+    autoPlayRoundsLeft--;
+
+    // Jatka seuraavaan kierrokseen
+    if (isAutoPlaying && autoPlayRoundsLeft > 0) {
+      // Odota 1 sekunti ennen seuraavaa kierrosta
+      setTimeout(executeAutoPlay, 1000);
+    } else {
+      stopAutoPlay();
+    }
+  }
+
+  // Nollaa RTP-tilastot
+  function resetStats() {
+    if (confirm('Reset all statistics?')) {
+      totalRounds = 0;
+      totalWagered = 0;
+      totalWon = 0;
+    }
   }
 </script>
 
@@ -1313,6 +1379,247 @@
 >
   💰 PAYTABLE
 </button>
+
+<!-- RTP Debug näyttö (vasemmassa yläkulmassa) -->
+<div style="
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: rgba(0, 0, 0, 0.9);
+  color: #00ff00;
+  padding: 15px 20px;
+  border-radius: 10px;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  border: 2px solid #00ff00;
+  box-shadow: 0 4px 15px rgba(0, 255, 0, 0.3);
+  z-index: 1500;
+  min-width: 200px;
+">
+  <div style="font-weight: bold; font-size: 16px; margin-bottom: 10px; color: #ffd700; text-align: center;">
+    📊 RTP MONITOR
+  </div>
+  <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+    <span style="color: #aaa;">Rounds:</span>
+    <span style="color: #fff;">{totalRounds.toLocaleString()}</span>
+  </div>
+  <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+    <span style="color: #aaa;">Wagered:</span>
+    <span style="color: #ff6666;">{totalWagered.toLocaleString()}</span>
+  </div>
+  <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+    <span style="color: #aaa;">Won:</span>
+    <span style="color: #66ff66;">{totalWon.toLocaleString()}</span>
+  </div>
+  <div style="
+    display: flex; 
+    justify-content: space-between; 
+    margin-top: 10px; 
+    padding-top: 10px; 
+    border-top: 1px solid #555;
+    font-weight: bold;
+    font-size: 18px;
+  ">
+    <span style="color: #ffd700;">RTP:</span>
+    <span style="color: {parseFloat(currentRTP) >= 95 ? '#00ff00' : parseFloat(currentRTP) >= 85 ? '#ffff00' : '#ff6666'};">
+      {currentRTP}%
+    </span>
+  </div>
+  <button
+    on:click={resetStats}
+    style="
+      margin-top: 10px;
+      width: 100%;
+      padding: 5px;
+      background: rgba(255, 100, 100, 0.3);
+      color: #fff;
+      border: 1px solid #ff6666;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 11px;
+    "
+  >
+    Reset Stats
+  </button>
+</div>
+
+<!-- Autoplay nappi ja menu (oikeassa alakulmassa) -->
+<div style="
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1500;
+">
+  {#if isAutoPlaying}
+    <!-- Autoplay aktiivinen - näytä Stop ja kierrosten määrä -->
+    <div style="
+      background: rgba(255, 100, 100, 0.9);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 10px;
+      border: 2px solid #ff0000;
+      box-shadow: 0 4px 15px rgba(255, 0, 0, 0.5);
+      text-align: center;
+      animation: winPulse 1s infinite;
+    ">
+      <div style="font-weight: bold; font-size: 16px; margin-bottom: 8px;">
+        🔄 AUTOPLAY
+      </div>
+      <div style="font-size: 20px; font-family: 'Courier New', monospace; margin-bottom: 10px;">
+        {autoPlayRoundsLeft} left
+      </div>
+      <button
+        on:click={stopAutoPlay}
+        style="
+          width: 100%;
+          padding: 8px;
+          background: #ffffff;
+          color: #ff0000;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
+          font-weight: bold;
+          font-size: 14px;
+        "
+      >
+        ⏹ STOP
+      </button>
+    </div>
+  {:else}
+    <!-- Autoplay ei aktiivinen - näytä nappi -->
+    <button
+      on:click={() => { showAutoPlayMenu = !showAutoPlayMenu; }}
+      style="
+        padding: 12px 20px;
+        background: rgba(100, 200, 255, 0.9);
+        color: white;
+        border: 2px solid #0088ff;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 14px;
+        box-shadow: 0 4px 15px rgba(0, 136, 255, 0.5);
+        min-width: 140px;
+      "
+    >
+      🔄 AUTOPLAY
+    </button>
+    
+    <!-- Autoplay valikko -->
+    {#if showAutoPlayMenu}
+      <div style="
+        position: absolute;
+        bottom: 60px;
+        right: 0;
+        background: rgba(0, 0, 0, 0.95);
+        padding: 15px;
+        border-radius: 10px;
+        border: 2px solid #0088ff;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+        min-width: 180px;
+      ">
+        <div style="color: white; font-weight: bold; margin-bottom: 10px; text-align: center;">
+          Select Rounds:
+        </div>
+        <button
+          on:click={() => startAutoPlay(10)}
+          style="
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 5px;
+            background: #44aa44;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+          "
+        >
+          10 Rounds
+        </button>
+        <button
+          on:click={() => startAutoPlay(100)}
+          style="
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 5px;
+            background: #4488ff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+          "
+        >
+          100 Rounds
+        </button>
+        <button
+          on:click={() => startAutoPlay(1000)}
+          style="
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 5px;
+            background: #ff8844;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+          "
+        >
+          1,000 Rounds
+        </button>
+        <button
+          on:click={() => startAutoPlay(10000)}
+          style="
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 5px;
+            background: #ff4444;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+          "
+        >
+          10,000 Rounds
+        </button>
+        <button
+          on:click={() => startAutoPlay(100000)}
+          style="
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            background: #aa00ff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+          "
+        >
+          100,000 Rounds
+        </button>
+        <button
+          on:click={() => { showAutoPlayMenu = false; }}
+          style="
+            width: 100%;
+            padding: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #aaa;
+            border: 1px solid #555;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+          "
+        >
+          Cancel
+        </button>
+      </div>
+    {/if}
+  {/if}
+</div>
 
 <!-- Mykistysnappi oikeassa yläkulmassa -->
 <button
