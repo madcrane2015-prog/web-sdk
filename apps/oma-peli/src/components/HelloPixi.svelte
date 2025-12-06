@@ -1244,34 +1244,33 @@
     
     <div style="margin-bottom: 15px; text-align: center; color: #aaa;">
       Voitot muodostuvat 81 ways -järjestelmällä (vasemmalta oikealle)<br/>
-      Vähintään 3 symbolia tarvitaan voittoon<br/>
-      <span style="color: #ffd700;">Satunnainen 1x-3x kerroin lisätään voittoihin!</span>
+      Vähintään 3 symbolia tarvitaan voittoon
     </div>
     
     <div style="display: grid; gap: 10px;">
       <!-- Premium Symbols -->
       <div style="background: rgba(255, 255, 255, 0.1); padding: 10px; border-radius: 8px; border-left: 4px solid #ffd700;">
         <div style="font-size: 1.2em; font-weight: bold; color: #ffd700; margin-bottom: 5px;">👑 PREMIUM SYMBOLS</div>
-        <div style="margin: 5px 0;">g (Rockabilly): 3x=5 | 4x=25 | 5x=100</div>
-        <div style="margin: 5px 0;">e (Blonde): 3x=5 | 4x=20 | 5x=75</div>
-        <div style="margin: 5px 0;">f (Brunette): 3x=3 | 4x=15 | 5x=50</div>
+        <div style="margin: 5px 0;">g (Rockabilly): 3x=2.5 | 4x=12.5 | 5x=50</div>
+        <div style="margin: 5px 0;">e (Blonde): 3x=2.5 | 4x=10 | 5x=37.5</div>
+        <div style="margin: 5px 0;">f (Brunette): 3x=1.5 | 4x=7.5 | 5x=25</div>
       </div>
       
       <!-- Blue Symbols -->
       <div style="background: rgba(255, 255, 255, 0.1); padding: 10px; border-radius: 8px; border-left: 4px solid #00bfff;">
         <div style="font-size: 1.2em; font-weight: bold; color: #00bfff; margin-bottom: 5px;">💎 BLUE SYMBOLS</div>
-        <div style="margin: 5px 0;">a (Hot Rod): 3x=2 | 4x=7 | 5x=25</div>
-        <div style="margin: 5px 0;">b (Jacket): 3x=2 | 4x=7 | 5x=25</div>
-        <div style="margin: 5px 0;">c (Roller Skates): 3x=1.5 | 4x=5 | 5x=20</div>
-        <div style="margin: 5px 0;">d (Microphone): 3x=1.5 | 4x=5 | 5x=20</div>
+        <div style="margin: 5px 0;">a (Hot Rod): 3x=1 | 4x=3.5 | 5x=12.5</div>
+        <div style="margin: 5px 0;">b (Jacket): 3x=1 | 4x=3.5 | 5x=12.5</div>
+        <div style="margin: 5px 0;">c (Roller Skates): 3x=0.75 | 4x=2.5 | 5x=10</div>
+        <div style="margin: 5px 0;">d (Microphone): 3x=0.75 | 4x=2.5 | 5x=10</div>
       </div>
       
       <!-- Red Symbols -->
       <div style="background: rgba(255, 255, 255, 0.1); padding: 10px; border-radius: 8px; border-left: 4px solid #ff6666;">
         <div style="font-size: 1.2em; font-weight: bold; color: #ff6666; margin-bottom: 5px;">🎵 RED SYMBOLS</div>
-        <div style="margin: 5px 0;">i (Burger): 3x=0.5 | 4x=2 | 5x=10</div>
-        <div style="margin: 5px 0;">j (Fries): 3x=0.5 | 4x=2 | 5x=10</div>
-        <div style="margin: 5px 0;">k (Milkshake): 3x=0.3 | 4x=1 | 5x=5</div>
+        <div style="margin: 5px 0;">i (Burger): 3x=0.25 | 4x=1 | 5x=5</div>
+        <div style="margin: 5px 0;">j (Fries): 3x=0.25 | 4x=1 | 5x=5</div>
+        <div style="margin: 5px 0;">k (Milkshake): 3x=0.15 | 4x=0.5 | 5x=2.4</div>
       </div>
       
       <!-- Special Symbols -->
@@ -1283,7 +1282,7 @@
     </div>
     
     <div style="margin-top: 20px; text-align: center; font-size: 0.9em; color: #aaa;">
-      Kaikki voitot kerrotaan panoksella (Bet) | Satunnainen 1x-3x kerroin lisätään
+      Kaikki voitot kerrotaan panoksella (Bet)
     </div>
     
     <button 
