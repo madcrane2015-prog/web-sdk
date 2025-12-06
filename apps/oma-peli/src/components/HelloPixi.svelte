@@ -951,6 +951,14 @@
         
         // Soita voittoääni
         playSound('win');
+        
+        // Jos autoplay on päällä, sulje popup automaattisesti 300ms kuluttua
+        if (isAutoPlaying) {
+          setTimeout(() => {
+            isShowingWin = false;
+            clearWinHighlights();
+          }, 300);
+        }
       } else {
         console.log('No wins found this spin');
       }
@@ -1033,9 +1041,11 @@
       return;
     }
 
-    // Tarkista että kaikki kiekot ovat pysähtyneet ennen seuraavaa kierrosta
+    // Tarkista että kaikki kiekot ovat pysähtyneet JA voitot käsitelty
     const allStopped = reels.every(r => !r.spinning);
-    if (!allStopped) {
+    const winsProcessed = !isShowingWin; // Voitot on käsitelty kun popup ei ole näkyvissä
+    
+    if (!allStopped || !winsProcessed) {
       // Odota 100ms ja yritä uudelleen
       setTimeout(executeAutoPlay, 100);
       return;
@@ -1047,8 +1057,8 @@
 
     // Jatka seuraavaan kierrokseen
     if (isAutoPlaying && autoPlayRoundsLeft > 0) {
-      // Odota 1 sekunti ennen seuraavaa kierrosta
-      setTimeout(executeAutoPlay, 1000);
+      // Odota 500ms ennen seuraavaa kierrosta (voittojen käsittelyä varten)
+      setTimeout(executeAutoPlay, 500);
     } else {
       stopAutoPlay();
     }
