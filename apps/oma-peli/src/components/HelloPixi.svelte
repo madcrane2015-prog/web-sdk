@@ -968,9 +968,10 @@
         }
       } else {
         console.log('No wins found this spin');
-        // Jos autoplay on päällä ja ei voittoja, jatka heti
+        // Jos autoplay on päällä ja ei voittoja, jatka seuraavaan kierrokseen
+        // MUTTA odota 1 sekunti että pelaaja näkee tulokset
         if (isAutoPlaying) {
-          setTimeout(executeAutoPlay, 500);
+          setTimeout(executeAutoPlay, 1000);
         }
       }
     }
