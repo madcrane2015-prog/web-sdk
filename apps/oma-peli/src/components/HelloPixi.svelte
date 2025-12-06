@@ -228,24 +228,25 @@
   };
 
   // Paytable - symbolien voitot 3x, 4x, 5x osumille (kertoimet x Bet)
+  // Säädöt: Base RTP ~60%, Bonus RTP ~36%, Total ~96%
   const SYMBOL_PAYTABLE: Record<SymbolKey, {3?: number, 4?: number, 5?: number}> = {
     // Red series - alhaisin arvo
-    k: { 3: 0.3, 4: 1, 5: 5 },      // Red_milkshake
-    j: { 3: 0.5, 4: 2, 5: 10 },     // Red_fries
-    i: { 3: 0.5, 4: 2, 5: 10 },     // Red_burger
+    k: { 3: 0.025, 4: 0.06, 5: 0.24 },   // Red_milkshake
+    j: { 3: 0.025, 4: 0.1, 5: 0.48 },    // Red_fries
+    i: { 3: 0.025, 4: 0.1, 5: 0.48 },    // Red_burger
     // Blue series - keskiarvo
-    c: { 3: 1.5, 4: 5, 5: 20 },     // Blue_rollers
-    d: { 3: 1.5, 4: 5, 5: 20 },     // Blue_speakers (microphone)
-    b: { 3: 2, 4: 7, 5: 25 },       // Blue_jacket
-    a: { 3: 2, 4: 7, 5: 25 },       // Blue_hotrod
+    c: { 3: 0.06, 4: 0.15, 5: 0.9 },     // Blue_rollers
+    d: { 3: 0.06, 4: 0.15, 5: 0.9 },     // Blue_speakers (microphone)
+    b: { 3: 0.08, 4: 0.3, 5: 1.5 },      // Blue_jacket
+    a: { 3: 0.08, 4: 0.3, 5: 1.5 },      // Blue_hotrod
     // Premium series - korkein arvo
-    f: { 3: 3, 4: 15, 5: 50 },      // Premium_brunette
-    e: { 3: 5, 4: 20, 5: 75 },      // Premium_blonde
-    g: { 3: 5, 4: 25, 5: 100 },     // Premium_rocker (Rockabilly)
+    f: { 3: 0.15, 4: 0.6, 5: 3 },        // Premium_brunette
+    e: { 3: 0.3, 4: 1.2, 5: 6 },         // Premium_blonde
+    g: { 3: 0.45, 4: 1.8, 5: 9 },        // Premium_rocker (Rockabilly)
     // Erikoissymbolit
-    h: {},                          // Red_bubblegum (WILD - korvaa muita, ei voittoa itsessään)
-    l: {},                          // Scatter - erillinen free spins logiikka
-    emptyslot: {}                   // Tyhjä ruutu - ei voittoa
+    h: {},                               // Red_bubblegum (WILD - korvaa muita, ei voittoa itsessään)
+    l: {},                               // Scatter - erillinen free spins logiikka
+    emptyslot: {}                        // Tyhjä ruutu - ei voittoa
   };
 
   // Tarkista voitot 81-ways järjestelmällä
@@ -368,31 +369,23 @@
     }
     
     // Muunna voittolinjat voittoiksi
-    // 81-ways: voitto = (payout per symboli) × (linjojen määrä)
+    // 81-ways: Maksetaan VAIN KERRAN per symboli-yhdistelmä (ei per way)
     const foundWinCombos: WinResult[] = [];
     
     for (const [key, winData] of winCounts.entries()) {
       const payoutMultiplier = SYMBOL_PAYTABLE[winData.symbol]?.[winData.length as 3 | 4 | 5];
       
       if (payoutMultiplier !== undefined && payoutMultiplier > 0) {
-        // 81-ways: Laske voitto = payout × bet × linjojen määrä
-        const singleLinePayout = payoutMultiplier * betAmount;
-        const basePayout = singleLinePayout * winData.lineCount;
+        // Maksetaan vain kerran riippumatta ways-määrästä
+        const finalPayout = payoutMultiplier * betAmount;
         
-        // Arvotaan satunnainen kerroin (1x, 2x tai 3x)
-        const multipliers = [1, 2, 3];
-        const randomMultiplier = multipliers[Math.floor(Math.random() * multipliers.length)];
-        
-        const finalPayout = basePayout * randomMultiplier;
-        
-        console.log(`Win: ${winData.length}x ${winData.symbol} on ${winData.lineCount} ways = ${finalPayout} (single line: ${singleLinePayout}, total base: ${basePayout}, multiplier: ${randomMultiplier}x)`);
+        console.log(`Win: ${winData.length}x ${winData.symbol} (found on ${winData.lineCount} ways) = ${finalPayout}`);
         
         foundWinCombos.push({
           symbol: winData.symbol,
           count: winData.length,
           payout: finalPayout,
-          positions: winData.examplePath,
-          multiplier: randomMultiplier
+          positions: winData.examplePath
         });
       }
     }
