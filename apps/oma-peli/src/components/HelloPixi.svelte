@@ -163,6 +163,7 @@
   let isAutoPlaying = $state(false);
   let autoPlayRoundsLeft = $state(0);
   let showAutoPlayMenu = $state(false);
+  let winPopupShownAt = $state(0); // Timestamp kun popup tuli näkyviin
 
   // RTP-seuranta
   let totalRounds = $state(0);
@@ -938,6 +939,7 @@
         
         // Näytä voitto-popup
         isShowingWin = true;
+        winPopupShownAt = Date.now(); // Merkitse aika kun popup tuli näkyviin
         
         console.log(`🎉 VOITTO! ${totalWin} pistettä! Uusi saldo: ${balance}`);
         console.log(`isShowingWin set to: ${isShowingWin}, totalWin: ${totalWin}`);
@@ -1042,9 +1044,20 @@
       return;
     }
     
-    // Jos on voittopopup näkyvissä, sulje se ja jatka
+    // Jos on voittopopup näkyvissä, odota että voitot on käsitelty
     if (isShowingWin) {
-      console.log('Autoplay: Closing win popup and continuing...');
+      const timeShown = Date.now() - winPopupShownAt;
+      const minDisplayTime = 1500; // Näytä popup vähintään 1.5 sekuntia
+      
+      if (timeShown < minDisplayTime) {
+        // Odota vielä
+        console.log(`Autoplay: Waiting for wins to be processed (${timeShown}ms / ${minDisplayTime}ms)`);
+        setTimeout(executeAutoPlay, 100);
+        return;
+      }
+      
+      // Nyt voitot on käsitelty, voidaan sulkea popup ja jatkaa
+      console.log('Autoplay: Wins processed, closing popup and continuing...');
       isShowingWin = false;
       clearWinHighlights();
       // Odota 200ms että tila päivittyy
