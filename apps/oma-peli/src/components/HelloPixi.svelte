@@ -175,44 +175,60 @@
   let totalWins = $state(0); // Voittojen määrä
   let currentRTP = $derived(totalWagered > 0 ? (totalWon / totalWagered * 100).toFixed(2) : "0.00");
   let hitFrequency = $derived(totalRounds > 0 ? (totalWins / totalRounds * 100).toFixed(2) : "0.00");
+  
+  // Free spins state
+  let isFreeSpinMode = $state(false);
+  let freeSpinsRemaining = $state(0);
+  let freeSpinsTotalWon = $state(0);
 
   // ===== APUFUNKTIOT =====
   // Symbol weights for weighted random distribution
+  // Strategy: High Empty slots to reduce hit frequency to 17-25%
   const SYMBOL_WEIGHTS: Record<SymbolKey, number> = {
-    // Red tier - 48% of symbols (cheap, frequent)
-    'k': 0.18,   // Red_milkshake (18%)
-    'j': 0.15,   // Red_fries (15%)
-    'i': 0.15,   // Red_burger (15%)
-    // Blue tier - 32% of symbols (mid)
-    'c': 0.09,   // Blue_rollers (9%)
-    'd': 0.09,   // Blue_speakers (9%)
-    'b': 0.07,   // Blue_jacket (7%)
-    'a': 0.07,   // Blue_hotrod (7%)
-    // Premium tier - 12% of symbols (expensive, rare)
-    'f': 0.04,   // Premium_brunette (4%)
-    'e': 0.03,   // Premium_blonde (3%)
-    'g': 0.025,  // Premium_rocker (2.5%)
-    'l': 0.025,  // Premium_pin (2.5%)
+    // Red tier - cheap, frequent
+    'k': 0.14,   // Red_milkshake (14%)
+    'j': 0.12,   // Red_fries (12%)
+    'i': 0.12,   // Red_burger (12%)
+    // Blue tier - mid value
+    'c': 0.055,  // Blue_rollers (5.5%)
+    'd': 0.055,  // Blue_speakers (5.5%)
+    'b': 0.04,   // Blue_jacket (4%)
+    'a': 0.04,   // Blue_hotrod (4%)
+    // Premium tier - expensive, rare
+    'f': 0.02,   // Premium_brunette (2%)
+    'e': 0.012,  // Premium_blonde (1.2%)
+    'g': 0.008,  // Premium_rocker (0.8%) - JACKPOT
+    'l': 0.09,   // Premium_pin/Scatter (9%) - for 1/100-200 trigger rate
     // Wild and empty (special handling)
-    'h': 0.08,   // Red_bubblegum (Wild) - only on middle reel
-    'emptyslot': 0
+    'h': 0,      // Red_bubblegum (Wild) - only on middle reel
+    'emptyslot': 0.28  // Empty slots 28% on outer reels
   };
 
   // Palauttaa satunnaisen symbolin tietylle kiekolle (weighted distribution)
   function randomSymbol(reelIndex: number): SymbolKey {
-    // Reel 6 (keskikiekko) - VAIN emptyslot ja h (Red_bubblegum)
+    // Reel 6 (keskikiekko) - VAIN Wild (50%) tai muut symbolit (50%)
     if (reelIndex === 6) {
-      const symbol = Math.random() < 0.5 ? 'emptyslot' : 'h';
-      console.log(`Reel ${reelIndex} (MIDDLE): ${symbol}`);
-      return symbol;
+      if (Math.random() < 0.5) {
+        return 'h'; // Wild 50%
+      }
+      // Muut symbolit 50% (ei Empty)
+      const availableSymbols = SYMBOL_KEYS.filter(s => s !== 'emptyslot' && s !== 'h');
+      const totalWeight = availableSymbols.reduce((sum, sym) => sum + SYMBOL_WEIGHTS[sym], 0);
+      const rand = Math.random();
+      let cumulative = 0;
+      for (const symbol of availableSymbols) {
+        cumulative += SYMBOL_WEIGHTS[symbol] / totalWeight;
+        if (rand < cumulative) return symbol;
+      }
+      return 'k';
     }
     
-    // Muut kiekot - weighted distribution (NO Wild on other reels)
+    // Reels 1,2,4,5 (outer reels) - Include Empty slots
     const rand = Math.random();
     let cumulative = 0;
     
-    // Get symbols without Wild and empty
-    const availableSymbols = SYMBOL_KEYS.filter(s => s !== 'emptyslot' && s !== 'h');
+    // All symbols INCLUDING emptyslot, but NO Wild
+    const availableSymbols = SYMBOL_KEYS.filter(s => s !== 'h');
     
     // Calculate total weight
     const totalWeight = availableSymbols.reduce((sum, sym) => sum + SYMBOL_WEIGHTS[sym], 0);
@@ -221,12 +237,11 @@
     for (const symbol of availableSymbols) {
       cumulative += SYMBOL_WEIGHTS[symbol] / totalWeight;
       if (rand < cumulative) {
-        console.log(`Reel ${reelIndex} (WEIGHTED): ${symbol}`);
         return symbol;
       }
     }
     
-    // Fallback (should never happen)
+    // Fallback
     return 'k';
   }
 
@@ -264,29 +279,46 @@
     count: number;
     payout: number;
     positions: number[]; // Voittavien kiekkojen indeksit
-    multiplier?: number; // Satunnainen kerroin (1x, 2x, 3x)
+    multiplier: number; // Win multiplier (1x/2x/3x base, 3x/5x/10x freespin)
   };
+  
+  // Generate random win multiplier based on game mode
+  function getWinMultiplier(): number {
+    const rand = Math.random();
+    
+    if (isFreeSpinMode) {
+      // Free spins: 3x (50%), 5x (30%), 10x (20%)
+      if (rand < 0.5) return 3;
+      if (rand < 0.8) return 5;
+      return 10;
+    } else {
+      // Base game: 1x (50%), 2x (30%), 3x (20%)
+      if (rand < 0.5) return 1;
+      if (rand < 0.8) return 2;
+      return 3;
+    }
+  }
 
   // Paytable - symbolien voitot 3x, 4x, 5x osumille (kertoimet x Bet)
-  // Säädöt: Base RTP ~68%, Bonus RTP ~36%, Total ~104%
-  // Halpojen symbolien määrä lisätty (48% Red, 32% Blue, 12% Premium)
+  // NEW MATH: Base RTP 60-65%, Free Spins 30-35%, Total 90-100%
+  // Win multipliers: Base (1x/2x/3x), Free Spins (3x/5x/10x)
   const SYMBOL_PAYTABLE: Record<SymbolKey, {3?: number, 4?: number, 5?: number}> = {
-    // Red series - alhaisin arvo (PALJON ENEMMÄN NÄITÄ KIEKOILLA!)
-    k: { 3: 0.15, 4: 0.5, 5: 2.4 },      // Red_milkshake (18% kiekoilla)
-    j: { 3: 0.25, 4: 1, 5: 5 },          // Red_fries (15% kiekoilla)
-    i: { 3: 0.25, 4: 1, 5: 5 },          // Red_burger (15% kiekoilla)
+    // Red series - alhaisin arvo
+    k: { 3: 0.3, 4: 1, 5: 5 },           // Red_milkshake
+    j: { 3: 0.5, 4: 2, 5: 10 },          // Red_fries
+    i: { 3: 0.5, 4: 2, 5: 10 },          // Red_burger
     // Blue series - keskiarvo
-    c: { 3: 0.75, 4: 2.5, 5: 10 },       // Blue_rollers (9% kiekoilla)
-    d: { 3: 0.75, 4: 2.5, 5: 10 },       // Blue_speakers (9% kiekoilla)
-    b: { 3: 1, 4: 3.5, 5: 12.5 },        // Blue_jacket (7% kiekoilla)
-    a: { 3: 1, 4: 3.5, 5: 12.5 },        // Blue_hotrod (7% kiekoilla)
-    // Premium series - korkein arvo (VÄHEMMÄN NÄITÄ)
-    f: { 3: 1.5, 4: 7.5, 5: 25 },        // Premium_brunette (4% kiekoilla)
-    e: { 3: 2.5, 4: 10, 5: 37.5 },       // Premium_blonde (3% kiekoilla)
-    g: { 3: 2.5, 4: 12.5, 5: 50 },       // Premium_rocker (2.5% kiekoilla)
+    c: { 3: 1.5, 4: 5, 5: 20 },          // Blue_rollers
+    d: { 3: 1.5, 4: 5, 5: 20 },          // Blue_speakers
+    b: { 3: 2, 4: 7, 5: 25 },            // Blue_jacket
+    a: { 3: 2, 4: 7, 5: 25 },            // Blue_hotrod
+    // Premium series - korkein arvo
+    f: { 3: 3, 4: 15, 5: 50 },           // Premium_brunette
+    e: { 3: 5, 4: 20, 5: 75 },           // Premium_blonde
+    g: { 3: 5, 4: 25, 5: 100 },          // Premium_rocker (JACKPOT!)
     // Erikoissymbolit
-    h: {},                               // Red_bubblegum (WILD - 50% middle reel, 0% others)
-    l: { 3: 2.5, 4: 12.5, 5: 50 },       // Premium_pin (2.5% kiekoilla)
+    h: {},                               // Red_bubblegum (WILD - replaces any symbol except scatter)
+    l: {},                               // Premium_pin (SCATTER - triggers free spins, no payout)
     emptyslot: {}                        // Tyhjä ruutu - ei voittoa
   };
 
@@ -303,16 +335,29 @@
     }
     
     // Scatter-voitot ja free spinsit
+    // 5 scatters = 8 free spins, 6 = 9, ..., 12 = 15 free spins
     if (scatterPositions.length >= 5) {
-      const freeSpins = 8 + (scatterPositions.length - 5); // 5 scatters = 8 free spins, 12 scatters = 15 free spins
-      console.log(`🎰 SCATTER WIN! ${scatterPositions.length} scatters = ${freeSpins} FREE SPINS!`);
+      const freeSpinsTriggered = 8 + (scatterPositions.length - 5);
       
-      // Scatter ei maksa voittoa, vain free spins (voit lisätä tämän myöhemmin)
+      // Add free spins (trigger or retrigger)
+      freeSpinsRemaining += freeSpinsTriggered;
+      
+      // If not already in free spin mode, enter it
+      if (!isFreeSpinMode) {
+        isFreeSpinMode = true;
+        freeSpinsTotalWon = 0;
+        console.log(`🎰 FREE SPINS TRIGGERED! ${scatterPositions.length} scatters = ${freeSpinsTriggered} FREE SPINS!`);
+      } else {
+        console.log(`🎰 FREE SPINS RETRIGGERED! +${freeSpinsTriggered} FREE SPINS! Total: ${freeSpinsRemaining}`);
+      }
+      
+      // Scatters don't pay, just trigger free spins
       wins.push({
         symbol: 'l',
         count: scatterPositions.length,
-        payout: 0, // Scatterit eivät maksa rahaa, vain free spinsejä
-        positions: scatterPositions
+        payout: 0,
+        positions: scatterPositions,
+        multiplier: 1
       });
     }
     
@@ -413,20 +458,25 @@
     // 81-ways: Maksetaan VAIN KERRAN per symboli-yhdistelmä (ei per way)
     const foundWinCombos: WinResult[] = [];
     
+    // Generate one multiplier for ALL wins (drawn once per spin when there's at least one win)
+    const winMultiplier = winCounts.size > 0 ? getWinMultiplier() : 1;
+    
     for (const [key, winData] of winCounts.entries()) {
       const payoutMultiplier = SYMBOL_PAYTABLE[winData.symbol]?.[winData.length as 3 | 4 | 5];
       
       if (payoutMultiplier !== undefined && payoutMultiplier > 0) {
-        // Maksetaan vain kerran riippumatta ways-määrästä
-        const finalPayout = payoutMultiplier * betAmount;
+        // Apply base payout and win multiplier
+        const basePayout = payoutMultiplier * betAmount;
+        const finalPayout = basePayout * winMultiplier;
         
-        console.log(`Win: ${winData.length}x ${winData.symbol} (found on ${winData.lineCount} ways) = ${finalPayout}`);
+        console.log(`Win: ${winData.length}x ${winData.symbol} (found on ${winData.lineCount} ways) = ${basePayout} x ${winMultiplier} = ${finalPayout}`);
         
         foundWinCombos.push({
           symbol: winData.symbol,
           count: winData.length,
           payout: finalPayout,
-          positions: winData.examplePath
+          positions: winData.examplePath,
+          multiplier: winMultiplier
         });
       }
     }
@@ -991,6 +1041,17 @@
         // Soita voittoääni
         playSound('win');
         
+        // Check if free spins ended (after this spin was evaluated)
+        if (isFreeSpinMode && freeSpinsRemaining === 0) {
+          console.log(`🎰 FREE SPINS ENDED! Total won: ${freeSpinsTotalWon}`);
+          // Show free spins end message (could be enhanced with popup)
+          setTimeout(() => {
+            alert(`Free Spins Ended!\nTotal Won: ${freeSpinsTotalWon.toFixed(2)}`);
+            isFreeSpinMode = false;
+            freeSpinsTotalWon = 0;
+          }, 2000);
+        }
+        
         // Jos autoplay on päällä, odota 1.5s ja sulje popup automaattisesti
         if (isAutoPlaying && !isProcessingAutoPlay) {
           isProcessingAutoPlay = true; // Lukitse
@@ -1026,11 +1087,27 @@
   // SPIN NAPPI - Käynnistää uuden pyöräytyksen
   // ===================================================================
   function spin() {
-    // Tarkista että on tarpeeksi saldoa
-    if (balance < betAmount) {
-      alert(`Not enough credits! Balance: ${balance}, Bet: ${betAmount}`);
-      stopAutoPlay();
-      return;
+    // Free spins mode - no bet deduction
+    if (isFreeSpinMode && freeSpinsRemaining > 0) {
+      freeSpinsRemaining--;
+      console.log(`🎰 FREE SPIN! Remaining: ${freeSpinsRemaining}`);
+      
+      // Check if free spins end after this spin (will be checked after win evaluation)
+      // Note: freeSpinsRemaining is decremented before the spin
+    } else if (!isFreeSpinMode) {
+      // Normal mode - check balance and deduct bet
+      if (balance < betAmount) {
+        alert(`Not enough credits! Balance: ${balance}, Bet: ${betAmount}`);
+        stopAutoPlay();
+        return;
+      }
+      
+      // Vähennä panos saldosta
+      balance -= betAmount;
+      
+      // Päivitä RTP-tilastot (only for paid spins)
+      totalRounds++;
+      totalWagered += betAmount;
     }
     
     // Tyhjennä mahdollinen autoplay timeout
@@ -1038,13 +1115,6 @@
       clearTimeout(autoPlayTimeoutId);
       autoPlayTimeoutId = null;
     }
-    
-    // Vähennä panos saldosta
-    balance -= betAmount;
-    
-    // Päivitä RTP-tilastot
-    totalRounds++;
-    totalWagered += betAmount;
     
     // Nollaa voittotiedot JA sulje popup
     currentWins = [];
@@ -1067,6 +1137,12 @@
   function addWinToBalance(winAmount: number) {
     balance += winAmount;
     totalWon += winAmount;
+    
+    // Track free spins total wins separately
+    if (isFreeSpinMode) {
+      freeSpinsTotalWon += winAmount;
+    }
+    
     if (winAmount > 0) {
       totalWins++;
     }
@@ -1199,12 +1275,17 @@
     
     {#each currentWins as win}
       <div style="margin: 5px 0; font-size: 1.1em;">
-        {win.count} × {SYMBOL_NAMES[win.symbol]} = {win.payout} pistettä
-        {#if win.multiplier && win.multiplier > 1}
-          <span style="color: #ffd700; font-weight: bold;"> ({win.multiplier}x kerroin!)</span>
-        {/if}
+        {win.count} × {SYMBOL_NAMES[win.symbol]} = {win.payout.toFixed(2)} pistettä
       </div>
     {/each}
+    
+    {#if currentWins.length > 0 && currentWins[0].multiplier > 1}
+      <div style="margin: 10px 0; padding: 8px; background: rgba(255, 0, 255, 0.2); border-radius: 8px; border: 2px solid #ff00ff;">
+        <span style="font-size: 1.3em; font-weight: bold; color: #ff00ff;">
+          ✨ {currentWins[0].multiplier}x WIN MULTIPLIER! ✨
+        </span>
+      </div>
+    {/if}
     
     <button 
       on:click={() => { 
@@ -1257,38 +1338,45 @@
       <!-- Premium Symbols -->
       <div style="background: rgba(255, 255, 255, 0.1); padding: 10px; border-radius: 8px; border-left: 4px solid #ffd700;">
         <div style="font-size: 1.2em; font-weight: bold; color: #ffd700; margin-bottom: 5px;">👑 PREMIUM SYMBOLS</div>
-        <div style="margin: 5px 0;">g (Rockabilly): 3x=2.5 | 4x=12.5 | 5x=50</div>
-        <div style="margin: 5px 0;">e (Blonde): 3x=2.5 | 4x=10 | 5x=37.5</div>
-        <div style="margin: 5px 0;">f (Brunette): 3x=1.5 | 4x=7.5 | 5x=25</div>
+        <div style="margin: 5px 0;">Rockabilly: 3x=5 | 4x=25 | 5x=100 🎸</div>
+        <div style="margin: 5px 0;">Blonde: 3x=5 | 4x=20 | 5x=75 👱‍♀️</div>
+        <div style="margin: 5px 0;">Brunette: 3x=3 | 4x=15 | 5x=50 👩‍🦱</div>
       </div>
       
       <!-- Blue Symbols -->
       <div style="background: rgba(255, 255, 255, 0.1); padding: 10px; border-radius: 8px; border-left: 4px solid #00bfff;">
         <div style="font-size: 1.2em; font-weight: bold; color: #00bfff; margin-bottom: 5px;">💎 BLUE SYMBOLS</div>
-        <div style="margin: 5px 0;">a (Hot Rod): 3x=1 | 4x=3.5 | 5x=12.5</div>
-        <div style="margin: 5px 0;">b (Jacket): 3x=1 | 4x=3.5 | 5x=12.5</div>
-        <div style="margin: 5px 0;">c (Roller Skates): 3x=0.75 | 4x=2.5 | 5x=10</div>
-        <div style="margin: 5px 0;">d (Microphone): 3x=0.75 | 4x=2.5 | 5x=10</div>
+        <div style="margin: 5px 0;">Hot Rod: 3x=2 | 4x=7 | 5x=25 🚗</div>
+        <div style="margin: 5px 0;">Jacket: 3x=2 | 4x=7 | 5x=25 🧥</div>
+        <div style="margin: 5px 0;">Roller Skates: 3x=1.5 | 4x=5 | 5x=20 🛼</div>
+        <div style="margin: 5px 0;">Microphone: 3x=1.5 | 4x=5 | 5x=20 🎤</div>
       </div>
       
       <!-- Red Symbols -->
       <div style="background: rgba(255, 255, 255, 0.1); padding: 10px; border-radius: 8px; border-left: 4px solid #ff6666;">
         <div style="font-size: 1.2em; font-weight: bold; color: #ff6666; margin-bottom: 5px;">🎵 RED SYMBOLS</div>
-        <div style="margin: 5px 0;">i (Burger): 3x=0.25 | 4x=1 | 5x=5</div>
-        <div style="margin: 5px 0;">j (Fries): 3x=0.25 | 4x=1 | 5x=5</div>
-        <div style="margin: 5px 0;">k (Milkshake): 3x=0.15 | 4x=0.5 | 5x=2.4</div>
+        <div style="margin: 5px 0;">Burger: 3x=0.5 | 4x=2 | 5x=10 🍔</div>
+        <div style="margin: 5px 0;">Fries: 3x=0.5 | 4x=2 | 5x=10 🍟</div>
+        <div style="margin: 5px 0;">Milkshake: 3x=0.3 | 4x=1 | 5x=5 🥤</div>
       </div>
       
       <!-- Special Symbols -->
       <div style="background: rgba(255, 255, 255, 0.1); padding: 10px; border-radius: 8px; border-left: 4px solid #ff00ff;">
         <div style="font-size: 1.2em; font-weight: bold; color: #ff00ff; margin-bottom: 5px;">⭐ SPECIAL SYMBOLS</div>
-        <div style="margin: 5px 0;">h (WILD) - Korvaa kaikki muut symbolit (paitsi Scatter)</div>
-        <div style="margin: 5px 0;">l (SCATTER) - 5-12 symbolia = 8-15 FREE SPINS</div>
+        <div style="margin: 5px 0;">WILD 🍬 - Korvaa kaikki muut symbolit (paitsi Scatter)</div>
+        <div style="margin: 5px 0;">SCATTER 📌 - 5-12 symbolia = 8-15 FREE SPINS</div>
+      </div>
+      
+      <!-- Win Multipliers -->
+      <div style="background: rgba(255, 215, 0, 0.15); padding: 10px; border-radius: 8px; border: 2px solid #ffd700;">
+        <div style="font-size: 1.2em; font-weight: bold; color: #ffd700; margin-bottom: 5px;">✨ WIN MULTIPLIERS</div>
+        <div style="margin: 5px 0; color: #fff;">Base Game: 1x (50%) | 2x (30%) | 3x (20%)</div>
+        <div style="margin: 5px 0; color: #00ff00;">Free Spins: 3x (50%) | 5x (30%) | 10x (20%)</div>
       </div>
     </div>
     
     <div style="margin-top: 20px; text-align: center; font-size: 0.9em; color: #aaa;">
-      Kaikki voitot kerrotaan panoksella (Bet)
+      Kaikki voitot kerrotaan panoksella (Bet) ja sitten Win Multiplierilla
     </div>
     
     <button 
@@ -1326,11 +1414,21 @@
   font-family: 'Courier New', monospace;
   font-size: 18px;
   font-weight: bold;
-  border: 2px solid #ffd700;
+  border: 2px solid {isFreeSpinMode ? '#ff00ff' : '#ffd700'};
   box-shadow: 0 4px 15px rgba(255, 215, 0, 0.5);
   z-index: 1500;
   min-width: 180px;
 ">
+  {#if isFreeSpinMode}
+    <div style="display: flex; justify-content: space-between; margin-bottom: 8px; color: #ff00ff; font-size: 16px; animation: pulse 1s infinite;">
+      <span>🎰 FREE SPINS:</span>
+      <span>{freeSpinsRemaining}</span>
+    </div>
+    <div style="display: flex; justify-content: space-between; margin-bottom: 8px; border-top: 1px solid #555; padding-top: 8px;">
+      <span style="color: #fff; font-size: 14px;">Total Won:</span>
+      <span style="color: #00ff00; font-size: 14px;">{freeSpinsTotalWon.toFixed(2)}</span>
+    </div>
+  {/if}
   <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
     <span style="color: #fff;">CREDITS:</span>
     <span style="color: #ffd700;">{balance.toLocaleString()}</span>
