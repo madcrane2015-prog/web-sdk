@@ -116,7 +116,7 @@
     e: `${symbolPath}/Premium_blonde.jpg`,   // Premium blondi
     f: `${symbolPath}/Premium_brunette.jpg`, // Premium brunette
     g: `${symbolPath}/Premium_rocker.jpg`,   // Premium rocker
-    h: `${symbolPath}/Red_bubblegum.jpg`,    // Punainen purukumi
+    h: `${symbolPath}/New_Wild.jpg`,         // WILD symbol
     i: `${symbolPath}/Red_burger.jpg`,       // Punainen hampurilainen
     j: `${symbolPath}/Red_fries.jpg`,        // Punaiset ranskalaiset
     k: `${symbolPath}/Red_milkshake.jpg`,    // Punainen milkshake
@@ -200,7 +200,7 @@
     'g': 0.008,  // Premium_rocker (0.8%) - JACKPOT
     'l': 0.09,   // Premium_pin/Scatter (9%) - for 1/100-200 trigger rate
     // Wild and empty (special handling)
-    'h': 0,      // Red_bubblegum (Wild) - only on middle reel
+    'h': 0,      // New_Wild (WILD) - only on middle reel
     'emptyslot': 0.28  // Empty slots 28% on outer reels
   };
 
@@ -305,7 +305,7 @@
     e: { 3: 5, 4: 20, 5: 75 },           // Premium_blonde
     g: { 3: 5, 4: 25, 5: 100 },          // Premium_rocker (JACKPOT!)
     // Erikoissymbolit
-    h: {},                               // Red_bubblegum (WILD - replaces any symbol except scatter)
+    h: {},                               // New_Wild (WILD - replaces any symbol except scatter)
     l: {},                               // Premium_pin (SCATTER - triggers free spins, no payout)
     emptyslot: {}                        // Tyhjä ruutu - ei voittoa
   };
