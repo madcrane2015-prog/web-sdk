@@ -58,21 +58,9 @@ function getWinMultiplier(isFreeSpinMode) {
 
 // Generate random symbol for a reel position
 function randomSymbol(reelIndex) {
-  // Reel 6 (middle) - 50% Wild, 50% other symbols (no Empty)
+  // Reel 6 (middle) - ONLY emptyslot (50%) or Wild (50%)
   if (reelIndex === 6) {
-    if (Math.random() < 0.5) return 'h'; // Wild
-    
-    // Other symbols (no empty)
-    const availableSymbols = Object.keys(SYMBOL_WEIGHTS).filter(s => s !== 'emptyslot' && s !== 'h');
-    const totalWeight = availableSymbols.reduce((sum, sym) => sum + SYMBOL_WEIGHTS[sym], 0);
-    const rand = Math.random();
-    let cumulative = 0;
-    
-    for (const symbol of availableSymbols) {
-      cumulative += SYMBOL_WEIGHTS[symbol] / totalWeight;
-      if (rand < cumulative) return symbol;
-    }
-    return 'k';
+    return Math.random() < 0.5 ? 'emptyslot' : 'h';
   }
   
   // Outer reels - Include Empty, no Wild

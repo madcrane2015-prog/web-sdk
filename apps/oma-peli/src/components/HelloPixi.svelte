@@ -206,21 +206,9 @@
 
   // Palauttaa satunnaisen symbolin tietylle kiekolle (weighted distribution)
   function randomSymbol(reelIndex: number): SymbolKey {
-    // Reel 6 (keskikiekko) - VAIN Wild (50%) tai muut symbolit (50%)
+    // Reel 6 (keskikiekko) - VAIN emptyslot (50%) tai Wild (50%)
     if (reelIndex === 6) {
-      if (Math.random() < 0.5) {
-        return 'h'; // Wild 50%
-      }
-      // Muut symbolit 50% (ei Empty)
-      const availableSymbols = SYMBOL_KEYS.filter(s => s !== 'emptyslot' && s !== 'h');
-      const totalWeight = availableSymbols.reduce((sum, sym) => sum + SYMBOL_WEIGHTS[sym], 0);
-      const rand = Math.random();
-      let cumulative = 0;
-      for (const symbol of availableSymbols) {
-        cumulative += SYMBOL_WEIGHTS[symbol] / totalWeight;
-        if (rand < cumulative) return symbol;
-      }
-      return 'k';
+      return Math.random() < 0.5 ? 'emptyslot' : 'h';
     }
     
     // Reels 1,2,4,5 (outer reels) - Include Empty slots
