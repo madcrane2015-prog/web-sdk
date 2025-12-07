@@ -180,35 +180,37 @@
   let isFreeSpinMode = $state(false);
   let freeSpinsRemaining = $state(0);
   let freeSpinsTotalWon = $state(0);
+  let freeSpinsTriggerCount = $state(0); // Kuinka monta kertaa vapaapelit alkaneet
+  let freeSpinsPlayedCount = $state(0);  // Kuinka monta vapaapelikierrosta yhteensä pelattu
 
   // ===== APUFUNKTIOT =====
   // Symbol weights for weighted random distribution
-  // Strategy: High Empty slots to reduce hit frequency to 17-25%
+  // Strategy: Balanced for 60-65% base RTP + 30-35% free spins = 95-96% total
   const SYMBOL_WEIGHTS: Record<SymbolKey, number> = {
     // Red tier - cheap, frequent
-    'k': 0.14,   // Red_milkshake (14%)
-    'j': 0.12,   // Red_fries (12%)
-    'i': 0.12,   // Red_burger (12%)
+    'k': 0.17,   // Red_milkshake (17%)
+    'j': 0.14,   // Red_fries (14%)
+    'i': 0.14,   // Red_burger (14%)
     // Blue tier - mid value
-    'c': 0.055,  // Blue_rollers (5.5%)
-    'd': 0.055,  // Blue_speakers (5.5%)
-    'b': 0.04,   // Blue_jacket (4%)
-    'a': 0.04,   // Blue_hotrod (4%)
+    'c': 0.065,  // Blue_rollers (6.5%)
+    'd': 0.065,  // Blue_speakers (6.5%)
+    'b': 0.05,   // Blue_jacket (5%)
+    'a': 0.05,   // Blue_hotrod (5%)
     // Premium tier - expensive, rare
-    'f': 0.02,   // Premium_brunette (2%)
-    'e': 0.012,  // Premium_blonde (1.2%)
-    'g': 0.008,  // Premium_rocker (0.8%) - JACKPOT
-    'l': 0.09,   // Premium_pin/Scatter (9%) - for 1/100-200 trigger rate
+    'f': 0.025,  // Premium_brunette (2.5%)
+    'e': 0.015,  // Premium_blonde (1.5%)
+    'g': 0.01,   // Premium_rocker (1%) - JACKPOT
+    'l': 0.07,   // Premium_pin/Scatter (7%) - for ~1/200 trigger rate
     // Wild and empty (special handling)
     'h': 0,      // New_Wild (WILD) - only on middle reel
-    'emptyslot': 0.28  // Empty slots 28% on outer reels
+    'emptyslot': 0.40  // Empty slots 40% on outer reels
   };
 
   // Palauttaa satunnaisen symbolin tietylle kiekolle (weighted distribution)
   function randomSymbol(reelIndex: number): SymbolKey {
-    // Reel 6 (keskikiekko) - VAIN emptyslot (50%) tai Wild (50%)
+    // Reel 6 (keskikiekko) - emptyslot (60%) tai Wild (40%)
     if (reelIndex === 6) {
-      return Math.random() < 0.5 ? 'emptyslot' : 'h';
+      return Math.random() < 0.6 ? 'emptyslot' : 'h';
     }
     
     // Reels 1,2,4,5 (outer reels) - Include Empty slots
@@ -280,10 +282,10 @@
       if (rand < 0.8) return 5;
       return 10;
     } else {
-      // Base game: 1x (50%), 2x (30%), 3x (20%)
-      if (rand < 0.5) return 1;
-      if (rand < 0.8) return 2;
-      return 3;
+      // Base game: 2x (50%), 3x (30%), 5x (20%)
+      if (rand < 0.5) return 2;
+      if (rand < 0.8) return 3;
+      return 5;
     }
   }
 
@@ -334,6 +336,7 @@
       if (!isFreeSpinMode) {
         isFreeSpinMode = true;
         freeSpinsTotalWon = 0;
+        freeSpinsTriggerCount++; // Laske uusi vapaaerä
         console.log(`🎰 FREE SPINS TRIGGERED! ${scatterPositions.length} scatters = ${freeSpinsTriggered} FREE SPINS!`);
       } else {
         console.log(`🎰 FREE SPINS RETRIGGERED! +${freeSpinsTriggered} FREE SPINS! Total: ${freeSpinsRemaining}`);
@@ -1078,6 +1081,7 @@
     // Free spins mode - no bet deduction
     if (isFreeSpinMode && freeSpinsRemaining > 0) {
       freeSpinsRemaining--;
+      freeSpinsPlayedCount++; // Laske vapaaerä
       console.log(`🎰 FREE SPIN! Remaining: ${freeSpinsRemaining}`);
       
       // Check if free spins end after this spin (will be checked after win evaluation)
@@ -1193,6 +1197,8 @@
       totalWagered = 0;
       totalWon = 0;
       totalWins = 0;
+      freeSpinsTriggerCount = 0;
+      freeSpinsPlayedCount = 0;
     }
   }
 </script>
@@ -1590,6 +1596,24 @@
     <span style="color: {parseFloat(hitFrequency) >= 30 ? '#00ff00' : parseFloat(hitFrequency) >= 20 ? '#ffff00' : '#ff6666'};">
       {hitFrequency}%
     </span>
+  </div>
+  <div style="
+    display: flex; 
+    justify-content: space-between; 
+    margin-top: 8px;
+    font-size: 14px;
+  ">
+    <span style="color: #aaa;">Free Spins Triggered:</span>
+    <span style="color: #66ccff;">{freeSpinsTriggerCount}</span>
+  </div>
+  <div style="
+    display: flex; 
+    justify-content: space-between; 
+    margin-top: 4px;
+    font-size: 14px;
+  ">
+    <span style="color: #aaa;">Free Spins Played:</span>
+    <span style="color: #66ccff;">{freeSpinsPlayedCount}</span>
   </div>
   <button
     on:click={resetStats}

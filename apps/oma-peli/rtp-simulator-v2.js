@@ -9,18 +9,18 @@
 
 // Symbol weights (matching HelloPixi.svelte)
 const SYMBOL_WEIGHTS = {
-  k: 0.14,   // Red_milkshake (14%)
-  j: 0.12,   // Red_fries (12%)
-  i: 0.12,   // Red_burger (12%)
-  c: 0.055,  // Blue_rollers (5.5%)
-  d: 0.055,  // Blue_speakers (5.5%)
-  b: 0.04,   // Blue_jacket (4%)
-  a: 0.04,   // Blue_hotrod (4%)
-  f: 0.02,   // Premium_brunette (2%)
-  e: 0.012,  // Premium_blonde (1.2%)
-  g: 0.008,  // Premium_rocker (0.8%) - JACKPOT
-  l: 0.09,   // Premium_pin/Scatter (9%)
-  emptyslot: 0.28  // Empty slots (28%) on outer reels
+  k: 0.17,   // Red_milkshake (17%)
+  j: 0.14,   // Red_fries (14%)
+  i: 0.14,   // Red_burger (14%)
+  c: 0.065,  // Blue_rollers (6.5%)
+  d: 0.065,  // Blue_speakers (6.5%)
+  b: 0.05,   // Blue_jacket (5%)
+  a: 0.05,   // Blue_hotrod (5%)
+  f: 0.025,  // Premium_brunette (2.5%)
+  e: 0.015,  // Premium_blonde (1.5%)
+  g: 0.01,   // Premium_rocker (1%) - JACKPOT
+  l: 0.07,   // Premium_pin/Scatter (7%)
+  emptyslot: 0.40  // Empty slots (40%) on outer reels
 };
 
 // Paytable (matching HelloPixi.svelte)
@@ -49,18 +49,18 @@ function getWinMultiplier(isFreeSpinMode) {
     if (rand < 0.8) return 5;
     return 10;
   } else {
-    // Base game: 1x (50%), 2x (30%), 3x (20%)
-    if (rand < 0.5) return 1;
-    if (rand < 0.8) return 2;
-    return 3;
+    // Base game: 2x (50%), 3x (30%), 5x (20%)
+    if (rand < 0.5) return 2;
+    if (rand < 0.8) return 3;
+    return 5;
   }
 }
 
 // Generate random symbol for a reel position
 function randomSymbol(reelIndex) {
-  // Reel 6 (middle) - ONLY emptyslot (50%) or Wild (50%)
+  // Reel 6 (middle) - emptyslot (60%) or Wild (40%)
   if (reelIndex === 6) {
-    return Math.random() < 0.5 ? 'emptyslot' : 'h';
+    return Math.random() < 0.6 ? 'emptyslot' : 'h';
   }
   
   // Outer reels - Include Empty, no Wild
