@@ -19,8 +19,8 @@ const SYMBOL_WEIGHTS = {
   f: 0.025,  // Premium_brunette (2.5%)
   e: 0.015,  // Premium_blonde (1.5%)
   g: 0.01,   // Premium_rocker (1%) - JACKPOT
-  l: 0.07,   // Premium_pin/Scatter (7%)
-  emptyslot: 0.40  // Empty slots (40%) on outer reels
+  l: 0.075,  // Premium_pin/Scatter (7.5%)
+  emptyslot: 0.42  // Empty slots (42%) on outer reels
 };
 
 // Paytable (matching HelloPixi.svelte)
@@ -44,10 +44,10 @@ const SYMBOL_PAYTABLE = {
 function getWinMultiplier(isFreeSpinMode) {
   const rand = Math.random();
   if (isFreeSpinMode) {
-    // Free spins: 3x (50%), 5x (30%), 10x (20%)
-    if (rand < 0.5) return 3;
-    if (rand < 0.8) return 5;
-    return 10;
+    // Free spins: 2x (60%), 3x (30%), 5x (10%)
+    if (rand < 0.6) return 2;
+    if (rand < 0.9) return 3;
+    return 5;
   } else {
     // Base game: 2x (50%), 3x (30%), 5x (20%)
     if (rand < 0.5) return 2;
@@ -58,9 +58,9 @@ function getWinMultiplier(isFreeSpinMode) {
 
 // Generate random symbol for a reel position
 function randomSymbol(reelIndex) {
-  // Reel 6 (middle) - emptyslot (60%) or Wild (40%)
+  // Reel 6 (middle) - emptyslot (55%) or Wild (45%)
   if (reelIndex === 6) {
-    return Math.random() < 0.6 ? 'emptyslot' : 'h';
+    return Math.random() < 0.55 ? 'emptyslot' : 'h';
   }
   
   // Outer reels - Include Empty, no Wild

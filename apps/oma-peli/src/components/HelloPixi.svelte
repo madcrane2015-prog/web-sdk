@@ -200,17 +200,17 @@
     'f': 0.025,  // Premium_brunette (2.5%)
     'e': 0.015,  // Premium_blonde (1.5%)
     'g': 0.01,   // Premium_rocker (1%) - JACKPOT
-    'l': 0.07,   // Premium_pin/Scatter (7%) - for ~1/200 trigger rate
+    'l': 0.075,  // Premium_pin/Scatter (7.5%) - for more frequent free spins
     // Wild and empty (special handling)
     'h': 0,      // New_Wild (WILD) - only on middle reel
-    'emptyslot': 0.40  // Empty slots 40% on outer reels
+    'emptyslot': 0.42  // Empty slots 42% on outer reels
   };
 
   // Palauttaa satunnaisen symbolin tietylle kiekolle (weighted distribution)
   function randomSymbol(reelIndex: number): SymbolKey {
-    // Reel 6 (keskikiekko) - emptyslot (60%) tai Wild (40%)
+    // Reel 6 (keskikiekko) - emptyslot (55%) tai Wild (45%)
     if (reelIndex === 6) {
-      return Math.random() < 0.6 ? 'emptyslot' : 'h';
+      return Math.random() < 0.55 ? 'emptyslot' : 'h';
     }
     
     // Reels 1,2,4,5 (outer reels) - Include Empty slots
@@ -277,10 +277,10 @@
     const rand = Math.random();
     
     if (isFreeSpinMode) {
-      // Free spins: 3x (50%), 5x (30%), 10x (20%)
-      if (rand < 0.5) return 3;
-      if (rand < 0.8) return 5;
-      return 10;
+      // Free spins: 2x (60%), 3x (30%), 5x (10%)
+      if (rand < 0.6) return 2;
+      if (rand < 0.9) return 3;
+      return 5;
     } else {
       // Base game: 2x (50%), 3x (30%), 5x (20%)
       if (rand < 0.5) return 2;
