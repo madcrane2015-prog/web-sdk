@@ -391,8 +391,15 @@
     console.log(`Generated ${allPaths.length} possible paths (should be 81)`);
     
     // Laske voittolinjat: jokainen polku arvioidaan erikseen
-    // Ryhmitellään voitot symbolin ja pituuden mukaan laskemista varten
-    const winCounts = new Map<string, {symbol: SymbolKey, length: number, lineCount: number, examplePath: number[]}>();
+    // Kerää KAIKKI voitot (myös samat symbolit eri riveiltä erikseen)
+    interface WinPath {
+      symbol: SymbolKey;
+      length: number;
+      path: number[];
+      startRow: number; // Miltä riviltä alkaa (0, 1, 2)
+    }
+    
+    const allWins: WinPath[] = [];
     
     for (const path of allPaths) {
       const symbols = path.map(idx => reelData[idx]);
@@ -429,44 +436,59 @@
       
       // Tarkista onko vähintään 3 symbolia (voittoon tarvitaan 3, 4 tai 5)
       if (matchLength >= 3) {
-        // Laske tämä voittolinja
-        const winKey = `${winSymbol}-${matchLength}`;
-        const existing = winCounts.get(winKey);
-        if (existing) {
-          existing.lineCount++;
-        } else {
-          winCounts.set(winKey, {
-            symbol: winSymbol,
-            length: matchLength,
-            lineCount: 1,
-            examplePath: path.slice(0, matchLength)
-          });
-        }
+        // Määritä aloitusrivi (0, 1, 2)
+        const startReelIndex = path[0];
+        const startRow = startReelIndex % 3;
+        
+        allWins.push({
+          symbol: winSymbol,
+          length: matchLength,
+          path: path.slice(0, matchLength),
+          startRow: startRow
+        });
       }
     }
     
-    // Muunna voittolinjat voittoiksi
-    // 81-ways: Maksetaan VAIN KERRAN per symboli-yhdistelmä (ei per way)
+    // Suodata voitot: Pidä vain PISIN voitto jokaisesta symbolista jokaiselta aloitusriviltä
+    const filteredWins: WinPath[] = [];
+    const symbolsByStartRow = new Map<string, WinPath[]>();
+    
+    // Ryhmittele symbolit aloitusrivin mukaan
+    for (const win of allWins) {
+      const key = `${win.symbol}-row${win.startRow}`;
+      if (!symbolsByStartRow.has(key)) {
+        symbolsByStartRow.set(key, []);
+      }
+      symbolsByStartRow.get(key)!.push(win);
+    }
+    
+    // Jokaisesta ryhmästä ota vain pisin
+    for (const [key, wins] of symbolsByStartRow.entries()) {
+      const longest = wins.reduce((max, win) => win.length > max.length ? win : max);
+      filteredWins.push(longest);
+    }
+    
+    // Muunna suodatetut voitot maksuiksi
     const foundWinCombos: WinResult[] = [];
     
     // Generate one multiplier for ALL wins (drawn once per spin when there's at least one win)
-    const winMultiplier = winCounts.size > 0 ? getWinMultiplier() : 1;
+    const winMultiplier = filteredWins.length > 0 ? getWinMultiplier() : 1;
     
-    for (const [key, winData] of winCounts.entries()) {
-      const payoutMultiplier = SYMBOL_PAYTABLE[winData.symbol]?.[winData.length as 3 | 4 | 5];
+    for (const win of filteredWins) {
+      const payoutMultiplier = SYMBOL_PAYTABLE[win.symbol]?.[win.length as 3 | 4 | 5];
       
       if (payoutMultiplier !== undefined && payoutMultiplier > 0) {
         // Apply base payout and win multiplier
         const basePayout = payoutMultiplier * betAmount;
         const finalPayout = basePayout * winMultiplier;
         
-        console.log(`Win: ${winData.length}x ${winData.symbol} (found on ${winData.lineCount} ways) = ${basePayout} x ${winMultiplier} = ${finalPayout}`);
+        console.log(`Win: ${win.length}x ${win.symbol} (row ${win.startRow}) = ${basePayout} x ${winMultiplier} = ${finalPayout}`);
         
         foundWinCombos.push({
-          symbol: winData.symbol,
-          count: winData.length,
+          symbol: win.symbol,
+          count: win.length,
           payout: finalPayout,
-          positions: winData.examplePath,
+          positions: win.path,
           multiplier: winMultiplier
         });
       }

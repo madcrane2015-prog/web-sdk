@@ -151,8 +151,8 @@ function checkWins(reelData, isFreeSpinMode) {
     }
   }
   
-  // 4. Count wins by symbol-length
-  const winCounts = new Map();
+  // 4. Collect ALL wins with start row tracking
+  const allWins = [];
   
   for (const path of allPaths) {
     const symbols = path.map(idx => reelData[idx]);
@@ -183,33 +183,45 @@ function checkWins(reelData, isFreeSpinMode) {
     
     // Min 3 symbols to win
     if (matchLength >= 3) {
-      const winKey = `${winSymbol}-${matchLength}`;
-      const existing = winCounts.get(winKey);
-      if (existing) {
-        existing.lineCount++;
-      } else {
-        winCounts.set(winKey, {
-          symbol: winSymbol,
-          length: matchLength,
-          lineCount: 1
-        });
-      }
+      const startRow = path[0] % 3;
+      allWins.push({
+        symbol: winSymbol,
+        length: matchLength,
+        startRow: startRow
+      });
     }
   }
   
-  // 5. Convert to wins with multiplier
-  const winMultiplier = winCounts.size > 0 ? getWinMultiplier(isFreeSpinMode) : 1;
+  // Filter: Keep only LONGEST win from each symbol on each starting row
+  const filteredWins = [];
+  const symbolsByStartRow = new Map();
   
-  for (const [key, winData] of winCounts.entries()) {
-    const payoutMultiplier = SYMBOL_PAYTABLE[winData.symbol]?.[winData.length];
+  for (const win of allWins) {
+    const key = `${win.symbol}-row${win.startRow}`;
+    if (!symbolsByStartRow.has(key)) {
+      symbolsByStartRow.set(key, []);
+    }
+    symbolsByStartRow.get(key).push(win);
+  }
+  
+  for (const [key, winsInGroup] of symbolsByStartRow.entries()) {
+    const longest = winsInGroup.reduce((max, win) => win.length > max.length ? win : max);
+    filteredWins.push(longest);
+  }
+  
+  // 5. Convert filtered wins to payouts with multiplier
+  const winMultiplier = filteredWins.length > 0 ? getWinMultiplier(isFreeSpinMode) : 1;
+  
+  for (const win of filteredWins) {
+    const payoutMultiplier = SYMBOL_PAYTABLE[win.symbol]?.[win.length];
     
     if (payoutMultiplier !== undefined && payoutMultiplier > 0) {
       const basePayout = payoutMultiplier; // × 1 bet
       const finalPayout = basePayout * winMultiplier;
       
       wins.push({
-        symbol: winData.symbol,
-        count: winData.length,
+        symbol: win.symbol,
+        count: win.length,
         payout: finalPayout,
         multiplier: winMultiplier
       });
