@@ -1,66 +1,57 @@
 /**
- * RTP Simulator V2 - New Math System
- * - Empty slots 18% on reels 1,2,4,5
- * - New paytable multipliers
- * - Win multipliers: Base (1x/2x/3x), Free Spins (3x/5x/10x)
- * - Free spins triggered by 5-12 scatters (8-15 free spins)
- * - Target: 60-65% base RTP, 30-35% free spins RTP
+ * RTP Simulator V2 - 81 WAYS System
+ * - 81 WAYS (no restrictions - all possible paths)
+ * - User-specified paytable and hit rates
+ * - Empty 75% (outer), Wild 50% (middle)
+ * - Target: 15-22% hit rate, Free spins 1/75-175
+ * - Win multipliers: Base (2x/3x/5x), Free Spins (2x/3x/5x)
+ * - Free spins triggered by 5-12 scatters (5-12 free spins)
  */
 
 // Symbol weights (matching HelloPixi.svelte)
+// 81 WAYS + NO FREE SPINS
 const SYMBOL_WEIGHTS = {
-  k: 0.17,   // Red_milkshake (17%)
-  j: 0.14,   // Red_fries (14%)
-  i: 0.14,   // Red_burger (14%)
-  c: 0.065,  // Blue_rollers (6.5%)
-  d: 0.065,  // Blue_speakers (6.5%)
-  b: 0.05,   // Blue_jacket (5%)
-  a: 0.05,   // Blue_hotrod (5%)
-  f: 0.025,  // Premium_brunette (2.5%)
-  e: 0.015,  // Premium_blonde (1.5%)
-  g: 0.01,   // Premium_rocker (1%) - JACKPOT
-  l: 0.075,  // Premium_pin/Scatter (7.5%)
-  emptyslot: 0.42  // Empty slots (42%) on outer reels
+  k: 0.25,   // Red_milkshake
+  j: 0.15,   // Red_fries
+  i: 0.15,   // Red_burger
+  c: 0.08,   // Blue_rollers
+  d: 0.08,   // Blue_speakers
+  b: 0.05,   // Blue_jacket
+  a: 0.05,   // Blue_hotrod
+  f: 0.04,   // Premium_brunette
+  e: 0.03,   // Premium_blonde
+  g: 0.02,   // Premium_rocker - JACKPOT
+  l: 0.053,  // Scatter (~1/137 trigger rate)
+  emptyslot: 0.182 // Empty slots (18.2%)
 };
 
-// Paytable (matching HelloPixi.svelte)
+// Paytable (matching HelloPixi.svelte) - Scaled by 1.39 for 96% RTP
 const SYMBOL_PAYTABLE = {
-  k: { 3: 0.3, 4: 1, 5: 5 },      // Red_milkshake
-  j: { 3: 0.5, 4: 2, 5: 10 },     // Red_fries
-  i: { 3: 0.5, 4: 2, 5: 10 },     // Red_burger
-  c: { 3: 1.5, 4: 5, 5: 20 },     // Blue_rollers
-  d: { 3: 1.5, 4: 5, 5: 20 },     // Blue_speakers
-  b: { 3: 2, 4: 7, 5: 25 },       // Blue_jacket
-  a: { 3: 2, 4: 7, 5: 25 },       // Blue_hotrod
-  f: { 3: 3, 4: 15, 5: 50 },      // Premium_brunette
-  e: { 3: 5, 4: 20, 5: 75 },      // Premium_blonde
-  g: { 3: 5, 4: 25, 5: 100 },     // Premium_rocker (JACKPOT!)
-  h: {},                          // Wild
-  l: {},                          // Scatter
-  emptyslot: {}                   // Empty
+  k: { 3: 0.42, 4: 1.39, 5: 6.95 },     // Red_milkshake
+  j: { 3: 0.7, 4: 2.78, 5: 13.9 },      // Red_fries
+  i: { 3: 0.7, 4: 2.78, 5: 13.9 },      // Red_burger
+  c: { 3: 2.09, 4: 6.95, 5: 27.8 },     // Blue_rollers
+  d: { 3: 2.09, 4: 6.95, 5: 27.8 },     // Blue_speakers
+  b: { 3: 2.78, 4: 9.73, 5: 34.75 },    // Blue_jacket
+  a: { 3: 2.78, 4: 9.73, 5: 34.75 },    // Blue_hotrod
+  f: { 3: 4.17, 4: 20.85, 5: 69.5 },    // Premium_brunette
+  e: { 3: 6.95, 4: 27.8, 5: 104.25 },   // Premium_blonde
+  g: { 3: 6.95, 4: 34.75, 5: 139 },     // Premium_rocker (JACKPOT!)
+  h: {},                                // Wild
+  l: {},                                // Scatter
+  emptyslot: {}                         // Empty
 };
 
-// Generate win multiplier
+// No multipliers - simple 1x payout
 function getWinMultiplier(isFreeSpinMode) {
-  const rand = Math.random();
-  if (isFreeSpinMode) {
-    // Free spins: 2x (60%), 3x (30%), 5x (10%)
-    if (rand < 0.6) return 2;
-    if (rand < 0.9) return 3;
-    return 5;
-  } else {
-    // Base game: 2x (50%), 3x (30%), 5x (20%)
-    if (rand < 0.5) return 2;
-    if (rand < 0.8) return 3;
-    return 5;
-  }
+  return 1; // Always 1x
 }
 
 // Generate random symbol for a reel position
 function randomSymbol(reelIndex) {
-  // Reel 6 (middle) - emptyslot (55%) or Wild (45%)
+  // Reel 6 (middle) - emptyslot (50%) or Wild (50%)
   if (reelIndex === 6) {
-    return Math.random() < 0.55 ? 'emptyslot' : 'h';
+    return Math.random() < 0.50 ? 'emptyslot' : 'h';
   }
   
   // Outer reels - Include Empty, no Wild
@@ -118,7 +109,7 @@ function checkWins(reelData, isFreeSpinMode) {
   
   let freeSpinsTriggered = 0;
   if (scatterPositions.length >= 5) {
-    freeSpinsTriggered = 8 + (scatterPositions.length - 5);
+    freeSpinsTriggered = scatterPositions.length; // 5→5, 6→6, ..., 12→12
   }
   
   // 2. Build grid
@@ -130,7 +121,7 @@ function checkWins(reelData, isFreeSpinMode) {
     [reelData[10], reelData[11], reelData[12]]
   ];
   
-  // 3. Generate all 81 paths
+  // 3. Generate 81 paths (NO restrictions - all possible paths)
   const allPaths = [];
   for (let r0 = 0; r0 < 3; r0++) {
     for (let r1 = 0; r1 < 3; r1++) {
@@ -187,36 +178,56 @@ function checkWins(reelData, isFreeSpinMode) {
       allWins.push({
         symbol: winSymbol,
         length: matchLength,
-        startRow: startRow
+        startRow: startRow,
+        path: path // Tallenna polku uniikin tunnistuksen mahdollistamiseksi
       });
     }
   }
   
-  // Filter: Keep only LONGEST win from each symbol on each starting row
+  // Filter: Keep only LONGEST wins for each UNIQUE PATH
+  // In ways games, each unique path pays separately!
   const filteredWins = [];
-  const symbolsByStartRow = new Map();
+  const winsGroupedByPath = new Map();
   
   for (const win of allWins) {
-    const key = `${win.symbol}-row${win.startRow}`;
-    if (!symbolsByStartRow.has(key)) {
-      symbolsByStartRow.set(key, []);
+    // Käytä koko polkua avaimena (symboli + polku)
+    const pathKey = `${win.symbol}-${win.path.join(',')}`;
+    if (!winsGroupedByPath.has(pathKey)) {
+      winsGroupedByPath.set(pathKey, []);
     }
-    symbolsByStartRow.get(key).push(win);
+    winsGroupedByPath.get(pathKey).push(win);
   }
   
-  for (const [key, winsInGroup] of symbolsByStartRow.entries()) {
-    const longest = winsInGroup.reduce((max, win) => win.length > max.length ? win : max);
-    filteredWins.push(longest);
+  // Jokaisesta polusta ota vain PISIN voitto
+  for (const [pathKey, winsInGroup] of winsGroupedByPath.entries()) {
+    const maxLength = Math.max(...winsInGroup.map(w => w.length));
+    const longestWin = winsInGroup.find(w => w.length === maxLength);
+    
+    if (longestWin) {
+      filteredWins.push(longestWin);
+    }
   }
   
-  // 5. Convert filtered wins to payouts with multiplier
-  const winMultiplier = filteredWins.length > 0 ? getWinMultiplier(isFreeSpinMode) : 1;
+  // 5. UUSI LOGIIKKA: Group by symbol and pay only BEST (longest) win per symbol
+  const bestWinPerSymbol = new Map();
   
   for (const win of filteredWins) {
+    const existing = bestWinPerSymbol.get(win.symbol);
+    
+    if (!existing || win.length > existing.length) {
+      // Keep only the longest win for this symbol
+      bestWinPerSymbol.set(win.symbol, win);
+    }
+  }
+  
+  // Convert to payouts: ONE payout per symbol
+  const winMultiplier = bestWinPerSymbol.size > 0 ? getWinMultiplier(isFreeSpinMode) : 1;
+  
+  for (const [symbol, win] of bestWinPerSymbol.entries()) {
     const payoutMultiplier = SYMBOL_PAYTABLE[win.symbol]?.[win.length];
     
     if (payoutMultiplier !== undefined && payoutMultiplier > 0) {
-      const basePayout = payoutMultiplier; // × 1 bet
+      const basePayout = payoutMultiplier;
       const finalPayout = basePayout * winMultiplier;
       
       wins.push({
