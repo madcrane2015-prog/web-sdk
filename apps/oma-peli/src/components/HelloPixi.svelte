@@ -243,9 +243,9 @@
     'g': 0.02,   // Premium_rocker (JACKPOT symbol)
     
     // SPECIAL SYMBOLS
-    'l': 0.053,  // Scatter (~1/137 trigger rate)
+    'l': 0.115,  // Scatter (1/200 trigger rate)
     'h': 0,      // Wild - ONLY on middle reel (handled separately)
-    'emptyslot': 0.182 // Empty slots (18.2%)
+    'emptyslot': 0.165 // Empty slots (16.5%)
   };
 
   // Palauttaa satunnaisen symbolin tietylle kiekolle (weighted distribution)
@@ -336,21 +336,21 @@
   // - With 81 ways, multiple paths can stack for higher wins
   // ============================================================================
   const SYMBOL_PAYTABLE: Record<SymbolKey, {3?: number, 4?: number, 5?: number}> = {
-    // RED TIER - Low value, frequent wins (×1.39)
-    k: { 3: 0.42, 4: 1.39, 5: 6.95 },    // Red_milkshake
-    j: { 3: 0.7, 4: 2.78, 5: 13.9 },     // Red_fries
-    i: { 3: 0.7, 4: 2.78, 5: 13.9 },     // Red_burger
+    // RED TIER - Low value, frequent wins (×1.39×0.97×1.14×0.98×0.50)
+    k: { 3: 0.23, 4: 0.76, 5: 3.77 },    // Red_milkshake
+    j: { 3: 0.38, 4: 1.51, 5: 7.53 },    // Red_fries
+    i: { 3: 0.38, 4: 1.51, 5: 7.53 },    // Red_burger
     
-    // BLUE TIER - Mid value, moderate wins (×1.39)
-    c: { 3: 2.09, 4: 6.95, 5: 27.8 },    // Blue_rollers
-    d: { 3: 2.09, 4: 6.95, 5: 27.8 },    // Blue_speakers
-    b: { 3: 2.78, 4: 9.73, 5: 34.75 },   // Blue_jacket
-    a: { 3: 2.78, 4: 9.73, 5: 34.75 },   // Blue_hotrod
+    // BLUE TIER - Mid value, moderate wins (×1.39×0.97×1.14×0.98×0.50)
+    c: { 3: 1.13, 4: 3.77, 5: 15.07 },   // Blue_rollers
+    d: { 3: 1.13, 4: 3.77, 5: 15.07 },   // Blue_speakers
+    b: { 3: 1.51, 4: 5.28, 5: 18.83 },   // Blue_jacket
+    a: { 3: 1.51, 4: 5.28, 5: 18.83 },   // Blue_hotrod
     
-    // PREMIUM TIER - High value, rare wins (×1.39)
-    f: { 3: 4.17, 4: 20.85, 5: 69.5 },   // Premium_brunette
-    e: { 3: 6.95, 4: 27.8, 5: 104.25 },  // Premium_blonde
-    g: { 3: 6.95, 4: 34.75, 5: 139 },    // Premium_rocker (JACKPOT!)
+    // PREMIUM TIER - High value, rare wins (×1.39×0.97×1.14×0.98×0.50)
+    f: { 3: 2.26, 4: 11.30, 5: 37.66 },  // Premium_brunette
+    e: { 3: 3.77, 4: 15.07, 5: 56.49 },  // Premium_blonde
+    g: { 3: 3.77, 4: 18.83, 5: 75.32 },  // Premium_rocker (JACKPOT!)
     
     // SPECIAL SYMBOLS - No direct payouts
     h: {},                               // Wild (substitutes any symbol except scatter)
@@ -521,49 +521,57 @@
       }
     }
     
-    // UUSI LOGIIKKA: Ryhmittele symbolit ja maksa VAIN PISIN voitto kerran per symboli
-    // EI makseta jokaista polkua erikseen!
+    // WAYS-PELIN LOGIIKKA: Laske montako symbolia per rulla, kerro määrät keskenään
     const foundWinCombos: WinResult[] = [];
-    const bestWinPerSymbol = new Map<SymbolKey, { symbol: SymbolKey; length: number; paths: number[][]; }>();
     
-    // Etsi jokaiselle symbolille PISIN voitto
+    // Ryhmittele symbolien ja pituuksien mukaan
+    const winsBySymbolAndLength = new Map<string, WinPath[]>();
+    
     for (const win of filteredWins) {
-      const existing = bestWinPerSymbol.get(win.symbol);
-      
-      if (!existing) {
-        bestWinPerSymbol.set(win.symbol, {
-          symbol: win.symbol,
-          length: win.length,
-          paths: [win.path]
-        });
-      } else {
-        // Jos tämä voitto on pidempi, korvaa
-        if (win.length > existing.length) {
-          existing.length = win.length;
-          existing.paths = [win.path];
-        } else if (win.length === existing.length) {
-          // Sama pituus, lisää polku listaan (vain näyttöä varten)
-          existing.paths.push(win.path);
-        }
+      const key = `${win.symbol}-${win.length}`;
+      if (!winsBySymbolAndLength.has(key)) {
+        winsBySymbolAndLength.set(key, []);
       }
+      winsBySymbolAndLength.get(key)!.push(win);
     }
     
-    // Muunna voitot maksuiksi: YKSI maksu per symboli
-    const winMultiplier = bestWinPerSymbol.size > 0 ? getWinMultiplier() : 1;
+    // Yksi multiplier koko spinille
+    const winMultiplier = winsBySymbolAndLength.size > 0 ? getWinMultiplier() : 1;
     
-    for (const [symbol, group] of bestWinPerSymbol.entries()) {
-      const payoutMultiplier = SYMBOL_PAYTABLE[group.symbol]?.[group.length as 3 | 4 | 5];
+    // Käsittele jokainen symboli+pituus yhdistelmä
+    for (const [key, winsInGroup] of winsBySymbolAndLength.entries()) {
+      const firstWin = winsInGroup[0];
+      const payoutMultiplier = SYMBOL_PAYTABLE[firstWin.symbol]?.[firstWin.length as 3 | 4 | 5];
       
       if (payoutMultiplier !== undefined && payoutMultiplier > 0) {
-        const totalPayout = payoutMultiplier * betAmount * winMultiplier;
+        // WAYS: Laske kuinka monta kyseistä symbolia on JOKAISELLA rullan
+        // Kerro määrät keskenään = ways
+        const symbolCountsPerReel = new Map<number, Set<number>>();
         
-        console.log(`  ${group.length}x${group.symbol}: BEST of ${group.paths.length} paths = ${payoutMultiplier}x x ${betAmount} x ${winMultiplier} = ${totalPayout}`);
+        for (const win of winsInGroup) {
+          for (let reelIndex = 0; reelIndex < win.length; reelIndex++) {
+            if (!symbolCountsPerReel.has(reelIndex)) {
+              symbolCountsPerReel.set(reelIndex, new Set());
+            }
+            symbolCountsPerReel.get(reelIndex)!.add(win.path[reelIndex]);
+          }
+        }
+        
+        // Kerro määrät: ways = reel0_count × reel1_count × ... × reelN_count
+        let ways = 1;
+        for (let i = 0; i < firstWin.length; i++) {
+          ways *= symbolCountsPerReel.get(i)?.size || 1;
+        }
+        
+        const totalPayout = payoutMultiplier * betAmount * winMultiplier * ways;
+        
+        console.log(`  ${firstWin.length}x${firstWin.symbol}: ${ways} ways × ${payoutMultiplier}x × ${betAmount} × ${winMultiplier} = ${totalPayout}`);
       
         foundWinCombos.push({
-          symbol: group.symbol,
-          count: group.length,
+          symbol: firstWin.symbol,
+          count: firstWin.length,
           payout: totalPayout,
-          positions: group.paths[0], // Näytä ensimmäinen polku
+          positions: firstWin.path,
           multiplier: winMultiplier
         });
       }

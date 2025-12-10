@@ -21,22 +21,22 @@ const SYMBOL_WEIGHTS = {
   f: 0.04,   // Premium_brunette
   e: 0.03,   // Premium_blonde
   g: 0.02,   // Premium_rocker - JACKPOT
-  l: 0.053,  // Scatter (~1/137 trigger rate)
-  emptyslot: 0.182 // Empty slots (18.2%)
+  l: 0.115,  // Scatter (1/200 trigger rate)
+  emptyslot: 0.165 // Empty slots (16.5%)
 };
 
-// Paytable (matching HelloPixi.svelte) - Scaled by 1.39 for 96% RTP
+// Paytable (matching HelloPixi.svelte) - Scaled by 1.39×0.97×1.14×0.98×0.50 for 96% RTP
 const SYMBOL_PAYTABLE = {
-  k: { 3: 0.42, 4: 1.39, 5: 6.95 },     // Red_milkshake
-  j: { 3: 0.7, 4: 2.78, 5: 13.9 },      // Red_fries
-  i: { 3: 0.7, 4: 2.78, 5: 13.9 },      // Red_burger
-  c: { 3: 2.09, 4: 6.95, 5: 27.8 },     // Blue_rollers
-  d: { 3: 2.09, 4: 6.95, 5: 27.8 },     // Blue_speakers
-  b: { 3: 2.78, 4: 9.73, 5: 34.75 },    // Blue_jacket
-  a: { 3: 2.78, 4: 9.73, 5: 34.75 },    // Blue_hotrod
-  f: { 3: 4.17, 4: 20.85, 5: 69.5 },    // Premium_brunette
-  e: { 3: 6.95, 4: 27.8, 5: 104.25 },   // Premium_blonde
-  g: { 3: 6.95, 4: 34.75, 5: 139 },     // Premium_rocker (JACKPOT!)
+  k: { 3: 0.23, 4: 0.76, 5: 3.77 },     // Red_milkshake
+  j: { 3: 0.38, 4: 1.51, 5: 7.53 },     // Red_fries
+  i: { 3: 0.38, 4: 1.51, 5: 7.53 },     // Red_burger
+  c: { 3: 1.13, 4: 3.77, 5: 15.07 },    // Blue_rollers
+  d: { 3: 1.13, 4: 3.77, 5: 15.07 },    // Blue_speakers
+  b: { 3: 1.51, 4: 5.28, 5: 18.83 },    // Blue_jacket
+  a: { 3: 1.51, 4: 5.28, 5: 18.83 },    // Blue_hotrod
+  f: { 3: 2.26, 4: 11.30, 5: 37.66 },   // Premium_brunette
+  e: { 3: 3.77, 4: 15.07, 5: 56.49 },   // Premium_blonde
+  g: { 3: 3.77, 4: 18.83, 5: 75.32 },   // Premium_rocker (JACKPOT!)
   h: {},                                // Wild
   l: {},                                // Scatter
   emptyslot: {}                         // Empty
@@ -208,32 +208,51 @@ function checkWins(reelData, isFreeSpinMode) {
     }
   }
   
-  // 5. UUSI LOGIIKKA: Group by symbol and pay only BEST (longest) win per symbol
-  const bestWinPerSymbol = new Map();
+  // 5. WAYS LOGIC: Count symbols per reel, multiply counts = ways
+  const winsBySymbolAndLength = new Map();
   
   for (const win of filteredWins) {
-    const existing = bestWinPerSymbol.get(win.symbol);
-    
-    if (!existing || win.length > existing.length) {
-      // Keep only the longest win for this symbol
-      bestWinPerSymbol.set(win.symbol, win);
+    const key = `${win.symbol}-${win.length}`;
+    if (!winsBySymbolAndLength.has(key)) {
+      winsBySymbolAndLength.set(key, []);
     }
+    winsBySymbolAndLength.get(key).push(win);
   }
   
-  // Convert to payouts: ONE payout per symbol
-  const winMultiplier = bestWinPerSymbol.size > 0 ? getWinMultiplier(isFreeSpinMode) : 1;
+  // One multiplier for the entire spin
+  const winMultiplier = filteredWins.length > 0 ? getWinMultiplier(isFreeSpinMode) : 1;
   
-  for (const [symbol, win] of bestWinPerSymbol.entries()) {
-    const payoutMultiplier = SYMBOL_PAYTABLE[win.symbol]?.[win.length];
+  // Process each symbol+length combination
+  for (const [key, winsInGroup] of winsBySymbolAndLength.entries()) {
+    const firstWin = winsInGroup[0];
+    const payoutMultiplier = SYMBOL_PAYTABLE[firstWin.symbol]?.[firstWin.length];
     
     if (payoutMultiplier !== undefined && payoutMultiplier > 0) {
-      const basePayout = payoutMultiplier;
-      const finalPayout = basePayout * winMultiplier;
+      // WAYS: Count how many of this symbol on EACH reel
+      // Multiply counts together = ways
+      const symbolCountsPerReel = new Map();
+      
+      for (const win of winsInGroup) {
+        for (let reelIndex = 0; reelIndex < win.length; reelIndex++) {
+          if (!symbolCountsPerReel.has(reelIndex)) {
+            symbolCountsPerReel.set(reelIndex, new Set());
+          }
+          symbolCountsPerReel.get(reelIndex).add(win.path[reelIndex]);
+        }
+      }
+      
+      // Multiply counts: ways = reel0_count × reel1_count × ... × reelN_count
+      let ways = 1;
+      for (let i = 0; i < firstWin.length; i++) {
+        ways *= symbolCountsPerReel.get(i)?.size || 1;
+      }
+      
+      const totalPayout = payoutMultiplier * winMultiplier * ways;
       
       wins.push({
-        symbol: win.symbol,
-        count: win.length,
-        payout: finalPayout,
+        symbol: firstWin.symbol,
+        count: firstWin.length,
+        payout: totalPayout,
         multiplier: winMultiplier
       });
     }
