@@ -8,43 +8,56 @@
  * - Free spins triggered by 5-12 scatters (5-12 free spins)
  */
 
-// Symbol weights (matching HelloPixi.svelte)
-// 81 WAYS + NO FREE SPINS
+// Symbol weights - NEW USER SPECIFICATIONS
 const SYMBOL_WEIGHTS = {
-  k: 0.25,   // Red_milkshake
-  j: 0.15,   // Red_fries
-  i: 0.15,   // Red_burger
-  c: 0.08,   // Blue_rollers
-  d: 0.08,   // Blue_speakers
-  b: 0.05,   // Blue_jacket
-  a: 0.05,   // Blue_hotrod
-  f: 0.04,   // Premium_brunette
-  e: 0.03,   // Premium_blonde
-  g: 0.02,   // Premium_rocker - JACKPOT
-  l: 0.115,  // Scatter (1/200 trigger rate)
-  emptyslot: 0.165 // Empty slots (16.5%)
+  k: 0.09,   // Milkshake (9%)
+  j: 0.08,   // Fries (8%)
+  i: 0.08,   // Burger (8%)
+  c: 0.07,   // Roller Skates (7%)
+  d: 0.07,   // Microphone (7%)
+  b: 0.07,   // Jacket (7%)
+  a: 0.07,   // Hot Rod (7%)
+  f: 0.06,   // Brunette (6%)
+  e: 0.05,   // Blonde (5%)
+  g: 0.04,   // Rockabilly (4%)
+  l: 0.12,   // Scatter (12%)
+  emptyslot: 0.20 // Empty (20%)
 };
 
-// Paytable (matching HelloPixi.svelte) - Scaled by 1.39×0.97×1.14×0.98×0.50 for 96% RTP
+// Paytable - NEW USER SPECIFICATIONS (before multiplier)
 const SYMBOL_PAYTABLE = {
-  k: { 3: 0.23, 4: 0.76, 5: 3.77 },     // Red_milkshake
-  j: { 3: 0.38, 4: 1.51, 5: 7.53 },     // Red_fries
-  i: { 3: 0.38, 4: 1.51, 5: 7.53 },     // Red_burger
-  c: { 3: 1.13, 4: 3.77, 5: 15.07 },    // Blue_rollers
-  d: { 3: 1.13, 4: 3.77, 5: 15.07 },    // Blue_speakers
-  b: { 3: 1.51, 4: 5.28, 5: 18.83 },    // Blue_jacket
-  a: { 3: 1.51, 4: 5.28, 5: 18.83 },    // Blue_hotrod
-  f: { 3: 2.26, 4: 11.30, 5: 37.66 },   // Premium_brunette
-  e: { 3: 3.77, 4: 15.07, 5: 56.49 },   // Premium_blonde
-  g: { 3: 3.77, 4: 18.83, 5: 75.32 },   // Premium_rocker (JACKPOT!)
-  h: {},                                // Wild
-  l: {},                                // Scatter
-  emptyslot: {}                         // Empty
+  k: { 3: 0.2, 4: 0.6, 5: 2 },      // Milkshake
+  j: { 3: 0.5, 4: 1, 5: 3 },        // Fries
+  i: { 3: 0.5, 4: 1, 5: 3 },        // Burger
+  c: { 3: 1, 4: 3, 5: 10 },         // Roller Skates
+  d: { 3: 1, 4: 3, 5: 10 },         // Microphone
+  b: { 3: 2, 4: 5, 5: 15 },         // Jacket
+  a: { 3: 2, 4: 5, 5: 15 },         // Hot Rod
+  f: { 3: 3, 4: 10, 5: 20 },        // Brunette
+  e: { 3: 5, 4: 15, 5: 25 },        // Blonde
+  g: { 3: 10, 4: 25, 5: 50 },       // Rockabilly
+  h: {},                            // Wild
+  l: {},                            // Scatter
+  emptyslot: {}                     // Empty
 };
 
-// No multipliers - simple 1x payout
+// Multiplier system - Center reel (position 6)
 function getWinMultiplier(isFreeSpinMode) {
-  return 1; // Always 1x
+  const rand = Math.random();
+  
+  if (isFreeSpinMode) {
+    // Free spins: 2x/5x/10x (need distribution)
+    // Using placeholder: 50% 2x, 30% 5x, 20% 10x
+    if (rand < 0.50) return 2;
+    if (rand < 0.80) return 5;
+    return 10;
+  } else {
+    // Base game: Empty 50%, 1x 25%, 2x 15%, 3x 10%
+    if (rand < 0.50) return 1; // Empty = no multiplier
+    if (rand < 0.75) return 1; // 1x
+    if (rand < 0.90) return 2; // 2x
+    return 3; // 3x
+  }
 }
 
 // Generate random symbol for a reel position
@@ -98,6 +111,11 @@ function getReelIndex(col, row) {
 // Check wins (81-ways system)
 function checkWins(reelData, isFreeSpinMode) {
   const wins = [];
+  
+  // FREE SPINS: Replace Jacket (b) with Rockabilly (g)
+  if (isFreeSpinMode) {
+    reelData = reelData.map(symbol => symbol === 'b' ? 'g' : symbol);
+  }
   
   // 1. Check scatters
   const scatterPositions = [];
@@ -269,6 +287,8 @@ function runSimulation(numSpins) {
   
   let totalWagered = 0;
   let totalWon = 0;
+  let baseGameWon = 0;
+  let freeSpinsWon = 0;
   let totalWins = 0;
   let biggestWin = 0;
   let totalFreeSpinsTriggered = 0;
@@ -303,6 +323,7 @@ function runSimulation(numSpins) {
     }
     
     totalWon += spinWin;
+    baseGameWon += spinWin;
     if (spinWin > biggestWin) biggestWin = spinWin;
     
     // Free spins triggered
@@ -333,6 +354,7 @@ function runSimulation(numSpins) {
         }
         
         totalWon += fsSpinWin;
+        freeSpinsWon += fsSpinWin;
         if (fsSpinWin > biggestWin) biggestWin = fsSpinWin;
         
         // Retrigger
@@ -350,10 +372,13 @@ function runSimulation(numSpins) {
   }
   
   // Calculate RTP
-  const baseGameRTP = (baseGameWins / numSpins * 100).toFixed(2);
+  const baseGameDirectRTP = (baseGameWon / totalWagered * 100).toFixed(2);
+  const freeSpinsRTP = (freeSpinsWon / totalWagered * 100).toFixed(2);
   const totalRTP = (totalWon / totalWagered * 100).toFixed(2);
   const hitFrequency = (totalWins / (numSpins + totalFreeSpinsPlayed) * 100).toFixed(2);
   const freeSpinsHitRate = (numSpins / totalFreeSpinsTriggered).toFixed(0);
+  const baseGamePct = (baseGameWon / totalWon * 100).toFixed(1);
+  const freeSpinsPct = (freeSpinsWon / totalWon * 100).toFixed(1);
   
   // Results
   console.log(`\n${'='.repeat(60)}`);
@@ -361,9 +386,12 @@ function runSimulation(numSpins) {
   console.log(`${'='.repeat(60)}`);
   console.log(`Total Wagered: ${totalWagered.toLocaleString()}`);
   console.log(`Total Won: ${totalWon.toLocaleString()}`);
-  console.log(`Base Game RTP: ${baseGameRTP}%`);
-  console.log(`Total RTP: ${totalRTP}%`);
-  console.log(`Hit Frequency: ${hitFrequency}% (${totalWins.toLocaleString()} wins)`);
+  console.log(`\nRTP Breakdown:`);
+  console.log(`  Base Game (direct wins): ${baseGameDirectRTP}% | ${baseGamePct}% of total wins`);
+  console.log(`  Free Spins (bonus wins):  ${freeSpinsRTP}% | ${freeSpinsPct}% of total wins`);
+  console.log(`  ─────────────────────────────────────`);
+  console.log(`  Total RTP: ${totalRTP}%`);
+  console.log(`\nHit Frequency: ${hitFrequency}% (${totalWins.toLocaleString()} wins)`);
   console.log(`Biggest Win: ${biggestWin.toFixed(2)}x`);
   console.log(`\nFree Spins:`);
   console.log(`  Triggered: ${totalFreeSpinsTriggered.toLocaleString()} times`);
