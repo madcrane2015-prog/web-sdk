@@ -548,13 +548,23 @@
         // Kerro määrät keskenään = ways
         const symbolCountsPerReel = new Map<number, Set<number>>();
         
+        console.log(`\n  DEBUG ${firstWin.length}x${firstWin.symbol}: Processing ${winsInGroup.length} wins in group`);
+        
         for (const win of winsInGroup) {
+          console.log(`    Path: [${win.path.join(', ')}]`);
           for (let reelIndex = 0; reelIndex < win.length; reelIndex++) {
             if (!symbolCountsPerReel.has(reelIndex)) {
               symbolCountsPerReel.set(reelIndex, new Set());
             }
             symbolCountsPerReel.get(reelIndex)!.add(win.path[reelIndex]);
           }
+        }
+        
+        // Debug: Tulosta symbolCountsPerReel
+        console.log(`    Symbol counts per reel:`);
+        for (let i = 0; i < firstWin.length; i++) {
+          const positions = Array.from(symbolCountsPerReel.get(i) || []);
+          console.log(`      Reel ${i}: ${positions.length} positions [${positions.join(', ')}]`);
         }
         
         // Kerro määrät: ways = reel0_count × reel1_count × ... × reelN_count
@@ -567,11 +577,17 @@
         
         console.log(`  ${firstWin.length}x${firstWin.symbol}: ${ways} ways × ${payoutMultiplier}x × ${betAmount} × ${winMultiplier} = ${totalPayout}`);
       
+        // Kerää KAIKKI unique positions kaikista voitoista (highlighttausta varten)
+        const allPositions = new Set<number>();
+        for (const win of winsInGroup) {
+          win.path.forEach(pos => allPositions.add(pos));
+        }
+      
         foundWinCombos.push({
           symbol: firstWin.symbol,
           count: firstWin.length,
           payout: totalPayout,
-          positions: firstWin.path,
+          positions: Array.from(allPositions),
           multiplier: winMultiplier
         });
       }
@@ -1437,26 +1453,26 @@
       <!-- Premium Symbols -->
       <div style="background: rgba(255, 255, 255, 0.1); padding: 10px; border-radius: 8px; border-left: 4px solid #ffd700;">
         <div style="font-size: 1.2em; font-weight: bold; color: #ffd700; margin-bottom: 5px;">👑 PREMIUM SYMBOLS</div>
-        <div style="margin: 5px 0;">Rockabilly: 3x=5 | 4x=25 | 5x=100 🎸</div>
-        <div style="margin: 5px 0;">Blonde: 3x=5 | 4x=20 | 5x=75 👱‍♀️</div>
-        <div style="margin: 5px 0;">Brunette: 3x=3 | 4x=15 | 5x=50 👩‍🦱</div>
+        <div style="margin: 5px 0;">Rockabilly: 3x=3.77 | 4x=18.83 | 5x=75.32 🎸</div>
+        <div style="margin: 5px 0;">Blonde: 3x=3.77 | 4x=15.07 | 5x=56.49 👱‍♀️</div>
+        <div style="margin: 5px 0;">Brunette: 3x=2.26 | 4x=11.30 | 5x=37.66 👩‍🦱</div>
       </div>
       
       <!-- Blue Symbols -->
       <div style="background: rgba(255, 255, 255, 0.1); padding: 10px; border-radius: 8px; border-left: 4px solid #00bfff;">
         <div style="font-size: 1.2em; font-weight: bold; color: #00bfff; margin-bottom: 5px;">💎 BLUE SYMBOLS</div>
-        <div style="margin: 5px 0;">Hot Rod: 3x=2 | 4x=7 | 5x=25 🚗</div>
-        <div style="margin: 5px 0;">Jacket: 3x=2 | 4x=7 | 5x=25 🧥</div>
-        <div style="margin: 5px 0;">Roller Skates: 3x=1.5 | 4x=5 | 5x=20 🛼</div>
-        <div style="margin: 5px 0;">Microphone: 3x=1.5 | 4x=5 | 5x=20 🎤</div>
+        <div style="margin: 5px 0;">Hot Rod: 3x=1.51 | 4x=5.28 | 5x=18.83 🚗</div>
+        <div style="margin: 5px 0;">Jacket: 3x=1.51 | 4x=5.28 | 5x=18.83 🧥</div>
+        <div style="margin: 5px 0;">Roller Skates: 3x=1.13 | 4x=3.77 | 5x=15.07 🛼</div>
+        <div style="margin: 5px 0;">Microphone: 3x=1.13 | 4x=3.77 | 5x=15.07 🎤</div>
       </div>
       
       <!-- Red Symbols -->
       <div style="background: rgba(255, 255, 255, 0.1); padding: 10px; border-radius: 8px; border-left: 4px solid #ff6666;">
         <div style="font-size: 1.2em; font-weight: bold; color: #ff6666; margin-bottom: 5px;">🎵 RED SYMBOLS</div>
-        <div style="margin: 5px 0;">Burger: 3x=0.5 | 4x=2 | 5x=10 🍔</div>
-        <div style="margin: 5px 0;">Fries: 3x=0.5 | 4x=2 | 5x=10 🍟</div>
-        <div style="margin: 5px 0;">Milkshake: 3x=0.3 | 4x=1 | 5x=5 🥤</div>
+        <div style="margin: 5px 0;">Burger: 3x=0.38 | 4x=1.51 | 5x=7.53 🍔</div>
+        <div style="margin: 5px 0;">Fries: 3x=0.38 | 4x=1.51 | 5x=7.53 🍟</div>
+        <div style="margin: 5px 0;">Milkshake: 3x=0.23 | 4x=0.76 | 5x=3.77 🥤</div>
       </div>
       
       <!-- Special Symbols -->
