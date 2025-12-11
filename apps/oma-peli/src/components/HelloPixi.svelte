@@ -1478,20 +1478,14 @@
       <!-- Special Symbols -->
       <div style="background: rgba(255, 255, 255, 0.1); padding: 10px; border-radius: 8px; border-left: 4px solid #ff00ff;">
         <div style="font-size: 1.2em; font-weight: bold; color: #ff00ff; margin-bottom: 5px;">⭐ SPECIAL SYMBOLS</div>
-        <div style="margin: 5px 0;">WILD 🍬 - Korvaa kaikki muut symbolit (paitsi Scatter)</div>
-        <div style="margin: 5px 0;">SCATTER 📌 - 5-12 symbolia = 8-15 FREE SPINS</div>
-      </div>
-      
-      <!-- Win Multipliers -->
-      <div style="background: rgba(255, 215, 0, 0.15); padding: 10px; border-radius: 8px; border: 2px solid #ffd700;">
-        <div style="font-size: 1.2em; font-weight: bold; color: #ffd700; margin-bottom: 5px;">✨ WIN MULTIPLIERS</div>
-        <div style="margin: 5px 0; color: #fff;">Base Game: 1x (50%) | 2x (30%) | 3x (20%)</div>
-        <div style="margin: 5px 0; color: #00ff00;">Free Spins: 3x (50%) | 5x (30%) | 10x (20%)</div>
+        <div style="margin: 5px 0;">WILD 🍬 - Korvaa kaikki muut symbolit (paitsi Scatter). Vain keskikelalla (50%).</div>
+        <div style="margin: 5px 0;">SCATTER 📌 - Triggeröi 10 FREE SPINS</div>
       </div>
     </div>
     
     <div style="margin-top: 20px; text-align: center; font-size: 0.9em; color: #aaa;">
-      Kaikki voitot kerrotaan panoksella (Bet) ja sitten Win Multiplierilla
+      Kaikki voitot kerrotaan panoksella (Bet) ja Ways-kertoimella<br/>
+      <span style="color: #ffd700;">Ways = Symbolien määrä per kela kerrottuna</span>
     </div>
     
     <button 
