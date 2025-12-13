@@ -10,19 +10,20 @@
   
   GAME FEATURES:
   - Dynamic symbol generation with weighted randomization
-  - Wild symbols (Red_bubblegum) on middle reel only
-  - Scatter-triggered free spins (5-12 scatters = 8-15 free spins)
-  - Random multipliers: Base (2x/3x/5x), Free Spins (2x/3x/5x with adjusted weights)
+  - Wild symbols on middle reel only (50% probability)
+  - Scatter-triggered free spins (all 5 reels = 10 free spins)
+  - TRUE WAYS LOGIC: Counts symbols per reel, multiplies counts together
   - Win animations with highlighted winning paths
   - Autoplay with configurable spin counts (10/100/1K/10K/100K)
   - Adjustable bet system with min/max limits
   
   MATH MODEL:
-  - RTP: 94.56% (Base: 6.81%, Free Spins: 87.75%)
-  - Hit Frequency: 6.81% (1 in 14.7 spins)
-  - Free Spin Trigger: ~1 in 2,900 spins
-  - Volatility: High (free spins dominate RTP)
-  - Max Win Observed: 554x (theoretical higher with premium 5-of-a-kinds)
+  - RTP: 95.51% (Base: 26.40%, Free Spins: 69.11%)
+  - Hit Frequency: 26.40% (1 in 3.8 spins)
+  - Free Spin Trigger: ~1 in 258 spins
+  - Volatility: Medium (balanced base game + free spins)
+  - Max Win Observed: 205.65x (1M spin simulation)
+  - NO MULTIPLIERS: All wins pay at 1x
   
   VISUAL ELEMENTS:
   - Background: 1445×1000px custom rockabilly-themed slot machine
@@ -66,9 +67,6 @@
   // Svelte lifecycle ja routing
   import { onMount } from "svelte";
   import { base } from "$app/paths";
-  
-  // StakeEngine math configuration
-  import config from "../game/config";
   
   // PixiJS kirjaston komponentit pelimoottoria varten
   import {
@@ -214,16 +212,16 @@
   // ============================================================================
   // SYMBOL DISTRIBUTION - Weighted Randomization
   // ============================================================================
-  // Current configuration: 54 WAYS + 94% PAYTABLE
-  // Achieved RTP: 94.56% (Base: 6.81%, Free Spins: 87.75%)
-  // Hit Frequency: 6.81% (1 in 14.7 spins)
+  // Current configuration: 81 WAYS + TRUE WAYS LOGIC
+  // Achieved RTP: ~95.5% (Base: 26.4%, Free Spins: 69.1%)
+  // Hit Frequency: 26.4% (1 in 3.8 spins)
   //
   // DISTRIBUTION STRATEGY:
-  // - Empty slots dominate (44%) to control hit frequency
-  // - Red tier (k,j,i) provides frequent small wins
-  // - Blue/Premium tiers create volatility spikes
-  // - Scatter at 7.1% triggers free spins ~1/2900 spins
-  // - Wild only on middle reel (30%) to prevent excessive wins
+  // - Empty slots (16.5%) balance hit frequency
+  // - Red tier (k,j,i) provides frequent small wins (25%+15%+15% = 55%)
+  // - Blue/Premium tiers create medium-sized wins
+  // - Scatter at 11.5% triggers free spins ~1/260 spins (5+ scatters)
+  // - Wild only on middle reel (50%) for substitution
   // ============================================================================
   const SYMBOL_WEIGHTS: Record<SymbolKey, number> = {
     // RED TIER - Low value, high frequency
@@ -243,7 +241,7 @@
     'g': 0.02,   // Premium_rocker (JACKPOT symbol)
     
     // SPECIAL SYMBOLS
-    'l': 0.115,  // Scatter (1/200 trigger rate)
+    'l': 0.115,  // Scatter (~1/260 trigger rate for 5+ scatters = 10 free spins)
     'h': 0,      // Wild - ONLY on middle reel (handled separately)
     'emptyslot': 0.165 // Empty slots (16.5%)
   };
@@ -311,7 +309,7 @@
     count: number;
     payout: number;
     positions: number[]; // Voittavien kiekkojen indeksit
-    multiplier: number; // Win multiplier (1x/2x/3x base, 3x/5x/10x freespin)
+    multiplier: number; // Always 1 (multipliers disabled)
   };
   
   // No multipliers - simple 1x payout
@@ -320,20 +318,20 @@
   }
 
   // ============================================================================
-  // PAYTABLE - Symbol Payouts (Multipliers × Bet)
+  // PAYTABLE - Symbol Payouts (Multipliers × Bet × Ways)
   // ============================================================================
-  // Values specified by user for 81 ways balance
-  // All payouts are multiplied by random multiplier (2x/3x/5x)
-  // Values represent payout multipliers for 3/4/5-of-a-kind combinations
+  // Values represent payout multipliers PER SYMBOL for 3/4/5-of-a-kind.
+  // 
+  // WAYS CALCULATION:
+  // Final payout = paytable_value × bet × ways
+  // Where ways = count_reel0 × count_reel1 × count_reel2 × count_reel3 × count_reel4
   //
-  // PAYOUT STRUCTURE:
-  // - Red tier: 0.2-0.5x (3-of-a-kind) up to 2-3x (5-of-a-kind)
-  // - Blue tier: 1-2x (3-of-a-kind) up to 10-15x (5-of-a-kind)
-  // - Premium: 3-10x (3-of-a-kind) up to 20-50x (5-of-a-kind)
+  // Example: 4×k with 2 symbols on reel 0, 1 on reel 1, 1 wild, 1 on reel 3:
+  // - Ways = 2 × 1 × 1 × 1 = 2 ways
+  // - Payout = 0.76 × 1 (bet) × 2 (ways) = 1.52
   //
-  // Combined with multipliers (2x/3x/5x), max theoretical wins:
-  // - Premium_rocker 5-of-a-kind: 50 × 5x = 250x base bet
-  // - With 81 ways, multiple paths can stack for higher wins
+  // Scaled by: 1.39 × 0.97 × 1.14 × 0.98 × 0.50 = 0.761 (achieves ~95.51% RTP)
+  // NO MULTIPLIERS: All wins pay at 1x (multiplier system removed)
   // ============================================================================
   const SYMBOL_PAYTABLE: Record<SymbolKey, {3?: number, 4?: number, 5?: number}> = {
     // RED TIER - Low value, frequent wins (×1.39×0.97×1.14×0.98×0.50)
@@ -371,9 +369,9 @@
     }
     
     // Scatter-voitot ja free spinsit
-    // 5 scatters = 5 free spins, 6 = 6, ..., 12 = 12 free spins
+    // 5+ scatters = 10 free spins
     if (scatterPositions.length >= 5) {
-      const freeSpinsTriggered = scatterPositions.length;
+      const freeSpinsTriggered = 10; // Always 10 free spins
       
       // Add free spins (trigger or retrigger)
       freeSpinsRemaining += freeSpinsTriggered;
@@ -401,16 +399,9 @@
   // ============================================================================
   // 81 WAYS-PAYING LOGIC
   // ============================================================================
-  // Build symbol grid from reel data (3×3×1×3×3 layout)
-    const grid: SymbolKey[][] = [
-      [reelData[0], reelData[1], reelData[2]],        // Column 0 (left, 3 rows)
-      [reelData[3], reelData[4], reelData[5]],        // Column 1 (3 rows)
-      [reelData[6]],                                   // Column 2 (middle, 1 row)
-      [reelData[7], reelData[8], reelData[9]],        // Column 3 (3 rows)
-      [reelData[10], reelData[11], reelData[12]]      // Column 4 (right, 3 rows)
-    ];    // Generate all 81 valid paths through the grid
-    // NO RESTRICTIONS: All possible row combinations allowed
-    // Grid: 3×3×1×3×3 = 81 total ways
+  // Generate all 81 valid paths through the grid
+  // NO RESTRICTIONS: All possible row combinations allowed
+  // Grid: 3×3×1×3×3 = 81 total ways
     const allPaths: number[][] = [];
     
     // Iterate through all possible row combinations (NO ±1 restriction)
@@ -521,7 +512,14 @@
       }
     }
     
-    // WAYS-PELIN LOGIIKKA: Laske montako symbolia per rulla, kerro määrät keskenään
+    // ============================================================================
+    // TRUE WAYS LOGIC: Count symbols per reel, multiply counts together
+    // ============================================================================
+    // Example: If reel 0 has 2 burgers, reel 1 has 1 burger, reel 2 has 1 wild,
+    //          reel 3 has 2 burgers, reel 4 has 1 burger:
+    // Ways = 2 × 1 × 1 × 2 × 1 = 4 ways
+    // Payout = paytable_value × bet × 4
+    // ============================================================================
     const foundWinCombos: WinResult[] = [];
     
     // Ryhmittele symbolien ja pituuksien mukaan
@@ -535,8 +533,8 @@
       winsBySymbolAndLength.get(key)!.push(win);
     }
     
-    // Yksi multiplier koko spinille
-    const winMultiplier = winsBySymbolAndLength.size > 0 ? getWinMultiplier() : 1;
+    // No multipliers - always 1x
+    const winMultiplier = 1;
     
     // Käsittele jokainen symboli+pituus yhdistelmä
     for (const [key, winsInGroup] of winsBySymbolAndLength.entries()) {
@@ -879,26 +877,6 @@
       debugInfo.push(errorMessage);
       console.error(errorMessage);
       return; // Lopeta lataus jos virhe
-    }    // ===== 3) ÄÄNIEN LATAUS =====
-    // Luodaan HTML5 Audio elementit ääniefektejä varten
-    console.log("Ladataan ääniefektit...");
-    
-    // Luo Web Audio elementit (placeholder-tiedostoja ei ole vielä olemassa)
-    for (const [key, url] of Object.entries(SOUND_URLS)) {
-      const audio = new Audio();
-      audio.src = url;
-      audio.preload = 'auto';
-      audio.volume = 0.7; // 70% äänenvoimakkuus
-      
-      // Yritä esikuormata (ei haittaa jos tiedosto ei ole olemassa)
-      audio.load();
-      
-      // Käsittele latausvirheet hiljaa (placeholder-tilanne)
-      audio.addEventListener('error', () => {
-        console.log(`Äänitiedostoa ei löydy: ${url} (käytetään hiljaista placeholderia)`);
-      });
-      
-      audioElements[key] = audio;
     }
     
     // ===== 3) ÄÄNIEN LATAUS =====
@@ -1153,17 +1131,6 @@
         // Soita voittoääni
         playSound('win');
         
-        // Check if free spins ended (after this spin was evaluated)
-        if (isFreeSpinMode && freeSpinsRemaining === 0) {
-          console.log(`🎰 FREE SPINS ENDED! Total won: ${freeSpinsTotalWon}`);
-          // Show free spins end message (could be enhanced with popup)
-          setTimeout(() => {
-            alert(`Free Spins Ended!\nTotal Won: ${freeSpinsTotalWon.toFixed(2)}`);
-            isFreeSpinMode = false;
-            freeSpinsTotalWon = 0;
-          }, 2000);
-        }
-        
         // Jos autoplay on päällä, odota 1.5s ja sulje popup automaattisesti
         if (isAutoPlaying && !isProcessingAutoPlay) {
           isProcessingAutoPlay = true; // Lukitse
@@ -1191,6 +1158,17 @@
             executeAutoPlay();
           }, 1000);
         }
+      }
+      
+      // Check if free spins ended (ALWAYS, regardless of win/no-win)
+      if (isFreeSpinMode && freeSpinsRemaining === 0) {
+        console.log(`🎰 FREE SPINS ENDED! Total won: ${freeSpinsTotalWon}`);
+        // Show free spins end message
+        setTimeout(() => {
+          alert(`Free Spins Ended!\nTotal Won: ${freeSpinsTotalWon.toFixed(2)}`);
+          isFreeSpinMode = false;
+          freeSpinsTotalWon = 0;
+        }, 2000);
       }
     }
   }

@@ -1,48 +1,53 @@
 /**
  * RTP Simulator V2 - 81 WAYS System
- * - 81 WAYS (no restrictions - all possible paths)
- * - User-specified paytable and hit rates
- * - Empty 75% (outer), Wild 50% (middle)
- * - Target: 15-22% hit rate, Free spins 1/75-175
- * - Win multipliers: Base (2x/3x/5x), Free Spins (2x/3x/5x)
- * - Free spins triggered by 5-12 scatters (5-12 free spins)
+ * 
+ * CURRENT CONFIGURATION (95.51% RTP):
+ * - 81 WAYS with TRUE ways logic (count symbols per reel, multiply)
+ * - Empty: 16.5% | Scatter: 11.5% | Wild: 50% (middle reel only)
+ * - Hit Frequency: 26.40% (1 in 3.8 spins)
+ * - Free Spins: 1/258 spins (scatter on all 5 reels = 10 free spins)
+ * - NO MULTIPLIERS: All wins pay at 1x
+ * - Paytable scaled: 1.39 × 0.97 × 1.14 × 0.98 × 0.50 = 0.761
  */
 
-// Symbol weights - NEW USER SPECIFICATIONS
+// Symbol weights - CURRENT CONFIGURATION (95.51% RTP)
 const SYMBOL_WEIGHTS = {
-  k: 0.09,   // Milkshake (9%)
-  j: 0.08,   // Fries (8%)
-  i: 0.08,   // Burger (8%)
-  c: 0.07,   // Roller Skates (7%)
-  d: 0.07,   // Microphone (7%)
-  b: 0.07,   // Jacket (7%)
-  a: 0.07,   // Hot Rod (7%)
-  f: 0.06,   // Brunette (6%)
-  e: 0.05,   // Blonde (5%)
-  g: 0.04,   // Rockabilly (4%)
-  l: 0.12,   // Scatter (12%)
-  emptyslot: 0.20 // Empty (20%)
+  k: 0.25,          // Milkshake (25%) - Most frequent paying symbol
+  j: 0.15,          // Fries (15%)
+  i: 0.15,          // Burger (15%)
+  c: 0.045,         // Roller Skates (4.5%)
+  d: 0.045,         // Microphone (4.5%)
+  b: 0.03,          // Jacket (3%)
+  a: 0.03,          // Hot Rod (3%)
+  f: 0.01,          // Brunette (1%)
+  e: 0.005,         // Blonde (0.5%)
+  g: 0.005,         // Rockabilly (0.5%) - JACKPOT
+  l: 0.115,         // Scatter (11.5%) - Free spins trigger
+  emptyslot: 0.165  // Empty (16.5%) - RTP balancer
 };
 
-// Paytable - NEW USER SPECIFICATIONS (before multiplier)
+// Paytable (matching HelloPixi.svelte) - Scaled by 1.39×0.97×1.14×0.98×0.50 for 96% RTP
 const SYMBOL_PAYTABLE = {
-  k: { 3: 0.2, 4: 0.6, 5: 2 },      // Milkshake
-  j: { 3: 0.5, 4: 1, 5: 3 },        // Fries
-  i: { 3: 0.5, 4: 1, 5: 3 },        // Burger
-  c: { 3: 1, 4: 3, 5: 10 },         // Roller Skates
-  d: { 3: 1, 4: 3, 5: 10 },         // Microphone
-  b: { 3: 2, 4: 5, 5: 15 },         // Jacket
-  a: { 3: 2, 4: 5, 5: 15 },         // Hot Rod
-  f: { 3: 3, 4: 10, 5: 20 },        // Brunette
-  e: { 3: 5, 4: 15, 5: 25 },        // Blonde
-  g: { 3: 10, 4: 25, 5: 50 },       // Rockabilly
-  h: {},                            // Wild
-  l: {},                            // Scatter
-  emptyslot: {}                     // Empty
+  k: { 3: 0.23, 4: 0.76, 5: 3.77 },     // Red_milkshake
+  j: { 3: 0.38, 4: 1.51, 5: 7.53 },     // Red_fries
+  i: { 3: 0.38, 4: 1.51, 5: 7.53 },     // Red_burger
+  c: { 3: 1.13, 4: 3.77, 5: 15.07 },    // Blue_rollers
+  d: { 3: 1.13, 4: 3.77, 5: 15.07 },    // Blue_speakers
+  b: { 3: 1.51, 4: 5.28, 5: 18.83 },    // Blue_jacket
+  a: { 3: 1.51, 4: 5.28, 5: 18.83 },    // Blue_hotrod
+  f: { 3: 2.26, 4: 11.30, 5: 37.66 },   // Premium_brunette
+  e: { 3: 3.77, 4: 15.07, 5: 56.49 },   // Premium_blonde
+  g: { 3: 3.77, 4: 18.83, 5: 75.32 },   // Premium_rocker (JACKPOT!)
+  h: {},                                // Wild
+  l: {},                                // Scatter
+  emptyslot: {}                         // Empty
 };
 
-// Multiplier system - Center reel (position 6)
+// NO MULTIPLIERS - Always returns 1x
 function getWinMultiplier(isFreeSpinMode) {
+  return 1; // Multiplier system removed for math simplification
+  
+  // OLD CODE (commented out):
   const rand = Math.random();
   
   if (isFreeSpinMode) {
