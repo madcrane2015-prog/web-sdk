@@ -208,6 +208,11 @@
   let freeSpinsTotalWon = $state(0);
   let freeSpinsTriggerCount = $state(0); // Kuinka monta kertaa vapaapelit alkaneet
   let freeSpinsPlayedCount = $state(0);  // Kuinka monta vapaapelikierrosta yhteensä pelattu
+  
+  // Emptyslot tracking
+  let totalVisibleSymbols = $state(0); // Kaikki näkyvät symbolit yhteensä
+  let totalEmptySlots = $state(0);      // Emptyslot-symbolit yhteensä
+  let emptySlotPercentage = $derived(totalVisibleSymbols > 0 ? (totalEmptySlots / totalVisibleSymbols * 100).toFixed(2) : "0.00");
 
   // ============================================================================
   // SYMBOL DISTRIBUTION - Weighted Randomization
@@ -291,6 +296,12 @@
       }
       
       reelData.push(symbol);
+      
+      // Track visible symbols and emptyslots
+      totalVisibleSymbols++;
+      if (symbol === 'emptyslot') {
+        totalEmptySlots++;
+      }
     }
     return reelData;
   }
@@ -1320,6 +1331,8 @@
       totalWins = 0;
       freeSpinsTriggerCount = 0;
       freeSpinsPlayedCount = 0;
+      totalVisibleSymbols = 0;
+      totalEmptySlots = 0;
     }
   }
 </script>
@@ -1671,8 +1684,11 @@
   z-index: 1500;
   min-width: 200px;
 ">
-  <div style="font-weight: bold; font-size: 16px; margin-bottom: 10px; color: #ffd700; text-align: center;">
+  <div style="font-weight: bold; font-size: 16px; margin-bottom: 5px; color: #ffd700; text-align: center;">
     📊 RTP MONITOR
+  </div>
+  <div style="font-size: 11px; margin-bottom: 10px; color: #888; text-align: center;">
+    v{GAME_VERSION}
   </div>
   <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
     <span style="color: #aaa;">Rounds:</span>
@@ -1729,6 +1745,17 @@
   ">
     <span style="color: #aaa;">Free Spins Played:</span>
     <span style="color: #66ccff;">{freeSpinsPlayedCount}</span>
+  </div>
+  <div style="
+    display: flex; 
+    justify-content: space-between; 
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #555;
+    font-size: 14px;
+  ">
+    <span style="color: #aaa;">Empty Slots:</span>
+    <span style="color: #ff9900;">{emptySlotPercentage}%</span>
   </div>
   <button
     on:click={resetStats}
