@@ -1,67 +1,61 @@
 /**
  * RTP Simulator V2 - 81 WAYS System
  * 
- * CURRENT CONFIGURATION (95.51% RTP):
+ * YAML CONFIG V1.0:
  * - 81 WAYS with TRUE ways logic (count symbols per reel, multiply)
- * - Empty: 16.5% | Scatter: 11.5% | Wild: 50% (middle reel only)
- * - Hit Frequency: 26.40% (1 in 3.8 spins)
- * - Free Spins: 1/258 spins (scatter on all 5 reels = 10 free spins)
- * - NO MULTIPLIERS: All wins pay at 1x
- * - Paytable scaled: 1.39 × 0.97 × 1.14 × 0.98 × 0.50 = 0.761
+ * - Empty: 25% | Scatter: 10% | Wild: 50% (middle reel only)
+ * - Multipliers ENABLED: base game (1x/2x/3x), free spins (3x/5x/10x)
+ * - Free spins: variable (5 scatters=5 spins, 6=6, ..., 12=12)
+ * - Symbol replacement in free spins: k→f, j→e, i→g
  */
 
-// Symbol weights - CURRENT CONFIGURATION (95.51% RTP)
+// Symbol weights - YAML CONFIG V1.0
 const SYMBOL_WEIGHTS = {
-  k: 0.25,          // Milkshake (25%) - Most frequent paying symbol
-  j: 0.15,          // Fries (15%)
-  i: 0.15,          // Burger (15%)
-  c: 0.045,         // Roller Skates (4.5%)
-  d: 0.045,         // Microphone (4.5%)
-  b: 0.03,          // Jacket (3%)
-  a: 0.03,          // Hot Rod (3%)
-  f: 0.01,          // Brunette (1%)
-  e: 0.005,         // Blonde (0.5%)
-  g: 0.005,         // Rockabilly (0.5%) - JACKPOT
-  l: 0.115,         // Scatter (11.5%) - Free spins trigger
-  emptyslot: 0.165  // Empty (16.5%) - RTP balancer
+  k: 0.08,          // Milkshake (8%)
+  j: 0.07,          // Fries (7%)
+  i: 0.07,          // Burger (7%)
+  c: 0.07,          // Roller Skates (7%)
+  d: 0.07,          // Microphone (7%)
+  b: 0.07,          // Jacket (7%)
+  a: 0.07,          // Hot Rod (7%)
+  f: 0.06,          // Brunette (6%)
+  e: 0.05,          // Blonde (5%)
+  g: 0.04,          // Rockabilly (4%) - JACKPOT
+  l: 0.10,          // Scatter (10%) - Free spins trigger
+  emptyslot: 0.25   // Empty (25%) - RTP balancer
 };
 
-// Paytable (matching HelloPixi.svelte) - Scaled by 1.39×0.97×1.14×0.98×0.50 for 96% RTP
+// Paytable from YAML config v1.0
 const SYMBOL_PAYTABLE = {
-  k: { 3: 0.23, 4: 0.76, 5: 3.77 },     // Red_milkshake
-  j: { 3: 0.38, 4: 1.51, 5: 7.53 },     // Red_fries
-  i: { 3: 0.38, 4: 1.51, 5: 7.53 },     // Red_burger
-  c: { 3: 1.13, 4: 3.77, 5: 15.07 },    // Blue_rollers
-  d: { 3: 1.13, 4: 3.77, 5: 15.07 },    // Blue_speakers
-  b: { 3: 1.51, 4: 5.28, 5: 18.83 },    // Blue_jacket
-  a: { 3: 1.51, 4: 5.28, 5: 18.83 },    // Blue_hotrod
-  f: { 3: 2.26, 4: 11.30, 5: 37.66 },   // Premium_brunette
-  e: { 3: 3.77, 4: 15.07, 5: 56.49 },   // Premium_blonde
-  g: { 3: 3.77, 4: 18.83, 5: 75.32 },   // Premium_rocker (JACKPOT!)
-  h: {},                                // Wild
-  l: {},                                // Scatter
-  emptyslot: {}                         // Empty
+  k: { 3: 0.20, 4: 0.60, 5: 1.50 },     // Red_milkshake
+  j: { 3: 0.40, 4: 1.00, 5: 2.50 },     // Red_fries
+  i: { 3: 0.40, 4: 1.00, 5: 2.50 },     // Red_burger
+  c: { 3: 0.80, 4: 2.00, 5: 5.00 },     // Blue_rollers
+  d: { 3: 0.80, 4: 2.00, 5: 5.00 },     // Blue_speakers
+  b: { 3: 1.50, 4: 4.00, 5: 8.00 },     // Blue_jacket
+  a: { 3: 1.50, 4: 4.00, 5: 8.00 },     // Blue_hotrod
+  f: { 3: 3.00, 4: 8.00, 5: 20.00 },    // Premium_brunette
+  e: { 3: 5.00, 4: 10.00, 5: 25.00 },   // Premium_blonde
+  g: { 3: 7.00, 4: 15.00, 5: 50.00 },   // Premium_rocker (JACKPOT!)
+  h: {},                                 // Wild
+  l: {},                                 // Scatter
+  emptyslot: {}                          // Empty
 };
 
-// NO MULTIPLIERS - Always returns 1x
+// Multipliers from YAML config v1.0
 function getWinMultiplier(isFreeSpinMode) {
-  return 1; // Multiplier system removed for math simplification
-  
-  // OLD CODE (commented out):
   const rand = Math.random();
   
   if (isFreeSpinMode) {
-    // Free spins: 2x/5x/10x (need distribution)
-    // Using placeholder: 50% 2x, 30% 5x, 20% 10x
-    if (rand < 0.50) return 2;
-    if (rand < 0.80) return 5;
+    // Free spins: 3x (60%), 5x (30%), 10x (10%)
+    if (rand < 0.60) return 3;
+    if (rand < 0.90) return 5;
     return 10;
   } else {
-    // Base game: Empty 50%, 1x 25%, 2x 15%, 3x 10%
-    if (rand < 0.50) return 1; // Empty = no multiplier
-    if (rand < 0.75) return 1; // 1x
-    if (rand < 0.90) return 2; // 2x
-    return 3; // 3x
+    // Base game: 1x (60%), 2x (30%), 3x (10%)
+    if (rand < 0.60) return 1;
+    if (rand < 0.90) return 2;
+    return 3;
   }
 }
 
@@ -86,10 +80,20 @@ function randomSymbol(reelIndex) {
 }
 
 // Create reel data (13 positions)
-function createReelData() {
+function createReelData(isFreeSpinMode = false) {
   const reelData = [];
   for (let i = 0; i < 13; i++) {
-    reelData.push(randomSymbol(i));
+    let symbol = randomSymbol(i);
+    
+    // SYMBOL REPLACEMENT IN FREE SPINS (YAML config v1.0)
+    // k → f, j → e, i → g
+    if (isFreeSpinMode) {
+      if (symbol === 'k') symbol = 'f';      // Milkshake → Brunette
+      else if (symbol === 'j') symbol = 'e'; // Fries → Blonde
+      else if (symbol === 'i') symbol = 'g'; // Burger → Rockabilly
+    }
+    
+    reelData.push(symbol);
   }
   return reelData;
 }
@@ -113,14 +117,35 @@ function getReelIndex(col, row) {
   return -1;
 }
 
-// Check wins (81-ways system)
+// Generate all 81 paths
+function generateAllPaths() {
+  const paths = [];
+  for (let r0 = 0; r0 < 3; r0++) {
+    for (let r1 = 0; r1 < 3; r1++) {
+      for (let r2 = 0; r2 < 1; r2++) {
+        for (let r3 = 0; r3 < 3; r3++) {
+          for (let r4 = 0; r4 < 3; r4++) {
+            paths.push([
+              getReelIndex(0, r0),
+              getReelIndex(1, r1),
+              getReelIndex(2, r2),
+              getReelIndex(3, r3),
+              getReelIndex(4, r4)
+            ]);
+          }
+        }
+      }
+    }
+  }
+  return paths;
+}
+
+// Check wins (81-ways system) - EXACTLY like math-sim.cjs
 function checkWins(reelData, isFreeSpinMode) {
   const wins = [];
   
-  // FREE SPINS: Replace Jacket (b) with Rockabilly (g)
-  if (isFreeSpinMode) {
-    reelData = reelData.map(symbol => symbol === 'b' ? 'g' : symbol);
-  }
+  // Symbol replacement already done in createReelData() for free spins
+  // No need to do it again here
   
   // 1. Check scatters
   const scatterPositions = [];
@@ -135,37 +160,8 @@ function checkWins(reelData, isFreeSpinMode) {
     freeSpinsTriggered = scatterPositions.length; // 5→5, 6→6, ..., 12→12
   }
   
-  // 2. Build grid
-  const grid = [
-    [reelData[0], reelData[1], reelData[2]],
-    [reelData[3], reelData[4], reelData[5]],
-    [reelData[6]],
-    [reelData[7], reelData[8], reelData[9]],
-    [reelData[10], reelData[11], reelData[12]]
-  ];
-  
-  // 3. Generate 81 paths (NO restrictions - all possible paths)
-  const allPaths = [];
-  for (let r0 = 0; r0 < 3; r0++) {
-    for (let r1 = 0; r1 < 3; r1++) {
-      for (let r2 = 0; r2 < 1; r2++) {
-        for (let r3 = 0; r3 < 3; r3++) {
-          for (let r4 = 0; r4 < 3; r4++) {
-            const path = [
-              getReelIndex(0, r0),
-              getReelIndex(1, r1),
-              getReelIndex(2, r2),
-              getReelIndex(3, r3),
-              getReelIndex(4, r4)
-            ];
-            allPaths.push(path);
-          }
-        }
-      }
-    }
-  }
-  
-  // 4. Collect ALL wins with start row tracking
+  // 2. Generate all 81 paths and evaluate each
+  const allPaths = generateAllPaths();
   const allWins = [];
   
   for (const path of allPaths) {
@@ -177,18 +173,19 @@ function checkWins(reelData, isFreeSpinMode) {
     // Find win symbol (first non-wild)
     let winSymbol = null;
     for (let i = 0; i < symbols.length; i++) {
-      if (symbols[i] !== 'h' && symbols[i] !== 'emptyslot' && symbols[i] !== 'l') {
-        winSymbol = symbols[i];
+      const s = symbols[i];
+      if (s !== 'h' && s !== 'emptyslot' && s !== 'l') {
+        winSymbol = s;
         break;
       }
     }
-    
     if (!winSymbol) continue;
     
     // Count consecutive matches
     let matchLength = 0;
     for (let i = 0; i < symbols.length; i++) {
-      if (symbols[i] === winSymbol || symbols[i] === 'h') {
+      const s = symbols[i];
+      if (s === winSymbol || s === 'h') {
         matchLength++;
       } else {
         break;
@@ -197,88 +194,75 @@ function checkWins(reelData, isFreeSpinMode) {
     
     // Min 3 symbols to win
     if (matchLength >= 3) {
-      const startRow = path[0] % 3;
       allWins.push({
         symbol: winSymbol,
         length: matchLength,
-        startRow: startRow,
-        path: path // Tallenna polku uniikin tunnistuksen mahdollistamiseksi
+        path: path.slice(0, matchLength) // Only winning positions
       });
     }
   }
   
-  // Filter: Keep only LONGEST wins for each UNIQUE PATH
-  // In ways games, each unique path pays separately!
-  const filteredWins = [];
-  const winsGroupedByPath = new Map();
-  
-  for (const win of allWins) {
-    // Käytä koko polkua avaimena (symboli + polku)
-    const pathKey = `${win.symbol}-${win.path.join(',')}`;
-    if (!winsGroupedByPath.has(pathKey)) {
-      winsGroupedByPath.set(pathKey, []);
-    }
-    winsGroupedByPath.get(pathKey).push(win);
+  // 3. Keep longest win per unique path
+  const groupedByPath = new Map();
+  for (const w of allWins) {
+    const k = `${w.symbol}-${w.path.join(',')}`;
+    if (!groupedByPath.has(k)) groupedByPath.set(k, []);
+    groupedByPath.get(k).push(w);
   }
   
-  // Jokaisesta polusta ota vain PISIN voitto
-  for (const [pathKey, winsInGroup] of winsGroupedByPath.entries()) {
-    const maxLength = Math.max(...winsInGroup.map(w => w.length));
-    const longestWin = winsInGroup.find(w => w.length === maxLength);
+  const filtered = [];
+  for (const group of groupedByPath.values()) {
+    const maxLen = Math.max(...group.map(x => x.length));
+    const longest = group.find(x => x.length === maxLen);
+    if (longest) filtered.push(longest);
+  }
+  
+  // 4. Group by symbol-length
+  const bySymbolLen = new Map();
+  for (const w of filtered) {
+    const k = `${w.symbol}-${w.length}`;
+    if (!bySymbolLen.has(k)) bySymbolLen.set(k, []);
+    bySymbolLen.get(k).push(w);
+  }
+  
+  // 5. One multiplier for the entire spin
+  const winMultiplier = filtered.length > 0 ? getWinMultiplier(isFreeSpinMode) : 1;
+  
+  // 6. Calculate payout for each symbol-length group
+  for (const group of bySymbolLen.values()) {
+    const first = group[0];
+    const sym = first.symbol;
+    const len = first.length;
     
-    if (longestWin) {
-      filteredWins.push(longestWin);
-    }
-  }
-  
-  // 5. WAYS LOGIC: Count symbols per reel, multiply counts = ways
-  const winsBySymbolAndLength = new Map();
-  
-  for (const win of filteredWins) {
-    const key = `${win.symbol}-${win.length}`;
-    if (!winsBySymbolAndLength.has(key)) {
-      winsBySymbolAndLength.set(key, []);
-    }
-    winsBySymbolAndLength.get(key).push(win);
-  }
-  
-  // One multiplier for the entire spin
-  const winMultiplier = filteredWins.length > 0 ? getWinMultiplier(isFreeSpinMode) : 1;
-  
-  // Process each symbol+length combination
-  for (const [key, winsInGroup] of winsBySymbolAndLength.entries()) {
-    const firstWin = winsInGroup[0];
-    const payoutMultiplier = SYMBOL_PAYTABLE[firstWin.symbol]?.[firstWin.length];
+    const pt = SYMBOL_PAYTABLE[sym]?.[len];
+    if (!(typeof pt === 'number' && pt > 0)) continue;
     
-    if (payoutMultiplier !== undefined && payoutMultiplier > 0) {
-      // WAYS: Count how many of this symbol on EACH reel
-      // Multiply counts together = ways
-      const symbolCountsPerReel = new Map();
-      
-      for (const win of winsInGroup) {
-        for (let reelIndex = 0; reelIndex < win.length; reelIndex++) {
-          if (!symbolCountsPerReel.has(reelIndex)) {
-            symbolCountsPerReel.set(reelIndex, new Set());
-          }
-          symbolCountsPerReel.get(reelIndex).add(win.path[reelIndex]);
-        }
+    // Count unique positions per reel from all winning paths in this group
+    const positionsPerReel = new Map();
+    for (const w of group) {
+      for (let i = 0; i < len; i++) {
+        if (!positionsPerReel.has(i)) positionsPerReel.set(i, new Set());
+        positionsPerReel.get(i).add(w.path[i]);
       }
-      
-      // Multiply counts: ways = reel0_count × reel1_count × ... × reelN_count
-      let ways = 1;
-      for (let i = 0; i < firstWin.length; i++) {
-        ways *= symbolCountsPerReel.get(i)?.size || 1;
-      }
-      
-      const totalPayout = payoutMultiplier * winMultiplier * ways;
-      
-      wins.push({
-        symbol: firstWin.symbol,
-        count: firstWin.length,
-        payout: totalPayout,
-        multiplier: winMultiplier
-      });
     }
+    
+    // Calculate ways by multiplying position counts
+    let ways = 1;
+    for (let i = 0; i < len; i++) {
+      const s = positionsPerReel.get(i);
+      ways *= s ? s.size : 1;
+    }
+    
+    // Payout = paytable × ways × multiplier (bet is always 1.0)
+    const payout = pt * ways * winMultiplier;
+    
+    wins.push({
+      symbol: sym,
+      count: len,
+      payout: payout,
+      multiplier: winMultiplier,
+      ways: ways
+    });
   }
   
   return { wins, freeSpinsTriggered };
@@ -309,7 +293,7 @@ function runSimulation(numSpins) {
     const betAmount = 1;
     totalWagered += betAmount;
     
-    const reelData = createReelData();
+    const reelData = createReelData(false); // Base game - no symbol replacement
     const { wins, freeSpinsTriggered } = checkWins(reelData, false);
     
     let spinWin = 0;
@@ -318,7 +302,9 @@ function runSimulation(numSpins) {
       baseGameWins++;
       
       for (const win of wins) {
-        spinWin += win.payout * betAmount;
+        // Win payout already includes: paytable × multiplier × ways
+        // Bet is always 1.0 in simulator
+        spinWin += win.payout;
         
         // Track distribution
         const key = `${win.count}x${win.symbol}`;
@@ -341,7 +327,7 @@ function runSimulation(numSpins) {
         freeSpinsRemaining--;
         totalFreeSpinsPlayed++;
         
-        const fsReelData = createReelData();
+        const fsReelData = createReelData(true); // Free spins - with symbol replacement
         const { wins: fsWins, freeSpinsTriggered: fsRetrigger } = checkWins(fsReelData, true);
         
         let fsSpinWin = 0;
@@ -350,7 +336,9 @@ function runSimulation(numSpins) {
           freeSpinWins++;
           
           for (const win of fsWins) {
-            fsSpinWin += win.payout * betAmount;
+            // Win payout already includes: paytable × multiplier × ways
+            // Bet is always 1.0 in simulator
+            fsSpinWin += win.payout;
             
             const key = `${win.count}x${win.symbol}`;
             winDistribution[key] = (winDistribution[key] || 0) + 1;

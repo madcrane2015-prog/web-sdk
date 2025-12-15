@@ -212,38 +212,39 @@
   // ============================================================================
   // SYMBOL DISTRIBUTION - Weighted Randomization
   // ============================================================================
-  // Current configuration: 81 WAYS + TRUE WAYS LOGIC
-  // Achieved RTP: ~95.5% (Base: 26.4%, Free Spins: 69.1%)
-  // Hit Frequency: 26.4% (1 in 3.8 spins)
+  // Current configuration: 81 WAYS + TRUE WAYS LOGIC + MULTIPLIERS
+  // From YAML config v1.0
   //
   // DISTRIBUTION STRATEGY:
-  // - Empty slots (16.5%) balance hit frequency
-  // - Red tier (k,j,i) provides frequent small wins (25%+15%+15% = 55%)
-  // - Blue/Premium tiers create medium-sized wins
-  // - Scatter at 11.5% triggers free spins ~1/260 spins (5+ scatters)
+  // - Empty slots (25%) balance hit frequency
+  // - Low tier (k,j,i) provides frequent small wins (8%+7%+7% = 22%)
+  // - Mid tier (c,d,b,a) creates medium-sized wins (28% total)
+  // - Premium tier (f,e,g) rare high-value wins (15% total)
+  // - Scatter at 10% triggers free spins
   // - Wild only on middle reel (50%) for substitution
+  // - Multipliers: base game (1x/2x/3x), free spins (3x/5x/10x)
   // ============================================================================
   const SYMBOL_WEIGHTS: Record<SymbolKey, number> = {
-    // RED TIER - Low value, high frequency
-    'k': 0.25,   // Red_milkshake
-    'j': 0.15,   // Red_fries
-    'i': 0.15,   // Red_burger
+    // LOW TIER - Low value, moderate frequency
+    'k': 0.08,   // Red_milkshake
+    'j': 0.07,   // Red_fries
+    'i': 0.07,   // Red_burger
     
-    // BLUE TIER - Mid value, moderate frequency
-    'c': 0.08,   // Blue_rollers
-    'd': 0.08,   // Blue_speakers
-    'b': 0.05,   // Blue_jacket
-    'a': 0.05,   // Blue_hotrod
+    // MID TIER - Mid value, moderate frequency
+    'c': 0.07,   // Blue_rollers
+    'd': 0.07,   // Blue_speakers
+    'b': 0.07,   // Blue_jacket
+    'a': 0.07,   // Blue_hotrod
     
-    // PREMIUM TIER - High value, moderate frequency
-    'f': 0.04,   // Premium_brunette
-    'e': 0.03,   // Premium_blonde
-    'g': 0.02,   // Premium_rocker (JACKPOT symbol)
+    // PREMIUM TIER - High value, lower frequency
+    'f': 0.06,   // Premium_brunette
+    'e': 0.05,   // Premium_blonde
+    'g': 0.04,   // Premium_rocker (JACKPOT symbol)
     
     // SPECIAL SYMBOLS
-    'l': 0.115,  // Scatter (~1/260 trigger rate for 5+ scatters = 10 free spins)
+    'l': 0.10,   // Scatter (10% - triggers free spins)
     'h': 0,      // Wild - ONLY on middle reel (handled separately)
-    'emptyslot': 0.165 // Empty slots (16.5%)
+    'emptyslot': 0.25 // Empty slots (25%)
   };
 
   // Palauttaa satunnaisen symbolin tietylle kiekolle (weighted distribution)
@@ -279,7 +280,17 @@
   function createReelData(): SymbolKey[] {
     const reelData: SymbolKey[] = [];
     for (let i = 0; i < TOTAL_REELS; i++) {
-      reelData.push(randomSymbol(i)); // Välitä kiekon indeksi
+      let symbol = randomSymbol(i); // Välitä kiekon indeksi
+      
+      // SYMBOL REPLACEMENT IN FREE SPINS (YAML config v1.0)
+      // k → f, j → e, i → g
+      if (isFreeSpinMode) {
+        if (symbol === 'k') symbol = 'f';      // Milkshake → Brunette
+        else if (symbol === 'j') symbol = 'e'; // Fries → Blonde
+        else if (symbol === 'i') symbol = 'g'; // Burger → Rockabilly
+      }
+      
+      reelData.push(symbol);
     }
     return reelData;
   }
@@ -309,12 +320,29 @@
     count: number;
     payout: number;
     positions: number[]; // Voittavien kiekkojen indeksit
-    multiplier: number; // Always 1 (multipliers disabled)
+    multiplier: number; // 1x/2x/3x (base), 3x/5x/10x (free spins)
   };
   
-  // No multipliers - simple 1x payout
+  // ============================================================================
+  // MULTIPLIERS - YAML Config v1.0
+  // ============================================================================
+  // Base game: 1x (60%), 2x (30%), 3x (10%)
+  // Free spins: 3x (60%), 5x (30%), 10x (10%)
+  // ============================================================================
   function getWinMultiplier(): number {
-    return 1; // Always 1x - no multipliers
+    if (isFreeSpinMode) {
+      // Free spins: 3x/5x/10x distribution
+      const rand = Math.random();
+      if (rand < 0.60) return 3;   // 60%
+      if (rand < 0.90) return 5;   // 30%
+      return 10;                    // 10%
+    } else {
+      // Base game: 1x/2x/3x distribution
+      const rand = Math.random();
+      if (rand < 0.60) return 1;   // 60%
+      if (rand < 0.90) return 2;   // 30%
+      return 3;                     // 10%
+    }
   }
 
   // ============================================================================
@@ -323,37 +351,37 @@
   // Values represent payout multipliers PER SYMBOL for 3/4/5-of-a-kind.
   // 
   // WAYS CALCULATION:
-  // Final payout = paytable_value × bet × ways
+  // Final payout = paytable_value × bet × ways × multiplier
   // Where ways = count_reel0 × count_reel1 × count_reel2 × count_reel3 × count_reel4
+  // Multiplier = 1x/2x/3x (base game) or 3x/5x/10x (free spins)
   //
-  // Example: 4×k with 2 symbols on reel 0, 1 on reel 1, 1 wild, 1 on reel 3:
+  // Example: 4×k with 2 symbols on reel 0, 1 on reel 1, 1 wild, 1 on reel 3, 2x multiplier:
   // - Ways = 2 × 1 × 1 × 1 = 2 ways
-  // - Payout = 0.76 × 1 (bet) × 2 (ways) = 1.52
+  // - Payout = 0.60 × 1 (bet) × 2 (ways) × 2 (multiplier) = 2.40
   //
-  // Scaled by: 1.39 × 0.97 × 1.14 × 0.98 × 0.50 = 0.761 (achieves ~95.51% RTP)
-  // NO MULTIPLIERS: All wins pay at 1x (multiplier system removed)
+  // Paytable from YAML config v1.0
   // ============================================================================
   const SYMBOL_PAYTABLE: Record<SymbolKey, {3?: number, 4?: number, 5?: number}> = {
-    // RED TIER - Low value, frequent wins (×1.39×0.97×1.14×0.98×0.50)
-    k: { 3: 0.23, 4: 0.76, 5: 3.77 },    // Red_milkshake
-    j: { 3: 0.38, 4: 1.51, 5: 7.53 },    // Red_fries
-    i: { 3: 0.38, 4: 1.51, 5: 7.53 },    // Red_burger
+    // LOW TIER - From YAML config
+    k: { 3: 0.20, 4: 0.60, 5: 1.50 },    // Red_milkshake
+    j: { 3: 0.40, 4: 1.00, 5: 2.50 },    // Red_fries
+    i: { 3: 0.40, 4: 1.00, 5: 2.50 },    // Red_burger
     
-    // BLUE TIER - Mid value, moderate wins (×1.39×0.97×1.14×0.98×0.50)
-    c: { 3: 1.13, 4: 3.77, 5: 15.07 },   // Blue_rollers
-    d: { 3: 1.13, 4: 3.77, 5: 15.07 },   // Blue_speakers
-    b: { 3: 1.51, 4: 5.28, 5: 18.83 },   // Blue_jacket
-    a: { 3: 1.51, 4: 5.28, 5: 18.83 },   // Blue_hotrod
+    // MID TIER - From YAML config
+    c: { 3: 0.80, 4: 2.00, 5: 5.00 },    // Blue_rollers
+    d: { 3: 0.80, 4: 2.00, 5: 5.00 },    // Blue_speakers
+    b: { 3: 1.50, 4: 4.00, 5: 8.00 },    // Blue_jacket
+    a: { 3: 1.50, 4: 4.00, 5: 8.00 },    // Blue_hotrod
     
-    // PREMIUM TIER - High value, rare wins (×1.39×0.97×1.14×0.98×0.50)
-    f: { 3: 2.26, 4: 11.30, 5: 37.66 },  // Premium_brunette
-    e: { 3: 3.77, 4: 15.07, 5: 56.49 },  // Premium_blonde
-    g: { 3: 3.77, 4: 18.83, 5: 75.32 },  // Premium_rocker (JACKPOT!)
+    // PREMIUM TIER - From YAML config
+    f: { 3: 3.00, 4: 8.00, 5: 20.00 },   // Premium_brunette
+    e: { 3: 5.00, 4: 10.00, 5: 25.00 },  // Premium_blonde
+    g: { 3: 7.00, 4: 15.00, 5: 50.00 },  // Premium_rocker (JACKPOT)
     
-    // SPECIAL SYMBOLS - No direct payouts
-    h: {},                               // Wild (substitutes any symbol except scatter)
-    l: {},                               // Scatter (triggers free spins: 5-12 scatters = 5-12 free spins)
-    emptyslot: {}                        // Empty slot (no payout)
+    // SPECIAL SYMBOLS (no payouts)
+    h: {},  // Wild (substitutes only)
+    l: {},  // Scatter (triggers free spins only)
+    emptyslot: {}  // Empty
   };
 
   // Tarkista voitot 81-ways järjestelmällä
@@ -369,9 +397,10 @@
     }
     
     // Scatter-voitot ja free spinsit
-    // 5+ scatters = 10 free spins
+    // Variable free spins based on scatter count (YAML config v1.0)
+    // 5 scatters = 5 spins, 6 = 6, ..., 12 = 12 spins
     if (scatterPositions.length >= 5) {
-      const freeSpinsTriggered = 10; // Always 10 free spins
+      const freeSpinsTriggered = scatterPositions.length; // Variable: 5-12 free spins
       
       // Add free spins (trigger or retrigger)
       freeSpinsRemaining += freeSpinsTriggered;
@@ -513,16 +542,18 @@
     }
     
     // ============================================================================
-    // TRUE WAYS LOGIC: Count symbols per reel, multiply counts together
+    // TRUE WAYS LOGIC: Count unique positions from winning paths
     // ============================================================================
-    // Example: If reel 0 has 2 burgers, reel 1 has 1 burger, reel 2 has 1 wild,
-    //          reel 3 has 2 burgers, reel 4 has 1 burger:
-    // Ways = 2 × 1 × 1 × 2 × 1 = 4 ways
-    // Payout = paytable_value × bet × 4
+    // This is the CORRECT way to calculate ways in a ways-paying game:
+    // 1. Generate all 81 possible paths
+    // 2. Find which paths result in wins
+    // 3. Group by symbol+length
+    // 4. Count UNIQUE POSITIONS that contribute to each symbol+length
+    // 5. Multiply position counts = ways
     // ============================================================================
     const foundWinCombos: WinResult[] = [];
     
-    // Ryhmittele symbolien ja pituuksien mukaan
+    // Group by symbol + length
     const winsBySymbolAndLength = new Map<string, WinPath[]>();
     
     for (const win of filteredWins) {
@@ -533,49 +564,40 @@
       winsBySymbolAndLength.get(key)!.push(win);
     }
     
-    // No multipliers - always 1x
-    const winMultiplier = 1;
+    // Get one multiplier for the entire spin
+    const winMultiplier = filteredWins.length > 0 ? getWinMultiplier() : 1;
     
-    // Käsittele jokainen symboli+pituus yhdistelmä
+    // Process each symbol+length combination
     for (const [key, winsInGroup] of winsBySymbolAndLength.entries()) {
       const firstWin = winsInGroup[0];
       const payoutMultiplier = SYMBOL_PAYTABLE[firstWin.symbol]?.[firstWin.length as 3 | 4 | 5];
       
       if (payoutMultiplier !== undefined && payoutMultiplier > 0) {
-        // WAYS: Laske kuinka monta kyseistä symbolia on JOKAISELLA rullan
-        // Kerro määrät keskenään = ways
-        const symbolCountsPerReel = new Map<number, Set<number>>();
-        
-        console.log(`\n  DEBUG ${firstWin.length}x${firstWin.symbol}: Processing ${winsInGroup.length} wins in group`);
+        // Count unique positions per reel from all winning paths in this group
+        const positionsPerReel = new Map<number, Set<number>>();
         
         for (const win of winsInGroup) {
-          console.log(`    Path: [${win.path.join(', ')}]`);
-          for (let reelIndex = 0; reelIndex < win.length; reelIndex++) {
-            if (!symbolCountsPerReel.has(reelIndex)) {
-              symbolCountsPerReel.set(reelIndex, new Set());
+          for (let i = 0; i < win.length; i++) {
+            if (!positionsPerReel.has(i)) {
+              positionsPerReel.set(i, new Set());
             }
-            symbolCountsPerReel.get(reelIndex)!.add(win.path[reelIndex]);
+            positionsPerReel.get(i)!.add(win.path[i]);
           }
         }
         
-        // Debug: Tulosta symbolCountsPerReel
-        console.log(`    Symbol counts per reel:`);
-        for (let i = 0; i < firstWin.length; i++) {
-          const positions = Array.from(symbolCountsPerReel.get(i) || []);
-          console.log(`      Reel ${i}: ${positions.length} positions [${positions.join(', ')}]`);
-        }
-        
-        // Kerro määrät: ways = reel0_count × reel1_count × ... × reelN_count
+        // Calculate ways by multiplying position counts
         let ways = 1;
         for (let i = 0; i < firstWin.length; i++) {
-          ways *= symbolCountsPerReel.get(i)?.size || 1;
+          const s = positionsPerReel.get(i);
+          ways *= s ? s.size : 1;
         }
         
-        const totalPayout = payoutMultiplier * betAmount * winMultiplier * ways;
+        // Payout = paytable × bet × ways × multiplier
+        const totalPayout = payoutMultiplier * betAmount * ways * winMultiplier;
         
-        console.log(`  ${firstWin.length}x${firstWin.symbol}: ${ways} ways × ${payoutMultiplier}x × ${betAmount} × ${winMultiplier} = ${totalPayout}`);
+        console.log(`  ${firstWin.length}x${firstWin.symbol}: ${ways} ways × ${payoutMultiplier}x × ${betAmount} bet × ${winMultiplier} mult = ${totalPayout}`);
       
-        // Kerää KAIKKI unique positions kaikista voitoista (highlighttausta varten)
+        // Collect all unique positions for highlighting
         const allPositions = new Set<number>();
         for (const win of winsInGroup) {
           win.path.forEach(pos => allPositions.add(pos));
@@ -591,7 +613,7 @@
       }
     }
     
-    // Lisää kaikki löydetyt voitot
+    // Add all found wins
     wins.push(...foundWinCombos);
     
     return wins;
