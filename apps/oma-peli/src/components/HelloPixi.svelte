@@ -1453,33 +1453,33 @@
       <!-- Premium Symbols -->
       <div style="background: rgba(255, 255, 255, 0.1); padding: 10px; border-radius: 8px; border-left: 4px solid #ffd700;">
         <div style="font-size: 1.2em; font-weight: bold; color: #ffd700; margin-bottom: 5px;">👑 PREMIUM SYMBOLS</div>
-        <div style="margin: 5px 0;">Rockabilly: 3x=3.77 | 4x=18.83 | 5x=75.32 🎸</div>
-        <div style="margin: 5px 0;">Blonde: 3x=3.77 | 4x=15.07 | 5x=56.49 👱‍♀️</div>
-        <div style="margin: 5px 0;">Brunette: 3x=2.26 | 4x=11.30 | 5x=37.66 👩‍🦱</div>
+        <div style="margin: 5px 0;">Rockabilly: 3x=7.00 | 4x=15.00 | 5x=50.00 🎸</div>
+        <div style="margin: 5px 0;">Blonde: 3x=5.00 | 4x=10.00 | 5x=25.00 👱‍♀️</div>
+        <div style="margin: 5px 0;">Brunette: 3x=3.00 | 4x=8.00 | 5x=20.00 👩‍🦱</div>
       </div>
       
       <!-- Blue Symbols -->
       <div style="background: rgba(255, 255, 255, 0.1); padding: 10px; border-radius: 8px; border-left: 4px solid #00bfff;">
         <div style="font-size: 1.2em; font-weight: bold; color: #00bfff; margin-bottom: 5px;">💎 BLUE SYMBOLS</div>
-        <div style="margin: 5px 0;">Hot Rod: 3x=1.51 | 4x=5.28 | 5x=18.83 🚗</div>
-        <div style="margin: 5px 0;">Jacket: 3x=1.51 | 4x=5.28 | 5x=18.83 🧥</div>
-        <div style="margin: 5px 0;">Roller Skates: 3x=1.13 | 4x=3.77 | 5x=15.07 🛼</div>
-        <div style="margin: 5px 0;">Microphone: 3x=1.13 | 4x=3.77 | 5x=15.07 🎤</div>
+        <div style="margin: 5px 0;">Hot Rod: 3x=1.50 | 4x=4.00 | 5x=8.00 🚗</div>
+        <div style="margin: 5px 0;">Jacket: 3x=1.50 | 4x=4.00 | 5x=8.00 🧥</div>
+        <div style="margin: 5px 0;">Roller Skates: 3x=0.80 | 4x=2.00 | 5x=5.00 🛼</div>
+        <div style="margin: 5px 0;">Microphone: 3x=0.80 | 4x=2.00 | 5x=5.00 🎤</div>
       </div>
       
       <!-- Red Symbols -->
       <div style="background: rgba(255, 255, 255, 0.1); padding: 10px; border-radius: 8px; border-left: 4px solid #ff6666;">
         <div style="font-size: 1.2em; font-weight: bold; color: #ff6666; margin-bottom: 5px;">🎵 RED SYMBOLS</div>
-        <div style="margin: 5px 0;">Burger: 3x=0.38 | 4x=1.51 | 5x=7.53 🍔</div>
-        <div style="margin: 5px 0;">Fries: 3x=0.38 | 4x=1.51 | 5x=7.53 🍟</div>
-        <div style="margin: 5px 0;">Milkshake: 3x=0.23 | 4x=0.76 | 5x=3.77 🥤</div>
+        <div style="margin: 5px 0;">Burger: 3x=0.40 | 4x=1.00 | 5x=2.50 🍔</div>
+        <div style="margin: 5px 0;">Fries: 3x=0.40 | 4x=1.00 | 5x=2.50 🍟</div>
+        <div style="margin: 5px 0;">Milkshake: 3x=0.20 | 4x=0.60 | 5x=1.50 🥤</div>
       </div>
       
       <!-- Special Symbols -->
       <div style="background: rgba(255, 255, 255, 0.1); padding: 10px; border-radius: 8px; border-left: 4px solid #ff00ff;">
         <div style="font-size: 1.2em; font-weight: bold; color: #ff00ff; margin-bottom: 5px;">⭐ SPECIAL SYMBOLS</div>
         <div style="margin: 5px 0;">WILD 🍬 - Korvaa kaikki muut symbolit (paitsi Scatter). Vain keskikelalla (50%).</div>
-        <div style="margin: 5px 0;">SCATTER 📌 - Triggeröi 10 FREE SPINS</div>
+        <div style="margin: 5px 0;">SCATTER 📌 - Triggeröi 5-12 FREE SPINS (5-12 scatteria)</div>
       </div>
     </div>
     
