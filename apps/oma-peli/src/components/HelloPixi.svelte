@@ -163,6 +163,9 @@
     win: `${base}/sounds/win.mp3`        // Voittoääni (tulevaisuudessa)
   };
   
+  // Version number
+  const GAME_VERSION = "1.0.2"; // Update this with each deploy
+  
   // Äänien hallinta
   let soundEnabled = $state(true);              // Voi käyttäjä halutessaan mykistää
   let audioElements: Record<string, HTMLAudioElement> = {};
@@ -1522,7 +1525,17 @@
 {/if}
 
 <!-- PixiJS canvas sijoitetaan tähän div-elementtiin -->
-<div bind:this={container}></div>
+<div 
+  bind:this={container}
+  style="
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  "
+></div>
 
 <!-- Credit ja Bet näyttö (oikeassa yläkulmassa) -->
 <div style="
