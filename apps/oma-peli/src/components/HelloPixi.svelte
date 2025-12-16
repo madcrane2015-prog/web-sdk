@@ -164,7 +164,7 @@
   };
   
   // Version number
-  const GAME_VERSION = "1.0.2"; // Update this with each deploy
+  const GAME_VERSION = "1.0.3"; // Update this with each deploy
   
   // Äänien hallinta
   let soundEnabled = $state(true);              // Voi käyttäjä halutessaan mykistää
@@ -257,9 +257,9 @@
 
   // Palauttaa satunnaisen symbolin tietylle kiekolle (weighted distribution)
   function randomSymbol(reelIndex: number): SymbolKey {
-    // Reel 6 (keskikiekko) - emptyslot (50%) tai Wild (50%)
+    // Reel 6 (keskikiekko) - Wild (55%) tai emptyslot (45%)
     if (reelIndex === 6) {
-      return Math.random() < 0.50 ? 'emptyslot' : 'h';
+      return Math.random() < 0.55 ? 'h' : 'emptyslot';
     }
     
     // Reels 1,2,4,5 (outer reels) - Include Empty slots
@@ -338,24 +338,24 @@
   };
   
   // ============================================================================
-  // MULTIPLIERS - YAML Config v1.0
+  // MULTIPLIERS - YAML Config v1.7
   // ============================================================================
-  // Base game: 1x (60%), 2x (30%), 3x (10%)
-  // Free spins: 3x (60%), 5x (30%), 10x (10%)
+  // Base game: 1x (70%), 2x (22%), 3x (8%)
+  // Free spins: 3x (70%), 5x (22%), 10x (8%)
   // ============================================================================
   function getWinMultiplier(): number {
     if (isFreeSpinMode) {
       // Free spins: 3x/5x/10x distribution
       const rand = Math.random();
-      if (rand < 0.60) return 3;   // 60%
-      if (rand < 0.90) return 5;   // 30%
-      return 10;                    // 10%
+      if (rand < 0.70) return 3;   // 70%
+      if (rand < 0.92) return 5;   // 22%
+      return 10;                    // 8%
     } else {
       // Base game: 1x/2x/3x distribution
       const rand = Math.random();
-      if (rand < 0.60) return 1;   // 60%
-      if (rand < 0.90) return 2;   // 30%
-      return 3;                     // 10%
+      if (rand < 0.70) return 1;   // 70%
+      if (rand < 0.92) return 2;   // 22%
+      return 3;                     // 8%
     }
   }
 

@@ -42,28 +42,28 @@ const SYMBOL_PAYTABLE = {
   emptyslot: {}                          // Empty
 };
 
-// Multipliers from YAML config v1.0
+// Multipliers from YAML config v1.7
 function getWinMultiplier(isFreeSpinMode) {
   const rand = Math.random();
   
   if (isFreeSpinMode) {
-    // Free spins: 3x (60%), 5x (30%), 10x (10%)
-    if (rand < 0.60) return 3;
-    if (rand < 0.90) return 5;
+    // Free spins: 3x (70%), 5x (22%), 10x (8%)
+    if (rand < 0.70) return 3;
+    if (rand < 0.92) return 5;
     return 10;
   } else {
-    // Base game: 1x (60%), 2x (30%), 3x (10%)
-    if (rand < 0.60) return 1;
-    if (rand < 0.90) return 2;
+    // Base game: 1x (70%), 2x (22%), 3x (8%)
+    if (rand < 0.70) return 1;
+    if (rand < 0.92) return 2;
     return 3;
   }
 }
 
 // Generate random symbol for a reel position
 function randomSymbol(reelIndex) {
-  // Reel 6 (middle) - emptyslot (50%) or Wild (50%)
+  // Reel 6 (middle) - Wild (55%) or emptyslot (45%)
   if (reelIndex === 6) {
-    return Math.random() < 0.50 ? 'emptyslot' : 'h';
+    return Math.random() < 0.55 ? 'h' : 'emptyslot';
   }
   
   // Outer reels - Include Empty, no Wild
