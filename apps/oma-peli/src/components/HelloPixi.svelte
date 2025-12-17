@@ -164,7 +164,7 @@
   };
   
   // Version number
-  const GAME_VERSION = "1.0.4"; // Update this with each deploy
+  const GAME_VERSION = "1.0.5"; // Update this with each deploy
   
   // Äänien hallinta
   let soundEnabled = $state(true);              // Voi käyttäjä halutessaan mykistää
@@ -216,6 +216,58 @@
   let totalVisibleSymbols = $state(0); // Kaikki näkyvät symbolit yhteensä
   let totalEmptySlots = $state(0);      // Emptyslot-symbolit yhteensä
   let emptySlotPercentage = $derived(totalVisibleSymbols > 0 ? (totalEmptySlots / totalVisibleSymbols * 100).toFixed(2) : "0.00");
+  
+  // Win logging system
+  let winLog: string[] = $state([]);
+  
+  function logWin(roundNumber: number, wins: WinResult[], totalPayout: number) {
+    const timestamp = new Date().toLocaleString('fi-FI');
+    let logEntry = `\n${'='.repeat(60)}\n`;
+    logEntry += `ROUND #${roundNumber} - ${timestamp}\n`;
+    logEntry += `Mode: ${isFreeSpinMode ? 'FREE SPINS' : 'BASE GAME'}\n`;
+    logEntry += `${'='.repeat(60)}\n`;
+    
+    wins.forEach((win, index) => {
+      logEntry += `\nWin ${index + 1}:\n`;
+      logEntry += `  Symbol: ${win.symbol} (${SYMBOL_NAMES[win.symbol]})\n`;
+      logEntry += `  Count: ${win.count} symbols\n`;
+      logEntry += `  Multiplier: ${win.multiplier}x\n`;
+      logEntry += `  Payout: ${win.payout.toFixed(2)}\n`;
+      logEntry += `  Positions: [${win.positions.join(', ')}]\n`;
+    });
+    
+    logEntry += `\n${'─'.repeat(60)}\n`;
+    logEntry += `TOTAL WIN: ${totalPayout.toFixed(2)}\n`;
+    logEntry += `${'='.repeat(60)}\n`;
+    
+    winLog.push(logEntry);
+  }
+  
+  function downloadWinLog() {
+    const logContent = `SLOT GAME WIN LOG\nGenerated: ${new Date().toLocaleString('fi-FI')}\n${winLog.join('\n')}`;
+    const blob = new Blob([logContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `win-log-${Date.now()}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+  
+  function clearWinLog() {
+    winLog = [];
+  }
+  
+  // Free spins test mode
+  function triggerTestFreeSpins() {
+    if (!isFreeSpinMode) {
+      isFreeSpinMode = true;
+      freeSpinsRemaining = 10; // Give 10 test spins
+      freeSpinsTotalWon = 0;
+      freeSpinsTriggerCount++;
+      console.log('🎰 TEST MODE: Free spins activated! 10 spins granted.');
+    }
+  }
 
   // ============================================================================
   // SYMBOL DISTRIBUTION - Weighted Randomization
@@ -1162,6 +1214,9 @@
         currentWins = wins;
         totalWin = wins.reduce((sum, win) => sum + win.payout, 0);
         
+        // Log the win to file
+        logWin(totalRounds, wins, totalWin);
+        
         // Lisää voitto saldoon VAIN KERRAN
         addWinToBalance(totalWin);
         
@@ -1801,6 +1856,68 @@
   >
     Reset Stats
   </button>
+  
+  <!-- Win Log Controls -->
+  <div style="
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  ">
+    <button
+      on:click={downloadWinLog}
+      disabled={winLog.length === 0}
+      style="
+        width: 100%;
+        padding: 5px;
+        background: {winLog.length > 0 ? 'rgba(100, 255, 100, 0.3)' : 'rgba(100, 100, 100, 0.3)'};
+        color: #fff;
+        border: 1px solid {winLog.length > 0 ? '#66ff66' : '#666'};
+        border-radius: 5px;
+        cursor: {winLog.length > 0 ? 'pointer' : 'not-allowed'};
+        font-size: 11px;
+        opacity: {winLog.length > 0 ? '1' : '0.5'};
+      "
+    >
+      Download Win Log ({winLog.length})
+    </button>
+    
+    <button
+      on:click={clearWinLog}
+      disabled={winLog.length === 0}
+      style="
+        width: 100%;
+        padding: 5px;
+        background: rgba(255, 150, 100, 0.3);
+        color: #fff;
+        border: 1px solid #ff9966;
+        border-radius: 5px;
+        cursor: {winLog.length > 0 ? 'pointer' : 'not-allowed'};
+        font-size: 11px;
+        opacity: {winLog.length > 0 ? '1' : '0.5'};
+      "
+    >
+      Clear Win Log
+    </button>
+    
+    <button
+      on:click={triggerTestFreeSpins}
+      disabled={isFreeSpinMode}
+      style="
+        width: 100%;
+        padding: 5px;
+        background: {isFreeSpinMode ? 'rgba(100, 100, 100, 0.3)' : 'rgba(100, 150, 255, 0.3)'};
+        color: #fff;
+        border: 1px solid {isFreeSpinMode ? '#666' : '#66aaff'};
+        border-radius: 5px;
+        cursor: {isFreeSpinMode ? 'not-allowed' : 'pointer'};
+        font-size: 11px;
+        opacity: {isFreeSpinMode ? '0.5' : '1'};
+      "
+    >
+      🎰 Test Free Spins
+    </button>
+  </div>
 </div>
 
 <!-- Autoplay nappi ja menu (oikeassa alakulmassa) -->
