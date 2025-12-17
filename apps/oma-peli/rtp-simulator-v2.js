@@ -9,8 +9,8 @@
  * - Symbol replacement in free spins: k→f, j→e, i→g
  */
 
-// Symbol weights - YAML CONFIG V1.0
-const SYMBOL_WEIGHTS = {
+// Symbol weights - YAML CONFIG V1.0 - BASE GAME
+const SYMBOL_WEIGHTS_BASE = {
   k: 0.08,          // Milkshake (8%)
   j: 0.07,          // Fries (7%)
   i: 0.07,          // Burger (7%)
@@ -21,6 +21,22 @@ const SYMBOL_WEIGHTS = {
   f: 0.06,          // Brunette (6%)
   e: 0.05,          // Blonde (5%)
   g: 0.04,          // Rockabilly (4%) - JACKPOT
+  l: 0.10,          // Scatter (10%) - Free spins trigger
+  emptyslot: 0.25   // Empty (25%) - RTP balancer
+};
+
+// Symbol weights - FREE SPINS (k/j/i removed, f/e/g increased)
+const SYMBOL_WEIGHTS_FS = {
+  k: 0,             // Milkshake - REMOVED in free spins
+  j: 0,             // Fries - REMOVED in free spins
+  i: 0,             // Burger - REMOVED in free spins
+  c: 0.07,          // Roller Skates (7%)
+  d: 0.07,          // Microphone (7%)
+  b: 0.07,          // Jacket (7%)
+  a: 0.07,          // Hot Rod (7%)
+  f: 0.14,          // Brunette (6% + 8% from k = 14%)
+  e: 0.12,          // Blonde (5% + 7% from j = 12%)
+  g: 0.11,          // Rockabilly (4% + 7% from i = 11%)
   l: 0.10,          // Scatter (10%) - Free spins trigger
   emptyslot: 0.25   // Empty (25%) - RTP balancer
 };
@@ -60,11 +76,14 @@ function getWinMultiplier(isFreeSpinMode) {
 }
 
 // Generate random symbol for a reel position
-function randomSymbol(reelIndex) {
+function randomSymbol(reelIndex, isFreeSpinMode = false) {
   // Reel 6 (middle) - Wild (55%) or emptyslot (45%)
   if (reelIndex === 6) {
     return Math.random() < 0.55 ? 'h' : 'emptyslot';
   }
+  
+  // Select appropriate weight table
+  const SYMBOL_WEIGHTS = isFreeSpinMode ? SYMBOL_WEIGHTS_FS : SYMBOL_WEIGHTS_BASE;
   
   // Outer reels - Include Empty, no Wild
   const availableSymbols = Object.keys(SYMBOL_WEIGHTS).filter(s => s !== 'h');
@@ -76,23 +95,16 @@ function randomSymbol(reelIndex) {
     cumulative += SYMBOL_WEIGHTS[symbol] / totalWeight;
     if (rand < cumulative) return symbol;
   }
-  return 'k';
+  return 'f'; // Fallback to brunette in free spins, milkshake in base
 }
 
 // Create reel data (13 positions)
 function createReelData(isFreeSpinMode = false) {
   const reelData = [];
   for (let i = 0; i < 13; i++) {
-    let symbol = randomSymbol(i);
-    
-    // SYMBOL REPLACEMENT IN FREE SPINS (YAML config v1.0)
-    // k → f, j → e, i → g
-    if (isFreeSpinMode) {
-      if (symbol === 'k') symbol = 'f';      // Milkshake → Brunette
-      else if (symbol === 'j') symbol = 'e'; // Fries → Blonde
-      else if (symbol === 'i') symbol = 'g'; // Burger → Rockabilly
-    }
-    
+    // randomSymbol() now uses correct weights based on isFreeSpinMode
+    // In free spins: k/j/i have 0 weight, f/e/g have increased weights
+    const symbol = randomSymbol(i, isFreeSpinMode);
     reelData.push(symbol);
   }
   return reelData;

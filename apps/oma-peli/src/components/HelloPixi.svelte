@@ -164,7 +164,7 @@
   };
   
   // Version number
-  const GAME_VERSION = "1.0.6"; // Update this with each deploy
+  const GAME_VERSION = "1.0.7"; // Update this with each deploy
   
   // Äänien hallinta
   let soundEnabled = $state(true);              // Voi käyttäjä halutessaan mykistää
@@ -284,7 +284,7 @@
   // - Wild only on middle reel (50%) for substitution
   // - Multipliers: base game (1x/2x/3x), free spins (3x/5x/10x)
   // ============================================================================
-  const SYMBOL_WEIGHTS: Record<SymbolKey, number> = {
+  const SYMBOL_WEIGHTS_BASE: Record<SymbolKey, number> = {
     // LOW TIER - Low value, moderate frequency
     'k': 0.08,   // Red_milkshake
     'j': 0.07,   // Red_fries
@@ -307,12 +307,42 @@
     'emptyslot': 0.25 // Empty slots (25%)
   };
 
+  // FREE SPINS WEIGHTS - Symbol replacements applied:
+  // k → f (milkshake → brunette)
+  // j → e (fries → blonde)
+  // i → g (burger → rockabilly)
+  const SYMBOL_WEIGHTS_FS: Record<SymbolKey, number> = {
+    // LOW TIER - Replaced in free spins
+    'k': 0,      // Milkshake - REMOVED in free spins
+    'j': 0,      // Fries - REMOVED in free spins
+    'i': 0,      // Burger - REMOVED in free spins
+    
+    // MID TIER - Mid value, moderate frequency
+    'c': 0.07,   // Blue_rollers
+    'd': 0.07,   // Blue_speakers
+    'b': 0.07,   // Blue_jacket
+    'a': 0.07,   // Blue_hotrod
+    
+    // PREMIUM TIER - Increased frequency in free spins (gets k+j+i weights)
+    'f': 0.14,   // Premium_brunette (0.06 + 0.08 from k)
+    'e': 0.12,   // Premium_blonde (0.05 + 0.07 from j)
+    'g': 0.11,   // Premium_rocker (0.04 + 0.07 from i)
+    
+    // SPECIAL SYMBOLS
+    'l': 0.10,   // Scatter (10% - triggers free spins)
+    'h': 0,      // Wild - ONLY on middle reel (handled separately)
+    'emptyslot': 0.25 // Empty slots (25%)
+  };
+
   // Palauttaa satunnaisen symbolin tietylle kiekolle (weighted distribution)
   function randomSymbol(reelIndex: number): SymbolKey {
     // Reel 6 (keskikiekko) - Wild (55%) tai emptyslot (45%)
     if (reelIndex === 6) {
       return Math.random() < 0.55 ? 'h' : 'emptyslot';
     }
+    
+    // Select appropriate weight table
+    const SYMBOL_WEIGHTS = isFreeSpinMode ? SYMBOL_WEIGHTS_FS : SYMBOL_WEIGHTS_BASE;
     
     // Reels 1,2,4,5 (outer reels) - Include Empty slots
     const rand = Math.random();
@@ -333,22 +363,16 @@
     }
     
     // Fallback
-    return 'k';
+    return 'f';
   }
 
   // Luo 13 erillistä kiekkoa (jokaiselle ruudulle oma kiekko)
   function createReelData(): SymbolKey[] {
     const reelData: SymbolKey[] = [];
     for (let i = 0; i < TOTAL_REELS; i++) {
-      let symbol = randomSymbol(i); // Välitä kiekon indeksi
-      
-      // SYMBOL REPLACEMENT IN FREE SPINS (YAML config v1.0)
-      // k → f, j → e, i → g
-      if (isFreeSpinMode) {
-        if (symbol === 'k') symbol = 'f';      // Milkshake → Brunette
-        else if (symbol === 'j') symbol = 'e'; // Fries → Blonde
-        else if (symbol === 'i') symbol = 'g'; // Burger → Rockabilly
-      }
+      // randomSymbol() now uses correct weights based on isFreeSpinMode
+      // In free spins: k/j/i have 0 weight, f/e/g have increased weights
+      const symbol = randomSymbol(i);
       
       reelData.push(symbol);
       
