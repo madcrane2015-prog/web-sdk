@@ -164,7 +164,7 @@
   };
   
   // Version number
-  const GAME_VERSION = "1.0.5"; // Update this with each deploy
+  const GAME_VERSION = "1.0.6"; // Update this with each deploy
   
   // Äänien hallinta
   let soundEnabled = $state(true);              // Voi käyttäjä halutessaan mykistää
@@ -551,17 +551,31 @@
       // Jos kaikki symbolit ovat wildeja, emptyslotteja tai scattereita, ohita
       if (!winSymbol) continue;
       
-      // Laske kuinka monta peräkkäistä symbolia (winSymbol tai wild) vasemmalta
+      // Laske kuinka monta peräkkäistä KIEKKOA (column) sisältää symbolin
+      // CRITICAL: For a 4-symbol win, the symbol must appear on columns 0,1,2,3
+      // If column 3 has no matching symbol, the win stops at column 2 (= 3 symbols)
       let matchLength = 0;
       
-      for (let i = 0; i < symbols.length; i++) {
+      // Track which columns have this symbol on this path
+      const columnsWithSymbol = new Set<number>();
+      
+      for (let i = 0; i < path.length; i++) {
+        const position = path[i];
+        const { col } = getReelPosition(position);
         const currentSymbol = symbols[i];
         
-        // Hyväksy vain winSymbol tai wild (h)
+        // Check if this position has the winning symbol or wild
         if (currentSymbol === winSymbol || currentSymbol === 'h') {
+          columnsWithSymbol.add(col);
+        }
+      }
+      
+      // Now check how many consecutive columns from the left have the symbol
+      for (let col = 0; col < 5; col++) {
+        if (columnsWithSymbol.has(col)) {
           matchLength++;
         } else {
-          break; // Katko heti kun tulee jotain muuta
+          break; // Stop as soon as we hit a column without the symbol
         }
       }
       

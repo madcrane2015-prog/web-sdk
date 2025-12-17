@@ -181,11 +181,25 @@ function checkWins(reelData, isFreeSpinMode) {
     }
     if (!winSymbol) continue;
     
-    // Count consecutive matches
-    let matchLength = 0;
-    for (let i = 0; i < symbols.length; i++) {
+    // Count how many consecutive COLUMNS (from left) contain the symbol
+    // CRITICAL: For a 4-symbol win, symbol must appear on columns 0,1,2,3
+    // If column 3 has no symbol, win stops at column 2 (= 3 symbols)
+    const columnsWithSymbol = new Set();
+    
+    for (let i = 0; i < path.length; i++) {
+      const position = path[i];
+      const { col } = getReelPosition(position);
       const s = symbols[i];
+      
       if (s === winSymbol || s === 'h') {
+        columnsWithSymbol.add(col);
+      }
+    }
+    
+    // Check how many consecutive columns from left have the symbol
+    let matchLength = 0;
+    for (let col = 0; col < 5; col++) {
+      if (columnsWithSymbol.has(col)) {
         matchLength++;
       } else {
         break;
