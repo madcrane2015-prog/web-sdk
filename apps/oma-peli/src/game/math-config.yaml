@@ -1,0 +1,216 @@
+# =====================================================================
+# ROCKABILLY REELS - MATH CONFIG
+# Versio: 1.0
+# =====================================================================
+
+game:
+  id: "rockabilly_reels"
+  name: "Rockabilly Reels"
+
+  layout:
+    reels: 5
+    grid: [3, 3, 1, 3, 3]
+    total_stops: 13
+    ways: 81
+
+  bet:
+    base_bet: 1.0
+
+# =====================================================================
+# SYMBOLIT
+# =====================================================================
+symbols:
+  - id: "k"
+    name: "Milkshake"
+    category: "low"
+    type: "normal"
+
+  - id: "j"
+    name: "Fries"
+    category: "low"
+    type: "normal"
+
+  - id: "i"
+    name: "Burger"
+    category: "low"
+    type: "normal"
+
+  - id: "c"
+    name: "Roller Skates"
+    category: "mid"
+    type: "normal"
+
+  - id: "d"
+    name: "Microphone"
+    category: "mid"
+    type: "normal"
+
+  - id: "b"
+    name: "Jacket"
+    category: "mid"
+    type: "normal"
+
+  - id: "a"
+    name: "Hot Rod"
+    category: "mid"
+    type: "normal"
+
+  - id: "f"
+    name: "Brunette"
+    category: "premium"
+    type: "normal"
+
+  - id: "e"
+    name: "Blonde"
+    category: "premium"
+    type: "normal"
+
+  - id: "g"
+    name: "Rockabilly"
+    category: "premium"
+    type: "normal"
+
+  - id: "h"
+    name: "Wild"
+    category: "special"
+    type: "wild"
+
+  - id: "l"
+    name: "Scatter"
+    category: "special"
+    type: "scatter"
+
+  - id: "emptyslot"
+    name: "Empty"
+    category: "special"
+    type: "empty"
+
+# =====================================================================
+# BASE GAME
+# =====================================================================
+base_game:
+  symbol_weights_outer_reels:
+    k: 0.25
+    j: 0.15
+    i: 0.15
+    c: 0.08
+    d: 0.08
+    b: 0.05
+    a: 0.05
+    f: 0.04
+    e: 0.03
+    g: 0.02
+    l: 0.115
+    h: 0.0
+    emptyslot: 0.165
+
+  center_reel:
+    wild_probability: 0.50
+    empty_probability: 0.50
+
+  paytable:
+    k:
+      "3": 0.23
+      "4": 0.76
+      "5": 3.77
+    j:
+      "3": 0.38
+      "4": 1.51
+      "5": 7.53
+    i:
+      "3": 0.38
+      "4": 1.51
+      "5": 7.53
+    c:
+      "3": 1.13
+      "4": 3.77
+      "5": 15.07
+    d:
+      "3": 1.13
+      "4": 3.77
+      "5": 15.07
+    b:
+      "3": 1.51
+      "4": 5.28
+      "5": 18.83
+    a:
+      "3": 1.51
+      "4": 5.28
+      "5": 18.83
+    f:
+      "3": 2.26
+      "4": 11.30
+      "5": 37.66
+    e:
+      "3": 3.77
+      "4": 15.07
+      "5": 56.49
+    g:
+      "3": 3.77
+      "4": 18.83
+      "5": 75.32
+    h: {}
+    l: {}
+    emptyslot: {}
+
+  ways:
+    enabled: true
+    min_symbols: 3
+    max_symbols: 5
+    wild_symbol: "h"
+    scatter_symbol: "l"
+    true_ways_mode: true
+
+# =====================================================================
+# FREE SPINS
+# =====================================================================
+free_spins:
+  enabled: true
+  trigger_symbol: "l"
+  min_scatter_count: 5
+
+  scatter_fs_awards:
+    "5": 5
+    "6": 6
+    "7": 7
+    "8": 8
+    "9": 9
+    "10": 10
+    "11": 11
+    "12": 12
+
+  use_fs_symbol_weights: false
+  fs_outer_reels_weights: {}
+  fs_center_reel:
+    wild_probability: 0.50
+    empty_probability: 0.50
+
+  fs_symbol_replacements:
+    enabled: true
+    replacement_map:
+      k: "g"
+      i: "f"
+
+# =====================================================================
+# MULTIPLIERS
+# =====================================================================
+multipliers:
+  enabled: false
+  base_game:
+    distribution: {}
+  free_spins:
+    distribution: {}
+
+# =====================================================================
+# SIMULATION DEFAULTS
+# =====================================================================
+simulation:
+  default_spins: 1000000
+  rng_seed: null
+
+  debug:
+    log_big_wins_over_x: 50.0
+    track_max_win: true
+    track_hit_frequency: true
+    track_fs_frequency: true
+    track_symbol_win_stats: true

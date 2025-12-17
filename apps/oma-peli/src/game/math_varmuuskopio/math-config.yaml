@@ -1,0 +1,376 @@
+# =====================================================================
+# ROCKABILLY REELS - MATH CONFIG
+# Versio: 1.0
+#
+# Tämä tiedosto on tarkoitettu PELIMATEMATIIKAN konfigurointiin.
+# - Muuta vain numeroarvoja (prosentteja, kertoimia, FS-määriä jne.)
+# - Rakenne pyritään pitämään vakiona, jotta simulaattori voi lukea sen.
+# =====================================================================
+
+game:
+  id: "rockabilly_reels"
+  name: "Rockabilly Reels"
+
+  layout:
+    reels: 5                # Näytettävät kelat
+    grid: [3, 3, 1, 3, 3]   # Sarakekohtaiset rivimäärät (3×3×1×3×3)
+    total_stops: 13         # Yhteensä 13 "virtuaalikelaa" (joka ruutu = yksi stoppikohta)
+    ways: 81                # 3×3×1×3×3 = 81 ways (kaikki kombot vasemmalta oikealle)
+
+  bet:
+    base_bet: 1.0           # Simulaatiossa käytettävä oletusbet (1.0 helpoin RTP-laskuun)
+
+# =====================================================================
+# SYMBOLIT
+# =====================================================================
+# Lista kaikista symboleista. Näitä koodeja käytetään:
+#  - SYMBOL_WEIGHTS
+#  - PAYTABLE
+#  - free spin -triggeri & korvaukset
+# =====================================================================
+
+symbols:
+  # LOW (RED) SYMBOLS
+  - id: "k"
+    name: "Milkshake"
+    category: "low"
+    type: "normal"
+
+  - id: "j"
+    name: "Fries"
+    category: "low"
+    type: "normal"
+
+  - id: "i"
+    name: "Burger"
+    category: "low"
+    type: "normal"
+
+  # MID (BLUE) SYMBOLS
+  - id: "c"
+    name: "Roller Skates"
+    category: "mid"
+    type: "normal"
+
+  - id: "d"
+    name: "Microphone"
+    category: "mid"
+    type: "normal"
+
+  - id: "b"
+    name: "Jacket"
+    category: "mid"
+    type: "normal"
+
+  - id: "a"
+    name: "Hot Rod"
+    category: "mid"
+    type: "normal"
+
+  # PREMIUM SYMBOLS
+  - id: "f"
+    name: "Brunette"
+    category: "premium"
+    type: "normal"
+
+  - id: "e"
+    name: "Blonde"
+    category: "premium"
+    type: "normal"
+
+  - id: "g"
+    name: "Rockabilly"
+    category: "premium"
+    type: "normal"      # käytännössä "jackpot" symboli
+
+  # SPECIAL
+  - id: "h"
+    name: "Wild"
+    category: "special"
+    type: "wild"
+
+  - id: "l"
+    name: "Scatter"
+    category: "special"
+    type: "scatter"
+
+  - id: "emptyslot"
+    name: "Empty"
+    category: "special"
+    type: "empty"
+
+# =====================================================================
+# BASE GAME - MATEMATIIKKA
+# =====================================================================
+base_game:
+
+  # ---------------------------------------------------------------
+  # SYMBOLIWEIGHTIT
+  # ---------------------------------------------------------------
+  # Nämä vastaavat HelloPixi-tiedoston SYMBOL_WEIGHTS -objektia.
+  #
+  # HUOM:
+  #  - Käytetään ulommilla "13-reels" stoppipaikoilla.
+  #  - Keskikela (indeksi 6) on ERIKOISTAPAUS:
+  #      50% emptyslot, 50% wild, ei käytä näitä weightsejä.
+  #
+  # Simulaattorissa logiikka:
+  #  - Kun arvotaan symboli mihin tahansa muuhun stoppikohtaan kuin keskelle:
+  #      * arvotaan yksi symboleista näillä suhteellisilla painoilla
+  #      * 'h' (wild) jätetään pois arvonnasta (baseSsa), kuten pelissä
+  # ---------------------------------------------------------------
+  symbol_weights_outer_reels:
+    # LOW (RED)
+    k: 0.25      # Milkshake (low)
+    j: 0.15      # Fries (low)
+    i: 0.15      # Burger (low)
+
+    # MID (BLUE)
+    c: 0.08      # Roller Skates (mid)
+    d: 0.08      # Microphone (mid)
+    b: 0.05      # Jacket (mid)
+    a: 0.05      # Hot Rod (mid)
+
+    # PREMIUM
+    f: 0.04      # Brunette (premium)
+    e: 0.03      # Blonde (premium)
+    g: 0.02      # Rockabilly (premium)
+
+    # SPECIAL (BASE GAME)
+    l: 0.115     # Scatter (special)
+    h: 0.0       # Wild (ei arvota ulkoreelsille base gamessa)
+    emptyslot: 0.165  # Empty (special)
+
+  # Keskikela: ei käytä yllä olevia weightsejä, vaan puhdas 50/50
+  center_reel:
+    wild_probability: 0.50      # h = Wild
+    empty_probability: 0.50     # emptyslot
+    # HUOM: keskikela EI koskaan ole Scatter / normisymboli base gamessa
+
+  # ---------------------------------------------------------------
+  # PAYTABLE (3 / 4 / 5 of a kind)
+  # ---------------------------------------------------------------
+  # Kaikki arvot ovat KERTOIMIA betille per ways-kombinaatio.
+  # Lopullinen voitto = paytable * bet * ways_count
+  #
+  # Esimerkki:
+  #  - 4x burger (i), paytable[4] = 1.51
+  #  - ways_count = 3
+  #  - bet = 1.0
+  #  -> payout = 1.51 * 1.0 * 3 = 4.53
+  #
+  # Symbolien nimet ja kategoriat kommentteina vieressä.
+  # ---------------------------------------------------------------
+  paytable:
+    # -----------------------------------------------------------
+    # LOW (RED) SYMBOLS
+    # -----------------------------------------------------------
+    k:   # Milkshake (LOW)
+      "3": 0.23
+      "4": 0.76
+      "5": 3.77
+
+    j:   # Fries (LOW)
+      "3": 0.38
+      "4": 1.51
+      "5": 7.53
+
+    i:   # Burger (LOW)
+      "3": 0.38
+      "4": 1.51
+      "5": 7.53
+
+    # -----------------------------------------------------------
+    # MID (BLUE) SYMBOLS
+    # -----------------------------------------------------------
+    c:   # Roller Skates (MID)
+      "3": 1.13
+      "4": 3.77
+      "5": 15.07
+
+    d:   # Microphone (MID)
+      "3": 1.13
+      "4": 3.77
+      "5": 15.07
+
+    b:   # Jacket (MID)
+      "3": 1.51
+      "4": 5.28
+      "5": 18.83
+
+    a:   # Hot Rod (MID)
+      "3": 1.51
+      "4": 5.28
+      "5": 18.83
+
+    # -----------------------------------------------------------
+    # PREMIUM SYMBOLS
+    # -----------------------------------------------------------
+    f:   # Brunette (PREMIUM)
+      "3": 2.26
+      "4": 11.30
+      "5": 37.66
+
+    e:   # Blonde (PREMIUM)
+      "3": 3.77
+      "4": 15.07
+      "5": 56.49
+
+    g:   # Rockabilly (PREMIUM / JACKPOT)
+      "3": 3.77
+      "4": 18.83
+      "5": 75.32
+
+    # -----------------------------------------------------------
+    # SPECIAL SYMBOLS (EI SUORIA MAKSUJA)
+    # -----------------------------------------------------------
+    h: {}        # Wild (korvaa, ei maksa itse)
+    l: {}        # Scatter (laukaisee vapaapelit, ei maksa)
+    emptyslot: {} # "Tyhjä" paikka, ei koskaan maksa
+
+  # ---------------------------------------------------------------
+  # WAYS-PAYING LOGIC
+  # ---------------------------------------------------------------
+  # Tämä kertoo simulaattorille, että kyseessä on "true ways" -peli:
+  #
+  # 1) Voitto lasketaan vasemmalta oikealle alkaen ensimmäisestä
+  #    ei-tyhjästä, ei-scatterista symbolista (wild kelpaa joka kelalla).
+  # 2) Lasketaan per kela, montako VOITTOSYMBOLIA (tai wildia) kelalla on.
+  # 3) ways = count(reel0) * count(reel1) * ... * count(reelN-1)
+  # 4) payout = paytable[symbol][length] * bet * ways
+  #
+  # HUOM: length = peräkkäisten kelojen määrä, joissa on joko symboli tai wild.
+  # ---------------------------------------------------------------
+  ways:
+    enabled: true
+    min_symbols: 3           # vähintään 3 kelan matka tarvitaan
+    max_symbols: 5           # max 5 (täysi matka 5 kelan yli)
+
+    wild_symbol: "h"         # wild voi korvata minkä tahansa muun kuin scatterin
+    scatter_symbol: "l"      # scatter ei osallistu ways-voittoon
+
+    # Jos true -> ways-logiikka vastaa suoraan HelloPixissä olevaa:
+    #  - lasketaan kaikki mahdolliset polut
+    #  - ryhmitellään symboli+length
+    #  - ways = uniikkien positiokombinaatioiden määrä per kela
+    true_ways_mode: true
+
+# =====================================================================
+# FREE SPINS - MATEMATIIKKA
+# =====================================================================
+free_spins:
+  enabled: true
+
+  # ---------------------------------------------------------------
+  # SCATTER-TRIGGERI
+  # ---------------------------------------------------------------
+  trigger_symbol: "l"          # Scatter-symboli
+  min_scatter_count: 5         # Tätä vähemmän = ei vapaapelejä
+
+  # Jokaiselle scatter-määrälle oma FS-määrä:
+  #  5 scatters  => 5 FS
+  #  6 scatters  => 6 FS
+  #  ...
+  #  12 scatters => 12 FS
+  scatter_fs_awards:
+    "5":  5   # 5 scatters = 5 free spins
+    "6":  6   # 6 scatters = 6 free spins
+    "7":  7   # 7 scatters = 7 free spins
+    "8":  8   # 8 scatters = 8 free spins
+    "9":  9   # 9 scatters = 9 free spins
+    "10": 10  # 10 scatters = 10 free spins
+    "11": 11  # 11 scatters = 11 free spins
+    "12": 12  # 12 scatters = 12 free spins
+
+  # Jos scattereita enemmän kuin suurin avain (esim. 13),
+  # logiikka koodissa voi:
+  #  - käyttää viimeistä arvoa ("12"), tai
+  #  - antaa 0, jos haluat rajoittaa.
+
+  # ---------------------------------------------------------------
+  # SYMBOLIWEIGHTIT VAPAAPELEISSÄ
+  # ---------------------------------------------------------------
+  # Jos use_fs_symbol_weights = false:
+  #   - käytetään samoja symboleiden painoja kuin base gamessa.
+  #
+  # Jos true:
+  #   - outer-reels käyttää fs_outer_reels_weights
+  #   - center-reel käyttää fs_center_reel asetuksia
+  # ---------------------------------------------------------------
+  use_fs_symbol_weights: false
+
+  # Käytössä vain jos use_fs_symbol_weights: true
+  fs_outer_reels_weights: { }   # tyhjä = sama kuin base_game.symbol_weights_outer_reels
+
+  fs_center_reel:
+    wild_probability: 0.50      # Sama kuin base gamessa (voit muuttaa)
+    empty_probability: 0.50
+
+  # ---------------------------------------------------------------
+  # SYMBOLI-KORVAUKSET VAPAAPELEISSÄ
+  # ---------------------------------------------------------------
+  # fs_symbol_replacements.enabled = true:
+  #   - Kun ruudulle arvotaan symboli S (base + mahdollinen FS-weight),
+  #   - ENNEN voitonlaskentaa tarkistetaan "replacement_map":
+  #       jos S on avain, se korvataan arvolla.
+  #
+  # Esimerkki:
+  #   - k (Milkshake) → g (Rockabilly)
+  #   - i (Burger)    → f (Brunette)
+  # ---------------------------------------------------------------
+  fs_symbol_replacements:
+    enabled: true
+
+    # vasen = alkuperäinen symboli
+    # oikea = mikä symboli tulee tilalle vapaapeleissä
+    replacement_map:
+      k: "g"     # Milkshake (LOW)  → Rockabilly (PREMIUM)
+      i: "f"     # Burger   (LOW)  → Brunette   (PREMIUM)
+
+    # Voit halutessa lisätä:
+    # j: "e"     # Fries   (LOW)   → Blonde     (PREMIUM)
+    # b: "g"     # Jacket  (MID)   → Rockabilly (PREMIUM)
+    # c: "f"     # Rollers (MID)   → Brunette   (PREMIUM)
+
+# =====================================================================
+# MULTIPLIERS (TÄSSÄ PELISSÄ POIS PÄÄLTÄ)
+# =====================================================================
+# HelloPixi-versiossa multipliereita ei lopullisesti käytetä:
+#   - getWinMultiplier() palauttaa aina 1
+# Tämä blokki on mukana, jotta simulaattori tukee myös tulevia versioita.
+# =====================================================================
+multipliers:
+  enabled: false
+
+  base_game:
+    # Esimerkki jos joskus haluat käyttää:
+    # distribution:
+    #   "1": 0.75
+    #   "2": 0.15
+    #   "3": 0.10
+    distribution: { }
+
+  free_spins:
+    # Esimerkki:
+    # distribution:
+    #   "2": 0.5
+    #   "3": 0.3
+    #   "5": 0.2
+    distribution: { }
+
+# =====================================================================
+# SIMULAATTORIN OLETUSASETUKSET
+# =====================================================================
+# Näitä voi käyttää puhtaasti simulaatiotyökalussa, ei pelissä.
+# =====================================================================
+simulation:
+  default_spins: 1000000     # esim. 1M spinniä RTP-arvioon
+  rng_seed: null             # voit asettaa esim. 1234 jos haluat toistettavuuden
+
+  # Debug-liput simulaattoria varten
+  debug:
+    log_big_wins_over_x: 50.0   # loggaa yksittäiset voitot > 50x
+    track_max_win: true
+    track_hit_frequency: true
+    track_fs_frequency: true
+    track_symbol_win_stats: true

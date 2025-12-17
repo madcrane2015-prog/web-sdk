@@ -1,0 +1,67 @@
+{
+  "meta": {
+    "generatedAt": "2025-12-13T23:03:10.788Z",
+    "configPath": "C:\\Users\\henrik\\dev\\web-sdk\\apps\\oma-peli\\src\\tools\\math-config.cjs",
+    "spinsPaid": 200000,
+    "bet": 1,
+    "note": "RTP is calculated as total won (paid + free spins) divided by total wagered on paid spins."
+  },
+  "results": {
+    "rtp": 1.2451839500003699,
+    "baseRtp": 0.9427096500002368,
+    "freeSpinsRtp": 0.30247429999999886,
+    "hitRatePaid": 0.264095,
+    "freeSpinsTriggerRatePaid": 0.00388,
+    "freeSpins": {
+      "triggeredOnPaidSpins": 776,
+      "totalFreeSpinsPlayed": 4064
+    },
+    "volatility": {
+      "meanX": 0.9427096500002368,
+      "stddevX": 3.677198602911054,
+      "p50X": 0,
+      "p90X": 1.8900000000000001,
+      "p95X": 4.760000000000001,
+      "p99X": 18.580000000000002,
+      "maxX": 2056.2599999999998
+    }
+  },
+  "volatilityExplanation": {
+    "unit": "X = win / base bet per paid spin",
+    "howToRead": [
+      "Volatiliteetti kuvaa voittojen epätasaisuutta ajan yli. Kaksi peliä voi olla samalla RTP:llä, mutta toinen maksaa usein pieniä ja toinen harvoin isoja.",
+      "Käytännössä stddevX kertoo 'kuinka piikikäs' jakauma on. Percentile-arvot (p50/p90/p95/p99) kertovat, miten isoihin voittoihin päädytään harvoin."
+    ],
+    "fields": {
+      "meanX": "Keskiarvoinen palautus per maksettu spinni. Lähellä RTP:tä, mutta ei yksin kuvaa volatiliteettia.",
+      "stddevX": "Standardipoikkeama per maksettu spinni. Suurin yksittäinen volatiliteettimittari: suurempi = isompia heilahteluja.",
+      "p50X": "Mediaani. 50% spinnauksista maksaa tämän tai vähemmän. Jos p50=0, yli puolet spinnauksista on häviöitä.",
+      "p90X": "90-persentiili. 90% spinnauksista maksaa tämän tai vähemmän.",
+      "p95X": "95-persentiili. Vain 1/20 spinnistä ylittää tämän arvon.",
+      "p99X": "99-persentiili. Vain 1/100 spinnistä ylittää tämän arvon.",
+      "maxX": "Suurin simulaatiossa nähty voitto. Ei ole teoreettinen maksimi."
+    },
+    "typicalRanges": {
+      "low": "stddev < 4",
+      "medium": "stddev 4–8",
+      "high": "stddev 8–15",
+      "very_high": "stddev > 15"
+    }
+  },
+  "humanSummary": [
+    "Tämän konfiguraation arvioitu RTP on 124.52% (base 94.27% + free spins 30.25%). Osumataajuus (paid spins) on 26.41% ja free spins -triggeri noin 1 / 258 maksettua spinniä. Volatiliteetti on matala (stddev 3.68x).",
+    "Mediaani (p50) on 0.00x, eli yli puolet spinnauksista on häviöitä. p95 on 4.76x (vain 1/20 spinnistä ylittää tämän), p99 on 18.58x (vain 1/100 ylittää tämän), ja simulaatiossa nähty maksimi oli 2056.26x. Kun stddev nousee ja p95/p99 kasvavat, peli tuntuu “räjähtävämmältä” (harvemmin, mutta isompia osumia)."
+  ],
+  "tuning": {
+    "targets": {
+      "stddev_min": 8,
+      "stddev_max": 12,
+      "p95_target": 20,
+      "p95_tolerance": 5
+    },
+    "advice": [
+      "Stddev 3.68x on alle target-minimin (8.00x). Lisää volatiliteettia tyypillisesti lisäämällä FS-spikeä (replacements/FS-weights) tai kasvattamalla premium-payoutteja hieman.",
+      "p95 4.76x on alle tavoitealueen (15.00x..25.00x). Nosta p95:ttä tyypillisesti vähentämällä emptyslotin osuutta hiukan tai nostamalla mid/premium symbolien painoja pienesti."
+    ]
+  }
+}

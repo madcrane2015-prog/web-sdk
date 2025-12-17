@@ -164,7 +164,7 @@
   };
   
   // Version number
-  const GAME_VERSION = "1.0.3"; // Update this with each deploy
+  const GAME_VERSION = "1.0.4"; // Update this with each deploy
   
   // Äänien hallinta
   let soundEnabled = $state(true);              // Voi käyttäjä halutessaan mykistää
@@ -558,19 +558,34 @@
     // ============================================================================
     // TRUE WAYS LOGIC: Count unique positions from winning paths
     // ============================================================================
-    // This is the CORRECT way to calculate ways in a ways-paying game:
-    // 1. Generate all 81 possible paths
-    // 2. Find which paths result in wins
-    // 3. Group by symbol+length
-    // 4. Count UNIQUE POSITIONS that contribute to each symbol+length
-    // 5. Multiply position counts = ways
+    // IMPORTANT: Only pay the LONGEST combination for each symbol
+    // Example: If symbol 'a' has both 3-symbol and 4-symbol wins, only pay the 4-symbol wins
+    // But count ALL paths that produce the longest combination
     // ============================================================================
     const foundWinCombos: WinResult[] = [];
     
-    // Group by symbol + length
-    const winsBySymbolAndLength = new Map<string, WinPath[]>();
+    // Group by symbol to find the longest combination for each
+    const winsBySymbol = new Map<SymbolKey, WinPath[]>();
     
     for (const win of filteredWins) {
+      if (!winsBySymbol.has(win.symbol)) {
+        winsBySymbol.set(win.symbol, []);
+      }
+      winsBySymbol.get(win.symbol)!.push(win);
+    }
+    
+    // For each symbol, keep ONLY the longest wins
+    const finalFilteredWins: WinPath[] = [];
+    for (const [symbol, wins] of winsBySymbol.entries()) {
+      const maxLength = Math.max(...wins.map(w => w.length));
+      const longestWins = wins.filter(w => w.length === maxLength);
+      finalFilteredWins.push(...longestWins);
+    }
+    
+    // Now group by symbol+length for payout calculation
+    const winsBySymbolAndLength = new Map<string, WinPath[]>();
+    
+    for (const win of finalFilteredWins) {
       const key = `${win.symbol}-${win.length}`;
       if (!winsBySymbolAndLength.has(key)) {
         winsBySymbolAndLength.set(key, []);
@@ -579,7 +594,7 @@
     }
     
     // Get one multiplier for the entire spin
-    const winMultiplier = filteredWins.length > 0 ? getWinMultiplier() : 1;
+    const winMultiplier = finalFilteredWins.length > 0 ? getWinMultiplier() : 1;
     
     // Process each symbol+length combination
     for (const [key, winsInGroup] of winsBySymbolAndLength.entries()) {

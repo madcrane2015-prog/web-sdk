@@ -217,24 +217,39 @@ function checkWins(reelData, isFreeSpinMode) {
     if (longest) filtered.push(longest);
   }
   
-  // 4. Group by symbol-length
-  const bySymbolLen = new Map();
+  // 4. Group by SYMBOL only to find longest combination for each symbol
+  const bySymbol = new Map();
   for (const w of filtered) {
+    if (!bySymbol.has(w.symbol)) bySymbol.set(w.symbol, []);
+    bySymbol.get(w.symbol).push(w);
+  }
+  
+  // 5. For each symbol, keep ONLY the longest wins
+  const finalFiltered = [];
+  for (const [symbol, wins] of bySymbol.entries()) {
+    const maxLen = Math.max(...wins.map(x => x.length));
+    const longestWins = wins.filter(x => x.length === maxLen);
+    finalFiltered.push(...longestWins);
+  }
+  
+  // 6. Group by symbol+length for payout calculation
+  const bySymbolLen = new Map();
+  for (const w of finalFiltered) {
     const k = `${w.symbol}-${w.length}`;
     if (!bySymbolLen.has(k)) bySymbolLen.set(k, []);
     bySymbolLen.get(k).push(w);
   }
   
-  // 5. One multiplier for the entire spin
-  const winMultiplier = filtered.length > 0 ? getWinMultiplier(isFreeSpinMode) : 1;
+  // 7. One multiplier for the entire spin
+  const winMultiplier = finalFiltered.length > 0 ? getWinMultiplier(isFreeSpinMode) : 1;
   
-  // 6. Calculate payout for each symbol-length group
-  for (const group of bySymbolLen.values()) {
+  // 8. Calculate payout for each symbol+length group
+  for (const [key, group] of bySymbolLen.entries()) {
     const first = group[0];
-    const sym = first.symbol;
+    const symbol = first.symbol;
     const len = first.length;
     
-    const pt = SYMBOL_PAYTABLE[sym]?.[len];
+    const pt = SYMBOL_PAYTABLE[symbol]?.[len];
     if (!(typeof pt === 'number' && pt > 0)) continue;
     
     // Count unique positions per reel from all winning paths in this group
@@ -257,7 +272,7 @@ function checkWins(reelData, isFreeSpinMode) {
     const payout = pt * ways * winMultiplier;
     
     wins.push({
-      symbol: sym,
+      symbol: symbol,
       count: len,
       payout: payout,
       multiplier: winMultiplier,

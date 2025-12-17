@@ -1,0 +1,141 @@
+{
+  "meta": {
+    "name": "Rockabilly Reels",
+    "description": "3x3x1x3x3, 81 ways, middle reel wild/empty, scatters 5-12 -> free spins",
+    "version": 1
+  },
+
+  "bet": {
+    "baseBet": 1
+  },
+
+  "layout": {
+    "cols": 5,
+    "rowsPerCol": [3, 3, 1, 3, 3] 
+  },
+
+  "symbols": {
+    "k": {
+      "name": "Milkshake (low red)",
+      "category": "low",
+      "weight": 0.25,
+      "pays": { "3": 0.23, "4": 0.76, "5": 3.77 }
+    },
+    "j": {
+      "name": "Fries (low red)",
+      "category": "low",
+      "weight": 0.15,
+      "pays": { "3": 0.38, "4": 1.51, "5": 7.53 }
+    },
+    "i": {
+      "name": "Burger (low red)",
+      "category": "low",
+      "weight": 0.15,
+      "pays": { "3": 0.38, "4": 1.51, "5": 7.53 }
+    },
+
+    "c": {
+      "name": "Roller Skates (mid blue)",
+      "category": "mid",
+      "weight": 0.08,
+      "pays": { "3": 1.13, "4": 3.77, "5": 15.07 }
+    },
+    "d": {
+      "name": "Microphone / Speakers (mid blue)",
+      "category": "mid",
+      "weight": 0.08,
+      "pays": { "3": 1.13, "4": 3.77, "5": 15.07 }
+    },
+    "b": {
+      "name": "Jacket (mid blue)",
+      "category": "mid",
+      "weight": 0.05,
+      "pays": { "3": 1.51, "4": 5.28, "5": 18.83 }
+    },
+    "a": {
+      "name": "Hot Rod (mid blue)",
+      "category": "mid",
+      "weight": 0.05,
+      "pays": { "3": 1.51, "4": 5.28, "5": 18.83 }
+    },
+
+    "f": {
+      "name": "Brunette (premium)",
+      "category": "premium",
+      "weight": 0.04,
+      "pays": { "3": 2.26, "4": 11.30, "5": 37.66 }
+    },
+    "e": {
+      "name": "Blonde (premium)",
+      "category": "premium",
+      "weight": 0.03,
+      "pays": { "3": 3.77, "4": 15.07, "5": 56.49 }
+    },
+    "g": {
+      "name": "Rockabilly (premium JACKPOT)",
+      "category": "premium",
+      "weight": 0.02,
+      "pays": { "3": 3.77, "4": 18.83, "5": 75.32 }
+    },
+
+    "h": {
+      "name": "Wild (middle reel only)",
+      "category": "special",
+      "weight": 0,
+      "special": "wild"
+    },
+    "l": {
+      "name": "Scatter",
+      "category": "special",
+      "weight": 0.115,
+      "special": "scatter"
+    },
+    "emptyslot": {
+      "name": "Empty (mainly middle reel)",
+      "category": "special",
+      "weight": 0.165
+    }
+  },
+
+  "middleReel": {
+    "index": 2,
+    "wildSymbol": "h",
+    "emptySymbol": "emptyslot",
+    "wildProbability": 0.5
+  },
+
+  "freeSpins": {
+    "enabled": true,
+
+    "spinsPerScatterCount": {
+      "5": 5,
+      "6": 6,
+      "7": 7,
+      "8": 8,
+      "9": 9,
+      "10": 10,
+      "11": 11,
+      "12": 12
+    },
+
+    "maxScattersCounted": 12,
+    "allowRetriggers": true,
+
+    "symbolReplacements": [
+      {
+        "from": "k",
+        "to": "g",
+        "description": "Milkshake -> Rockabilly in free spins"
+      },
+      {
+        "from": "i",
+        "to": "f",
+        "description": "Burger -> Brunette in free spins"
+      }
+    ]
+  },
+
+  "simulation": {
+    "spins": 200000
+  }
+}
