@@ -2,7 +2,7 @@
   ============================================================================
   HelloPixi.svelte - ROCKABILLY REELS Slot Machine
   ============================================================================
-  VERSION: 1.0.7 (December 2025)
+  VERSION: 1.0.8 (December 2025)
   
   GAME ARCHITECTURE:
   - 5-reel slot with 3×3×1×3×3 grid layout (13 total independent reels)
