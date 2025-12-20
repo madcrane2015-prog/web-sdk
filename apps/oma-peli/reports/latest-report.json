@@ -1,9 +1,9 @@
 {
   "meta": {
-    "generatedAt": "2025-12-16T22:27:49.297Z",
+    "generatedAt": "2025-12-20T09:27:40.478Z",
     "configPath": "C:\\Users\\henrik\\dev\\web-sdk\\apps\\oma-peli\\src\\tools\\math-config.yml",
     "projectRoot": "C:\\Users\\henrik\\dev\\web-sdk\\apps\\oma-peli",
-    "rngSeedUsed": 2469579339
+    "rngSeedUsed": 538784506
   },
   "game": {
     "id": "rockabilly_reels",
@@ -25,27 +25,27 @@
     }
   },
   "simulation": {
-    "paidSpins": 100,
-    "totalWagered": 100,
-    "totalWon": 93.8,
-    "baseWon": 93.8,
-    "freeSpinsWon": 0,
-    "freeSpinsSpinsPlayed": 0,
-    "freeSpinsSessionsTriggered": 0
+    "paidSpins": 10000000,
+    "totalWagered": 10000000,
+    "totalWon": 9702830.900029043,
+    "baseWon": 6952530.799992488,
+    "freeSpinsWon": 2750300.0999996834,
+    "freeSpinsSpinsPlayed": 226729,
+    "freeSpinsSessionsTriggered": 43128
   },
-  "rtp": 0.938,
-  "baseRtp": 0.938,
-  "freeSpinsRtp": 0,
-  "hitRatePaid": 0.22,
-  "freeSpinsTriggerRatePaid": 0,
+  "rtp": 0.9702830900029042,
+  "baseRtp": 0.6952530799992488,
+  "freeSpinsRtp": 0.27503000999996835,
+  "hitRatePaid": 0.1734381,
+  "freeSpinsTriggerRatePaid": 0.0043128,
   "volatility": {
-    "meanX": 0.938,
-    "stddevX": 2.682304233303897,
+    "meanX": 0.9702830900029042,
+    "stddevX": 9.840410759264598,
     "p50X": 0,
-    "p90X": 3,
-    "p95X": 5.505,
-    "p99X": 13.555000000000028,
-    "maxX": 19
+    "p90X": 1.5,
+    "p95X": 3.8000000000000003,
+    "p99X": 15,
+    "maxX": 2959
   },
   "volatilityExplanation": {
     "unit": "X = (paid spin total return) / (base bet). Feature wins are lumped into the triggering paid spin X.",
@@ -103,205 +103,253 @@
       "5": 0.22,
       "10": 0.08
     },
-    "avgBaseMultiplier": 1.42,
-    "avgFreeSpinMultiplier": 1
+    "avgBaseMultiplier": 1.3797881,
+    "avgFreeSpinMultiplier": 3.993326835120342
   },
   "humanSummary": [
-    "Arvioitu RTP on 93.80% (base 93.80% + free spins 0.00%). Osumataajuus (paid spins) on 22.00% Volatiliteetti luokitellaan: matala (stddev 2.68x).",
-    "Mediaani (p50) on 0.00x, eli yli puolet maksetuista spinnauksista on 0x-häviöitä. p95 on 5.50x (vain 1/20 ylittää tämän), p99 on 13.56x (vain 1/100 ylittää tämän), ja suurin havaittu oli 19.00x."
+    "Arvioitu RTP on 97.03% (base 69.53% + free spins 27.50%). Osumataajuus (paid spins) on 17.34% ja free spins -triggeri noin 1 / 232 maksettua spinniä. Volatiliteetti luokitellaan: korkea (stddev 9.84x).",
+    "Mediaani (p50) on 0.00x, eli yli puolet maksetuista spinnauksista on 0x-häviöitä. p95 on 3.80x (vain 1/20 ylittää tämän), p99 on 15.00x (vain 1/100 ylittää tämän), ja suurin havaittu oli 2959.00x."
   ],
   "symbolBreakdown": {
-    "c": {
-      "winEvents": 4,
-      "totalPayout": 8,
+    "d": {
+      "winEvents": 266236,
+      "totalPayout": 515341.1999986193,
       "byLength": {
         "3": {
-          "winEvents": 3,
-          "totalPayout": 4
+          "winEvents": 215634,
+          "totalPayout": 285743.1999994148
         },
         "4": {
-          "winEvents": 1,
-          "totalPayout": 4
+          "winEvents": 42283,
+          "totalPayout": 150288
         },
         "5": {
-          "winEvents": 0,
-          "totalPayout": 0
+          "winEvents": 8319,
+          "totalPayout": 79310
         }
       },
-      "paidSpinsWithWin": 3,
-      "freeSpinsWinEvents": 0,
-      "freeSpinsPayout": 0,
-      "baseWinEvents": 4,
-      "basePayout": 8,
-      "rtpContributionPct": 8
-    },
-    "f": {
-      "winEvents": 3,
-      "totalPayout": 12,
-      "byLength": {
-        "3": {
-          "winEvents": 3,
-          "totalPayout": 12
-        },
-        "4": {
-          "winEvents": 0,
-          "totalPayout": 0
-        },
-        "5": {
-          "winEvents": 0,
-          "totalPayout": 0
-        }
-      },
-      "paidSpinsWithWin": 3,
-      "freeSpinsWinEvents": 0,
-      "freeSpinsPayout": 0,
-      "baseWinEvents": 3,
-      "basePayout": 12,
-      "rtpContributionPct": 12
+      "paidSpinsWithWin": 215453,
+      "freeSpinsWinEvents": 5962,
+      "freeSpinsPayout": 32187.400000001526,
+      "baseWinEvents": 260274,
+      "basePayout": 483153.79999866325,
+      "rtpContributionPct": 5.153411999986194
     },
     "k": {
-      "winEvents": 5,
-      "totalPayout": 2.8,
+      "winEvents": 342714,
+      "totalPayout": 188891.00000026263,
       "byLength": {
         "3": {
-          "winEvents": 3,
-          "totalPayout": 1
+          "winEvents": 269571,
+          "totalPayout": 87447.19999970916
         },
         "4": {
-          "winEvents": 2,
-          "totalPayout": 1.7999999999999998
+          "winEvents": 59775,
+          "totalPayout": 63136.79999995356
         },
         "5": {
-          "winEvents": 0,
-          "totalPayout": 0
+          "winEvents": 13368,
+          "totalPayout": 38307
         }
       },
-      "paidSpinsWithWin": 3,
+      "paidSpinsWithWin": 269715,
       "freeSpinsWinEvents": 0,
       "freeSpinsPayout": 0,
-      "baseWinEvents": 5,
-      "basePayout": 2.8,
-      "rtpContributionPct": 2.8
+      "baseWinEvents": 342714,
+      "basePayout": 188891.00000026263,
+      "rtpContributionPct": 1.8889100000026262
     },
-    "g": {
-      "winEvents": 1,
-      "totalPayout": 7,
+    "e": {
+      "winEvents": 148236,
+      "totalPayout": 1966685,
       "byLength": {
         "3": {
-          "winEvents": 1,
-          "totalPayout": 7
+          "winEvents": 124599,
+          "totalPayout": 1179450
         },
         "4": {
-          "winEvents": 0,
-          "totalPayout": 0
+          "winEvents": 20069,
+          "totalPayout": 486660
         },
         "5": {
-          "winEvents": 0,
-          "totalPayout": 0
+          "winEvents": 3568,
+          "totalPayout": 300575
         }
       },
-      "paidSpinsWithWin": 1,
-      "freeSpinsWinEvents": 0,
-      "freeSpinsPayout": 0,
-      "baseWinEvents": 1,
-      "basePayout": 7,
-      "rtpContributionPct": 7.000000000000001
+      "paidSpinsWithWin": 123121,
+      "freeSpinsWinEvents": 17858,
+      "freeSpinsPayout": 753370,
+      "baseWinEvents": 130378,
+      "basePayout": 1213315,
+      "rtpContributionPct": 19.66685
     },
-    "a": {
-      "winEvents": 8,
-      "totalPayout": 36.5,
+    "f": {
+      "winEvents": 214217,
+      "totalPayout": 2127727,
       "byLength": {
         "3": {
-          "winEvents": 6,
-          "totalPayout": 16.5
+          "winEvents": 174352,
+          "totalPayout": 1002063
         },
         "4": {
-          "winEvents": 2,
-          "totalPayout": 20
+          "winEvents": 33021,
+          "totalPayout": 655744
         },
         "5": {
-          "winEvents": 0,
-          "totalPayout": 0
+          "winEvents": 6844,
+          "totalPayout": 469920
         }
       },
-      "paidSpinsWithWin": 6,
-      "freeSpinsWinEvents": 0,
-      "freeSpinsPayout": 0,
-      "baseWinEvents": 8,
-      "basePayout": 36.5,
-      "rtpContributionPct": 36.5
+      "paidSpinsWithWin": 171960,
+      "freeSpinsWinEvents": 24580,
+      "freeSpinsPayout": 868377,
+      "baseWinEvents": 189637,
+      "basePayout": 1259350,
+      "rtpContributionPct": 21.27727
     },
-    "b": {
-      "winEvents": 7,
-      "totalPayout": 23.5,
+    "i": {
+      "winEvents": 259679,
+      "totalPayout": 240491.89999932522,
       "byLength": {
         "3": {
-          "winEvents": 4,
-          "totalPayout": 7.5
+          "winEvents": 210595,
+          "totalPayout": 133636.39999977668
         },
         "4": {
-          "winEvents": 2,
-          "totalPayout": 8
+          "winEvents": 40999,
+          "totalPayout": 69678
         },
         "5": {
-          "winEvents": 1,
-          "totalPayout": 8
+          "winEvents": 8085,
+          "totalPayout": 37177.5
         }
       },
-      "paidSpinsWithWin": 4,
+      "paidSpinsWithWin": 210676,
       "freeSpinsWinEvents": 0,
       "freeSpinsPayout": 0,
-      "baseWinEvents": 7,
-      "basePayout": 23.5,
-      "rtpContributionPct": 23.5
+      "baseWinEvents": 259679,
+      "basePayout": 240491.89999932522,
+      "rtpContributionPct": 2.404918999993252
     },
     "j": {
-      "winEvents": 3,
-      "totalPayout": 3.2,
+      "winEvents": 259496,
+      "totalPayout": 241051.99999933195,
       "byLength": {
         "3": {
-          "winEvents": 2,
-          "totalPayout": 1.2000000000000002
+          "winEvents": 210431,
+          "totalPayout": 134051.99999977302
         },
         "4": {
-          "winEvents": 1,
-          "totalPayout": 2
+          "winEvents": 41118,
+          "totalPayout": 70330
         },
         "5": {
-          "winEvents": 0,
-          "totalPayout": 0
+          "winEvents": 7947,
+          "totalPayout": 36670
         }
       },
-      "paidSpinsWithWin": 2,
+      "paidSpinsWithWin": 210510,
       "freeSpinsWinEvents": 0,
       "freeSpinsPayout": 0,
-      "baseWinEvents": 3,
-      "basePayout": 3.2,
-      "rtpContributionPct": 3.2
+      "baseWinEvents": 259496,
+      "basePayout": 241051.99999933195,
+      "rtpContributionPct": 2.4105199999933196
     },
-    "d": {
-      "winEvents": 1,
-      "totalPayout": 0.8,
+    "c": {
+      "winEvents": 266481,
+      "totalPayout": 515601.7999986004,
       "byLength": {
         "3": {
-          "winEvents": 1,
-          "totalPayout": 0.8
+          "winEvents": 216154,
+          "totalPayout": 285744.7999994039
         },
         "4": {
-          "winEvents": 0,
-          "totalPayout": 0
+          "winEvents": 42063,
+          "totalPayout": 149692
         },
         "5": {
-          "winEvents": 0,
-          "totalPayout": 0
+          "winEvents": 8264,
+          "totalPayout": 80165
         }
       },
-      "paidSpinsWithWin": 1,
-      "freeSpinsWinEvents": 0,
-      "freeSpinsPayout": 0,
-      "baseWinEvents": 1,
-      "basePayout": 0.8,
-      "rtpContributionPct": 0.8
+      "paidSpinsWithWin": 215977,
+      "freeSpinsWinEvents": 5890,
+      "freeSpinsPayout": 32396.200000001398,
+      "baseWinEvents": 260591,
+      "basePayout": 483205.5999986412,
+      "rtpContributionPct": 5.156017999986004
+    },
+    "g": {
+      "winEvents": 97421,
+      "totalPayout": 1981579,
+      "byLength": {
+        "3": {
+          "winEvents": 84011,
+          "totalPayout": 1150254
+        },
+        "4": {
+          "winEvents": 11523,
+          "totalPayout": 461475
+        },
+        "5": {
+          "winEvents": 1887,
+          "totalPayout": 369850
+        }
+      },
+      "paidSpinsWithWin": 82839,
+      "freeSpinsWinEvents": 15207,
+      "freeSpinsPayout": 943944,
+      "baseWinEvents": 82214,
+      "basePayout": 1037635,
+      "rtpContributionPct": 19.81579
+    },
+    "a": {
+      "winEvents": 266645,
+      "totalPayout": 966867.5,
+      "byLength": {
+        "3": {
+          "winEvents": 216065,
+          "totalPayout": 536035.5
+        },
+        "4": {
+          "winEvents": 42185,
+          "totalPayout": 300840
+        },
+        "5": {
+          "winEvents": 8395,
+          "totalPayout": 129992
+        }
+      },
+      "paidSpinsWithWin": 215905,
+      "freeSpinsWinEvents": 5854,
+      "freeSpinsPayout": 60777.5,
+      "baseWinEvents": 260791,
+      "basePayout": 906090,
+      "rtpContributionPct": 9.668675
+    },
+    "b": {
+      "winEvents": 265267,
+      "totalPayout": 958594.5,
+      "byLength": {
+        "3": {
+          "winEvents": 215163,
+          "totalPayout": 533866.5
+        },
+        "4": {
+          "winEvents": 41880,
+          "totalPayout": 298160
+        },
+        "5": {
+          "winEvents": 8224,
+          "totalPayout": 126568
+        }
+      },
+      "paidSpinsWithWin": 214979,
+      "freeSpinsWinEvents": 5908,
+      "freeSpinsPayout": 59248,
+      "baseWinEvents": 259359,
+      "basePayout": 899346.5,
+      "rtpContributionPct": 9.585945
     }
   }
 }

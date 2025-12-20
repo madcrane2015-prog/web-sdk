@@ -2,40 +2,69 @@
   ============================================================================
   HelloPixi.svelte - ROCKABILLY REELS Slot Machine
   ============================================================================
+  VERSION: 1.0.7 (December 2025)
   
   GAME ARCHITECTURE:
   - 5-reel slot with 3×3×1×3×3 grid layout (13 total independent reels)
-  - 81 WAYS-PAYING system (all possible paths, no restrictions)
+  - 81 WAYS-PAYING system with column-based win calculation
   - PixiJS 8 graphics engine with Svelte 5 runes reactive state
+  - YAML Config v1.0 math model implementation
   
   GAME FEATURES:
   - Dynamic symbol generation with weighted randomization
-  - Wild symbols on middle reel only (50% probability)
-  - Scatter-triggered free spins (all 5 reels = 10 free spins)
-  - TRUE WAYS LOGIC: Counts symbols per reel, multiplies counts together
+  - Wild symbols on middle reel only (55% probability)
+  - Scatter-triggered free spins (5+ scatters = variable free spins)
+  - TRUE WAYS LOGIC: Counts symbols per column, multiplies ways together
+  - Win multipliers: Base (1x/2x/3x), Free Spins (3x/5x/10x)
+  - "Longest only" rule: Only pay highest win per symbol
   - Win animations with highlighted winning paths
   - Autoplay with configurable spin counts (10/100/1K/10K/100K)
-  - Adjustable bet system with min/max limits
+  - Adjustable bet system (min 1, max 100)
   
-  MATH MODEL:
-  - RTP: 95.51% (Base: 26.40%, Free Spins: 69.11%)
-  - Hit Frequency: 26.40% (1 in 3.8 spins)
-  - Free Spin Trigger: ~1 in 258 spins
-  - Volatility: Medium (balanced base game + free spins)
-  - Max Win Observed: 205.65x (1M spin simulation)
-  - NO MULTIPLIERS: All wins pay at 1x
+  MATH MODEL (YAML Config v1.7):
+  - Target RTP: ~80% (after "longest only" rule implementation)
+  - Base Game: ~58-59% RTP | ~73% of total wins
+  - Free Spins: ~21-22% RTP | ~27% of total wins
+  - Hit Frequency: ~17-18% (1 in 5.7 spins)
+  - Free Spin Trigger: ~1 in 230-240 spins
+  - Volatility: Medium-High (balanced hit frequency with big win potential)
+  - Max Win Observed: 3200x (1M spin simulation)
+  
+  SYMBOL REPLACEMENTS (Free Spins):
+  - k (Milkshake) → f (Brunette): 8% → 14% total
+  - j (Fries) → e (Blonde): 7% → 12% total
+  - i (Burger) → g (Rockabilly): 7% → 11% total
+  - Result: Premium symbols appear 2x more frequently in free spins
+  
+  WIN CALCULATION:
+  - Column-based: Symbol must appear on each consecutive column from left
+  - Example 4-symbol win requires symbol on columns 0,1,2,3
+  - Ways counted per path: multiply symbol count per column
+  - Only longest combination pays per symbol (v1.0.4)
   
   VISUAL ELEMENTS:
   - Background: 1445×1000px custom rockabilly-themed slot machine
   - 11 symbol types: 3 red (low), 4 blue (mid), 3 premium, 1 wild, 1 scatter
   - Logo, bet controls, credit display, paytable viewer
-  - Statistics tracker for RTP monitoring
+  - Statistics tracker with RTP monitoring
+  - Win log system with download capability
+  - Test mode for instant free spins
   
   TECHNICAL NOTES:
   - All math is local (no RGS integration)
-  - Symbol weights in SYMBOL_WEIGHTS constant
-  - Paytable values at 94% of original design
-  - See config.ts for detailed math documentation
+  - Separate weight tables: SYMBOL_WEIGHTS_BASE / SYMBOL_WEIGHTS_FS
+  - Multiplier distribution: 70%/22%/8% for base and free spins
+  - Empty slots: 25% across all reels for RTP balancing
+  
+  VERSION HISTORY:
+  - v1.0.7: Fixed free spin symbol replacements (use weight tables)
+  - v1.0.6: Fixed column-based win calculation (require symbol on each column)
+  - v1.0.5: Added win logging system and test free spins button
+  - v1.0.4: Implemented "longest only" rule (pay highest win per symbol)
+  - v1.0.3: Updated to math v1.7 (wild 55%, multipliers 70/22/8)
+  - v1.0.2: Fixed black screen, improved UI
+  - v1.0.1: Fixed ways calculation (enumerate all 81 paths)
+  - v1.0.0: Initial YAML config v1.0 implementation
   ============================================================================
 -->
 
@@ -217,7 +246,9 @@
   let totalEmptySlots = $state(0);      // Emptyslot-symbolit yhteensä
   let emptySlotPercentage = $derived(totalVisibleSymbols > 0 ? (totalEmptySlots / totalVisibleSymbols * 100).toFixed(2) : "0.00");
   
-  // Win logging system
+  // Win logging system (v1.0.5)
+  // Logs all winning rounds with details: round number, timestamp, symbols, payouts
+  // Can be downloaded as .txt file for analysis
   let winLog: string[] = $state([]);
   
   function logWin(roundNumber: number, wins: WinResult[], totalPayout: number) {
@@ -258,7 +289,9 @@
     winLog = [];
   }
   
-  // Free spins test mode
+  // Free spins test mode (v1.0.5)
+  // Instantly grants 10 free spins without requiring scatter triggers
+  // Useful for testing free spin mechanics and symbol replacements
   function triggerTestFreeSpins() {
     if (!isFreeSpinMode) {
       isFreeSpinMode = true;
@@ -273,16 +306,21 @@
   // SYMBOL DISTRIBUTION - Weighted Randomization
   // ============================================================================
   // Current configuration: 81 WAYS + TRUE WAYS LOGIC + MULTIPLIERS
-  // From YAML config v1.0
+  // From YAML config v1.0, Math v1.7
   //
-  // DISTRIBUTION STRATEGY:
+  // DISTRIBUTION STRATEGY (BASE GAME):
   // - Empty slots (25%) balance hit frequency
   // - Low tier (k,j,i) provides frequent small wins (8%+7%+7% = 22%)
   // - Mid tier (c,d,b,a) creates medium-sized wins (28% total)
   // - Premium tier (f,e,g) rare high-value wins (15% total)
   // - Scatter at 10% triggers free spins
-  // - Wild only on middle reel (50%) for substitution
-  // - Multipliers: base game (1x/2x/3x), free spins (3x/5x/10x)
+  // - Wild only on middle reel (55%) for substitution
+  // - Multipliers: base game (1x/2x/3x at 70/22/8), free spins (3x/5x/10x at 70/22/8)
+  //
+  // FREE SPINS DISTRIBUTION:
+  // - Low tier (k,j,i) REMOVED (0% each)
+  // - Premium tier BOOSTED: f=14%, e=12%, g=11% (inherits low tier weights)
+  // - Result: More frequent premium symbols for higher free spin value
   // ============================================================================
   const SYMBOL_WEIGHTS_BASE: Record<SymbolKey, number> = {
     // LOW TIER - Low value, moderate frequency
@@ -516,11 +554,23 @@
     }
     
   // ============================================================================
-  // 81 WAYS-PAYING LOGIC
+  // 81 WAYS-PAYING LOGIC (v1.0.6: Column-based calculation)
   // ============================================================================
   // Generate all 81 valid paths through the grid
   // NO RESTRICTIONS: All possible row combinations allowed
   // Grid: 3×3×1×3×3 = 81 total ways
+  //
+  // COLUMN-BASED WIN CALCULATION (v1.0.6):
+  // - Win length determined by consecutive columns from left that contain symbol
+  // - Example: If columns 0,1,2 have symbol but column 3 doesn't → 3-symbol win
+  // - For 4-symbol win: Symbol MUST appear on columns 0,1,2,3
+  // - This prevents false 4-symbol wins when symbol missing from column 3
+  //
+  // WAYS COUNTING:
+  // - Each unique path through the grid counts as separate way
+  // - If 2 symbols on column 0, 1 on column 1, 1 on column 2 → 2 ways of 3-symbol win
+  // - Ways multiply together: column0_count × column1_count × column2_count...
+  // ============================================================================
     const allPaths: number[][] = [];
     
     // Iterate through all possible row combinations (NO ±1 restriction)
@@ -648,9 +698,17 @@
     // ============================================================================
     // TRUE WAYS LOGIC: Count unique positions from winning paths
     // ============================================================================
-    // IMPORTANT: Only pay the LONGEST combination for each symbol
-    // Example: If symbol 'a' has both 3-symbol and 4-symbol wins, only pay the 4-symbol wins
-    // But count ALL paths that produce the longest combination
+    // IMPORTANT (v1.0.4): Only pay the LONGEST combination for each symbol
+    // Example: If symbol 'a' has both 3-symbol and 4-symbol wins, only pay 4-symbol wins
+    // But count ALL paths/ways that produce the longest combination
+    //
+    // WAYS CALCULATION:
+    // - Count how many times longest combination appears across all paths
+    // - Each unique path = 1 way
+    // - Multiple symbols on same columns = multiple ways
+    // - Example: 2 symbols on col0 × 1 on col1 × 1 on col2 = 2 ways of 3-symbol win
+    //
+    // This "longest only" rule significantly reduces RTP (~80% vs ~96% without it)
     // ============================================================================
     const foundWinCombos: WinResult[] = [];
     

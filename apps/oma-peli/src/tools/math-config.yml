@@ -220,7 +220,7 @@ multipliers:
 # =====================================================================
 simulation:
   default_spins: 1000000
-  rng_seed: random
+  rng_seed: null
 
   debug:
     log_big_wins_over_x: 50.0
