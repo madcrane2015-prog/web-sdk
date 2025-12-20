@@ -199,7 +199,7 @@
   };
   
   // Version number
-  const GAME_VERSION = "1.0.7"; // Update this with each deploy
+  const GAME_VERSION = "1.0.8"; // Update this with each deploy
   
   // Äänien hallinta
   let soundEnabled = $state(true);              // Voi käyttäjä halutessaan mykistää
@@ -1872,7 +1872,7 @@
   <div style="font-weight: bold; font-size: 16px; margin-bottom: 5px; color: #ffd700; text-align: center;">
     📊 RTP MONITOR
   </div>
-  <div style="font-size: 11px; margin-bottom: 10px; color: #888; text-align: center;">
+  <div style="font-size: 14px; font-weight: bold; margin-bottom: 10px; color: #ffd700; text-align: center;">
     v{GAME_VERSION}
   </div>
   <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
