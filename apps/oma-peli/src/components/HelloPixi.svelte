@@ -21,14 +21,14 @@
   - Autoplay with configurable spin counts (10/100/1K/10K/100K)
   - Adjustable bet system (min 1, max 100)
   
-  MATH MODEL (YAML Config v1.7):
-  - Target RTP: ~80% (after "longest only" rule implementation)
-  - Base Game: ~58-59% RTP | ~73% of total wins
-  - Free Spins: ~21-22% RTP | ~27% of total wins
+  MATH MODEL (YAML Config v1.0):
+  - Target RTP: ~97% (corrected from ~80% in v1.0.8)
+  - Base Game: ~69% RTP | ~71% of total wins
+  - Free Spins: ~28% RTP | ~29% of total wins
   - Hit Frequency: ~17-18% (1 in 5.7 spins)
   - Free Spin Trigger: ~1 in 230-240 spins
   - Volatility: Medium-High (balanced hit frequency with big win potential)
-  - Max Win Observed: 3200x (1M spin simulation)
+  - Max Win Observed: 2700x+ (1M spin simulation)
   
   SYMBOL REPLACEMENTS (Free Spins):
   - k (Milkshake) → f (Brunette): 8% → 14% total
@@ -40,7 +40,11 @@
   - Column-based: Symbol must appear on each consecutive column from left
   - Example 4-symbol win requires symbol on columns 0,1,2,3
   - Ways counted per path: multiply symbol count per column
-  - Only longest combination pays per symbol (v1.0.4)
+  - CORRECT LOGIC (v1.0.8): Pays all symbol+length combinations separately
+    * Groups by symbol+length (e.g., "a-3", "a-5")
+    * Each group counts ways independently and pays separately
+    * This is the correct ways-game behavior
+  - REMOVED (v1.0.8): "Longest only per symbol" global filter (caused 17% RTP loss)
   
   VISUAL ELEMENTS:
   - Background: 1445×1000px custom rockabilly-themed slot machine
@@ -53,10 +57,12 @@
   TECHNICAL NOTES:
   - All math is local (no RGS integration)
   - Separate weight tables: SYMBOL_WEIGHTS_BASE / SYMBOL_WEIGHTS_FS
-  - Multiplier distribution: 70%/22%/8% for base and free spins
+  - Multiplier distribution: 70%/22%/8% for base and free spins (v1.7)
   - Empty slots: 25% across all reels for RTP balancing
+  - Wild on middle reel: 55% probability
   
   VERSION HISTORY:
+  - v1.0.8: CRITICAL FIX - Removed underpay bug (+17% RTP: 80%→97%)
   - v1.0.7: Fixed free spin symbol replacements (use weight tables)
   - v1.0.6: Fixed column-based win calculation (require symbol on each column)
   - v1.0.5: Added win logging system and test free spins button

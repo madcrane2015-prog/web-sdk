@@ -243,22 +243,12 @@ function checkWins(reelData, isFreeSpinMode) {
     if (longest) filtered.push(longest);
   }
   
-  // 4. Group by SYMBOL only to find longest combination for each symbol
-  const bySymbol = new Map();
-  for (const w of filtered) {
-    if (!bySymbol.has(w.symbol)) bySymbol.set(w.symbol, []);
-    bySymbol.get(w.symbol).push(w);
-  }
+  // 4. Group by symbol+length for payout calculation (PAY ALL COMBINATIONS)
+  // REMOVED: "Longest per symbol" filter - this was causing underpayment
+  // Correct logic: Pay all symbol+length combinations separately
+  const finalFiltered = filtered;
   
-  // 5. For each symbol, keep ONLY the longest wins
-  const finalFiltered = [];
-  for (const [symbol, wins] of bySymbol.entries()) {
-    const maxLen = Math.max(...wins.map(x => x.length));
-    const longestWins = wins.filter(x => x.length === maxLen);
-    finalFiltered.push(...longestWins);
-  }
-  
-  // 6. Group by symbol+length for payout calculation
+  // 5. Group by symbol+length for payout calculation
   const bySymbolLen = new Map();
   for (const w of finalFiltered) {
     const k = `${w.symbol}-${w.length}`;
