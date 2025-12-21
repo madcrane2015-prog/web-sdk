@@ -1,8 +1,12 @@
+<svelte:head>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.4/howler.min.js"></script>
+</svelte:head>
+
 <!--
   ============================================================================
   HelloPixi.svelte - ROCKABILLY REELS Slot Machine
   ============================================================================
-  VERSION: 1.0.8 (December 2025)
+  VERSION: 1.0.9 (December 2025) - Music Integration
   
   GAME ARCHITECTURE:
   - 5-reel slot with 3×3×1×3×3 grid layout (13 total independent reels)
@@ -199,11 +203,121 @@
   };
   
   // Version number
-  const GAME_VERSION = "1.0.8"; // Update this with each deploy
+  const GAME_VERSION = "1.0.9"; // Update this with each deploy
   
   // Äänien hallinta
   let soundEnabled = $state(true);              // Voi käyttäjä halutessaan mykistää
   let audioElements: Record<string, HTMLAudioElement> = {};
+  
+  // ===== MUSIIKKIJÄRJESTELMÄ (v1.0.9) =====
+  // Howler.js-pohjaiset musiikkisoittimet
+  let backgroundMusic: any = null;  // Taustamusiikki (rockabilly loop)
+  let drumHitSound: any = null;     // Rumpuisku kiekkojen pysähtyessä
+  let winThemeSound: any = null;    // Voittoteema
+  
+  // BPM-synkronointi
+  const MUSIC_BPM = 130;            // Rockabilly tempo (beats per minute)
+  const BEAT_INTERVAL = 60 / MUSIC_BPM; // Sekunteja per tahti (~0.46s)
+  const FRAMES_PER_BEAT = Math.round(BEAT_INTERVAL * 60); // Frameja per tahti (60 FPS)
+  
+  // Musiikin tilanhallinta
+  let musicEnabled = $state(true);  // Musiikin on/off toggle
+  let musicLoaded = $state(false);  // Onko musiikki ladattu
+  
+  // Musiikkitiedostojen URLit (päivitetään kun musiikki on luotu)
+  const MUSIC_URLS = {
+    background: `${base}/music/rockabilly-loop.mp3`,    // Taustamusiikki (generoi Suno AI:lla)
+    drumHit: `${base}/music/drum-hit.mp3`,             // Rumpuisku (lyhyt, 0.1-0.2s)
+    winTheme: `${base}/music/win-stinger.mp3`          // Voittoteema (2-3s)
+  };
+
+  // Alusta musiikkijärjestelmä Howler.js:llä
+  function initializeMusic() {
+    if (typeof window === 'undefined' || !(window as any).Howl) {
+      console.warn('Howler.js not loaded yet, retrying in 500ms...');
+      setTimeout(initializeMusic, 500);
+      return;
+    }
+    
+    const Howl = (window as any).Howl;
+    
+    try {
+      // Taustamusiikki (looppaa jatkuvasti)
+      backgroundMusic = new Howl({
+        src: [MUSIC_URLS.background],
+        loop: true,
+        volume: 0.3,  // 30% volume (taustamusiikin ei pidä olla liian dominoiva)
+        onload: () => {
+          console.log('✅ Background music loaded');
+          musicLoaded = true;
+        },
+        onloaderror: (id: any, error: any) => {
+          console.warn('⚠️ Background music not found (generate with Suno AI):', error);
+        }
+      });
+      
+      // Rumpuisku-efekti (soitetaan kiekkojen pysähtyessä)
+      drumHitSound = new Howl({
+        src: [MUSIC_URLS.drumHit],
+        volume: 0.5,
+        onload: () => console.log('✅ Drum hit sound loaded'),
+        onloaderror: () => console.warn('⚠️ Drum hit sound not found')
+      });
+      
+      // Voittoteema (soitetaan isoille voitoille)
+      winThemeSound = new Howl({
+        src: [MUSIC_URLS.winTheme],
+        volume: 0.6,
+        onload: () => console.log('✅ Win theme loaded'),
+        onloaderror: () => console.warn('⚠️ Win theme not found')
+      });
+      
+      console.log('🎵 Music system initialized (generate music with Suno AI)');
+      
+    } catch (error) {
+      console.error('Failed to initialize music system:', error);
+    }
+  }
+  
+  // Käynnistä taustamusiikki
+  function startBackgroundMusic() {
+    if (backgroundMusic && musicEnabled && !backgroundMusic.playing()) {
+      backgroundMusic.play();
+      console.log('🎵 Background music started');
+    }
+  }
+  
+  // Pysäytä taustamusiikki
+  function stopBackgroundMusic() {
+    if (backgroundMusic && backgroundMusic.playing()) {
+      backgroundMusic.fade(backgroundMusic.volume(), 0, 500); // Fade out 500ms
+      setTimeout(() => backgroundMusic.stop(), 500);
+    }
+  }
+  
+  // Toggle musiikin on/off
+  function toggleMusic() {
+    musicEnabled = !musicEnabled;
+    if (musicEnabled) {
+      startBackgroundMusic();
+    } else {
+      stopBackgroundMusic();
+    }
+  }
+  
+  // Soita rumpuisku
+  function playDrumHit() {
+    if (drumHitSound && musicEnabled && soundEnabled) {
+      drumHitSound.play();
+    }
+  }
+  
+  // Soita voittoteema
+  function playWinTheme() {
+    if (winThemeSound && musicEnabled && soundEnabled) {
+      winThemeSound.play();
+    }
+  }
 
   // ===== PELIN TILA JA MUUTTUJAT =====
   // Ladatut tekstuurit (kuvat muutettuna PixiJS muotoon)
@@ -917,6 +1031,13 @@
       this.targetSpeed = 35;     // Aseta tavoitenopeus
       this.stopDelay = delay;    // Aseta pysäytysviive (kiekot pysähtyvät eri aikoina)
     }
+    
+    // BPM-synkronoitu start-metodi (v1.0.9)
+    // Pysäyttää kiekot rytmisesti 130 BPM tahtiin
+    startSynchronized(beatIndex: number) {
+      const delay = 60 + (beatIndex * FRAMES_PER_BEAT); // 60 base + rytminen viive
+      this.start(delay);
+    }
 
     // Päivitä kiekon tila joka frame
     update() {
@@ -943,6 +1064,9 @@
           
           // Soita "chunk" pysähtymisääni
           playSound('stop');
+          
+          // Soita rumpuisku (v1.0.9 music integration)
+          playDrumHit();
         }
       }
       
@@ -1291,7 +1415,10 @@
       console.log("Logo lisätty päällimmäiseen layeriin:", logoSprite.width.toFixed(0), "x", logoSprite.height.toFixed(0));
     }
 
-    // ===== 6) PELISILMUKAN KÄYNNISTYS =====
+    // ===== 7) MUSIIKKIJÄRJESTELMÄN ALUSTUS (v1.0.9) =====
+    initializeMusic();
+    
+    // ===== 8) PELISILMUKAN KÄYNNISTYS =====
     // PixiJS ticker kutsuu update-funktiota joka frame (yleensä 60 FPS)
     app.ticker.add(update);
   }); // onMount loppu
@@ -1423,10 +1550,14 @@
     clearWinHighlights(); // Poista voittokorostukset
     
     reelData = createReelData();                     // Luo uudet symbolit 13 kiekolle
-    reels.forEach((r, i) => r.start(60 + i * 10));  // Käynnistä kiekot porrastetusti
-    // Viive kaava: 1. kiekko = 60 framea, 2. = 70, 3. = 80, jne.
-    // Kaikki kiekot pyörivät vähintään 60 framea ennen hidastuksen alkua
-    // Tämä luo kauniin "aaltomaisen" pysähtymisen
+    
+    // v1.0.9: BPM-synkronoitu pysähtyminen (130 BPM)
+    // Kiekot pysähtyvät rytmisesti musiikin tahtiin
+    // Ryhmitellään kiekot 5 sarakkeeseen rytmistä pysähtymistä varten
+    reels.forEach((r, i) => {
+      const col = Math.floor(i / 3); // Sarake (0-4)
+      r.startSynchronized(col);      // Synkronoitu start rytmin mukaan
+    });
     
     // Soita "whirr" SPIN-ääni
     playSound('spin');
@@ -1444,6 +1575,12 @@
     
     if (winAmount > 0) {
       totalWins++;
+      
+      // v1.0.9: Soita voittoteema isoille voitoille (yli 10x panos)
+      const winMultiplier = winAmount / betAmount;
+      if (winMultiplier >= 10) {
+        playWinTheme();
+      }
     }
   }
   
@@ -2000,6 +2137,24 @@
       "
     >
       Clear Win Log
+    </button>
+    
+    <!-- Music Toggle Button (v1.0.9) -->
+    <button
+      on:click={toggleMusic}
+      style="
+        width: 100%;
+        padding: 5px;
+        background: {musicEnabled ? 'rgba(255, 215, 0, 0.3)' : 'rgba(100, 100, 100, 0.3)'};
+        color: #fff;
+        border: 1px solid {musicEnabled ? '#ffd700' : '#666'};
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 11px;
+        margin-bottom: 5px;
+      "
+    >
+      🎵 Music: {musicEnabled ? 'ON' : 'OFF'}
     </button>
     
     <button
