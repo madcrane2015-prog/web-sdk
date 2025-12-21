@@ -6,7 +6,7 @@
   ============================================================================
   HelloPixi.svelte - ROCKABILLY REELS Slot Machine
   ============================================================================
-  VERSION: 1.0.9 (December 2025) - Music Integration
+  VERSION: 1.1.0 (December 2025) - Control Panel Integration
   
   GAME ARCHITECTURE:
   - 5-reel slot with 3×3×1×3×3 grid layout (13 total independent reels)
@@ -145,6 +145,12 @@
   const BUTTON_X = 720;       // Napin X-koordinaatti
   const BUTTON_Y = 750;       // Napin Y-koordinaatti
   
+  // ===== CONTROL PANEL ASETUKSET (v1.1.0) =====
+  const CONTROL_PANEL_Y = 750;         // Paneelin Y-koordinaatti (sama kuin vanha BUTTON_Y)
+  const CONTROL_PANEL_HEIGHT = 120;    // Paneelin korkeus
+  const REEL_FRAMES_X = 250;           // Kehysten X-sijainti (sama kuin kehyksissä)
+  const REEL_FRAMES_WIDTH = 945;       // Kehysten leveys (arvio, päivitetään dynaamisesti)
+  
   // LOGO-asetukset (helppo säätää)
   const LOGO_SCALE = 0.8;     // Logon koko kerroin (1.0 = alkuperäinen koko)
   const LOGO_X = 50;          // Logon X-siirtymä keskikohdasta (+ = oikealle, - = vasemmalle)
@@ -172,6 +178,7 @@
   // GitHub Pages: käytä suoria polkuja, localhost: käytä base-polkuja
   const isGitHubPages = typeof window !== 'undefined' && window.location.hostname.includes('github.io');
   const symbolPath = isGitHubPages ? '/web-sdk/oma-peli/symbols' : `${base}/symbols`;
+  const controlsPath = isGitHubPages ? '/web-sdk/oma-peli/controls' : `${base}/controls`;
   
   const SYMBOL_URLS: Record<SymbolKey, string> = {
     a: `${symbolPath}/Blue_hotrod.jpg`,      // Sininen hotrod
@@ -203,7 +210,7 @@
   };
   
   // Version number
-  const GAME_VERSION = "1.0.9"; // Update this with each deploy
+  const GAME_VERSION = "1.1.0"; // Update this with each deploy
   
   // Äänien hallinta
   let soundEnabled = $state(true);              // Voi käyttäjä halutessaan mykistää
@@ -223,6 +230,11 @@
   // Musiikin tilanhallinta
   let musicEnabled = $state(true);  // Musiikin on/off toggle
   let musicLoaded = $state(false);  // Onko musiikki ladattu
+  
+  // ===== CONTROL PANEL TILA (v1.1.0) =====
+  let isFastPlayEnabled = $state(false);     // Nopea pelitila
+  let controlPanelWidth = $state(945);       // Paneelin leveys (päivittyy dynaamisesti)
+  let reelFramesSpriteRef: any = null;       // Viittaus reel frames spriteen
   
   // Musiikkitiedostojen URLit (päivitetään kun musiikki on luotu)
   const MUSIC_URLS = {
@@ -1397,7 +1409,10 @@
       reelFramesSprite.y = 200; // Säädä kiekkojen mukaan
       
       app.stage.addChild(reelFramesSprite);
+      reelFramesSpriteRef = reelFramesSprite; // Tallenna viittaus control panelia varten
+      controlPanelWidth = reelFramesSprite.width; // Päivitä paneelin leveys dynaamisesti
       console.log("Reel frames lisätty:", reelFramesSprite.width.toFixed(0), "x", reelFramesSprite.height.toFixed(0));
+      console.log("Control panel leveys päivitetty:", controlPanelWidth.toFixed(0));
     }
     
     // ===== 7) PELIN LOGO (PÄÄLLIMMÄINEN LAYER) =====
@@ -2380,29 +2395,185 @@
   {soundEnabled ? "🔊" : "🔇"}
 </button>
 
+<!-- ===== CONTROL PANEL (v1.1.0) ===== -->
 <!-- 
-  Läpinäkyvä SPIN-nappi taustakuvan vihreän napin päälle
-  
-  Nappi on positioned absolutely ja sijoitettu täsmälleen taustakuvan
-  vihreän SPIN-napin päälle. Se on osittain läpinäkyvä koordinaattien
-  varmistamiseksi ja helpon klikkauksen mahdollistamiseksi.
+  Moderni control panel joka skaalautuu reelien kehysten leveyteen.
+  Koostuu kolmesta osasta:
+  - Vasen pää (Control_leftend.png)
+  - Keskikohta (Control_scalablebg.png - skaalautuva)
+  - Oikea pää (Control_rightend.png)
 -->
-<button
-  on:click={spin}
-  style="
-    position: absolute;
-    left: {BUTTON_X}px;                    /* X-koordinaatti (säädettävissä) */
-    top: {BUTTON_Y}px;                     /* Y-koordinaatti (säädettävissä) */
-    width: 60px;                           /* Napin leveys */
-    height: 60px;                          /* Napin korkeus */
-    border-radius: 50%;                    /* Pyöreä muoto */
-    background-color: rgba(0,255,0,0.2);   /* Vihreä, läpinäkyvä */
-    border: 2px solid rgba(0,255,0,0.5);   /* Vihreä reunus */
-    cursor: pointer;                       /* Käsi-kursori hover:ssa */
-    z-index: 1000;                         /* Varmista että nappi on päällimmäisenä */
-    font-size: 0;                          /* Piilota teksti */
-  "
-  title="SPIN"
->
-  <!-- Nappi on osittain näkyvä koordinaattien varmistamiseksi -->
-</button>
+<div style="
+  position: absolute;
+  left: {reelFramesSpriteRef ? reelFramesSpriteRef.x : REEL_FRAMES_X}px;
+  top: {CONTROL_PANEL_Y}px;
+  width: {controlPanelWidth}px;
+  height: {CONTROL_PANEL_HEIGHT}px;
+  display: flex;
+  align-items: center;
+  z-index: 1000;
+">
+  <!-- Vasen pää -->
+  <img 
+    src="{controlsPath}/Control_leftend.png" 
+    alt="Left End"
+    style="height: {CONTROL_PANEL_HEIGHT}px; flex-shrink: 0;"
+  />
+  
+  <!-- Keskiosa (skaalautuva tausta) -->
+  <div style="
+    flex-grow: 1;
+    height: {CONTROL_PANEL_HEIGHT}px;
+    background-image: url('{controlsPath}/Control_scalablebg.png');
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0 20px;
+  ">
+    <!-- BET kontrollit -->
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+      <div style="color: #00ff00; font-size: 12px; font-weight: bold;">BET</div>
+      <div style="display: flex; gap: 5px; align-items: center;">
+        <button
+          on:click={decreaseBet}
+          style="
+            width: 40px;
+            height: 40px;
+            background-image: url('{controlsPath}/Control_lowerbet_select.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            border: none;
+            cursor: pointer;
+            background-color: transparent;
+          "
+          title="Decrease Bet"
+        ></button>
+        <div style="
+          color: #fff;
+          font-size: 18px;
+          font-weight: bold;
+          min-width: 80px;
+          text-align: center;
+          font-family: 'Courier New', monospace;
+        ">
+          {betAmount.toFixed(2)}
+        </div>
+        <button
+          on:click={increaseBet}
+          style="
+            width: 40px;
+            height: 40px;
+            background-image: url('{controlsPath}/Control_upperbet_select.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            border: none;
+            cursor: pointer;
+            background-color: transparent;
+          "
+          title="Increase Bet"
+        ></button>
+      </div>
+    </div>
+    
+    <!-- BALANCE näyttö -->
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+      <div style="color: #00ff00; font-size: 12px; font-weight: bold;">BALANCE</div>
+      <div style="
+        color: #fff;
+        font-size: 20px;
+        font-weight: bold;
+        font-family: 'Courier New', monospace;
+      ">
+        {balance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+      </div>
+    </div>
+    
+    <!-- PLAY nappi (keskellä, iso) -->
+    <button
+      on:click={spin}
+      disabled={isAutoPlaying}
+      style="
+        width: 80px;
+        height: 80px;
+        background-image: url('{controlsPath}/Control_playbutton.png');
+        background-size: contain;
+        background-repeat: no-repeat;
+        border: none;
+        cursor: {isAutoPlaying ? 'not-allowed' : 'pointer'};
+        background-color: transparent;
+        opacity: {isAutoPlaying ? 0.5 : 1};
+      "
+      title="SPIN"
+    ></button>
+    
+    <!-- Autoplay nappi -->
+    <button
+      on:click={() => { showAutoPlayMenu = !showAutoPlayMenu; }}
+      style="
+        width: 50px;
+        height: 50px;
+        background-image: url('{controlsPath}/{isAutoPlaying ? 'Control_autoplay_stop.png' : 'Control_autoplay_select.png'}');
+        background-size: contain;
+        background-repeat: no-repeat;
+        border: none;
+        cursor: pointer;
+        background-color: transparent;
+      "
+      title="Autoplay"
+    ></button>
+    
+    <!-- Fast Play nappi -->
+    <button
+      on:click={() => { isFastPlayEnabled = !isFastPlayEnabled; }}
+      style="
+        width: 50px;
+        height: 50px;
+        background-image: url('{controlsPath}/{isFastPlayEnabled ? 'Control_fastplay_select.png' : 'Control_fastplay_deselect.png'}');
+        background-size: contain;
+        background-repeat: no-repeat;
+        border: none;
+        cursor: pointer;
+        background-color: transparent;
+      "
+      title="Fast Play"
+    ></button>
+    
+    <!-- WIN näyttö -->
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+      <div style="color: #00ff00; font-size: 12px; font-weight: bold;">WIN</div>
+      <div style="
+        color: #ffd700;
+        font-size: 20px;
+        font-weight: bold;
+        font-family: 'Courier New', monospace;
+      ">
+        {totalWin.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+      </div>
+    </div>
+    
+    <!-- Menu nappi -->
+    <button
+      on:click={() => { showPaytable = !showPaytable; }}
+      style="
+        width: 50px;
+        height: 50px;
+        background-image: url('{controlsPath}/Control_menubar.png');
+        background-size: contain;
+        background-repeat: no-repeat;
+        border: none;
+        cursor: pointer;
+        background-color: transparent;
+      "
+      title="Menu"
+    ></button>
+  </div>
+  
+  <!-- Oikea pää -->
+  <img 
+    src="{controlsPath}/Control_rightend.png" 
+    alt="Right End"
+    style="height: {CONTROL_PANEL_HEIGHT}px; flex-shrink: 0;"
+  />
+</div>
