@@ -151,6 +151,12 @@
   const REEL_FRAMES_X = 250;           // Kehysten X-sijainti (sama kuin kehyksissä)
   const REEL_FRAMES_WIDTH = 945;       // Kehysten leveys (arvio, päivitetään dynaamisesti)
   
+  // Control Panel Fine-Tuning (säädettävissä)
+  const CONTROL_PANEL_OFFSET_X = 0;    // X-siirtymä (+ = oikealle, - = vasemmalle)
+  const CONTROL_PANEL_OFFSET_Y = 0;    // Y-siirtymä (+ = alaspäin, - = ylöspäin)
+  const CONTROL_PANEL_SCALE_X = 1.0;   // X-skaalaus (1.0 = normaali, >1 = leveämpi, <1 = kapeampi)
+  const CONTROL_PANEL_SCALE_Y = 1.0;   // Y-skaalaus (1.0 = normaali, >1 = korkeampi, <1 = matalampi)
+  
   // LOGO-asetukset (helppo säätää)
   const LOGO_SCALE = 0.8;     // Logon koko kerroin (1.0 = alkuperäinen koko)
   const LOGO_X = 50;          // Logon X-siirtymä keskikohdasta (+ = oikealle, - = vasemmalle)
@@ -2405,10 +2411,10 @@
 -->
 <div style="
   position: absolute;
-  left: {reelFramesSpriteRef ? reelFramesSpriteRef.x : REEL_FRAMES_X}px;
-  top: {CONTROL_PANEL_Y}px;
-  width: {controlPanelWidth}px;
-  height: {CONTROL_PANEL_HEIGHT}px;
+  left: {(reelFramesSpriteRef ? reelFramesSpriteRef.x : REEL_FRAMES_X) + CONTROL_PANEL_OFFSET_X}px;
+  top: {CONTROL_PANEL_Y + CONTROL_PANEL_OFFSET_Y}px;
+  width: {controlPanelWidth * CONTROL_PANEL_SCALE_X}px;
+  height: {CONTROL_PANEL_HEIGHT * CONTROL_PANEL_SCALE_Y}px;
   display: flex;
   align-items: center;
   z-index: 1000;
@@ -2417,13 +2423,13 @@
   <img 
     src="{controlsPath}/Control_leftend.png" 
     alt="Left End"
-    style="height: {CONTROL_PANEL_HEIGHT}px; flex-shrink: 0;"
+    style="height: {CONTROL_PANEL_HEIGHT * CONTROL_PANEL_SCALE_Y}px; flex-shrink: 0;"
   />
   
   <!-- Keskiosa (skaalautuva tausta) -->
   <div style="
     flex-grow: 1;
-    height: {CONTROL_PANEL_HEIGHT}px;
+    height: {CONTROL_PANEL_HEIGHT * CONTROL_PANEL_SCALE_Y}px;
     background-image: url('{controlsPath}/Control_scalablebg.png');
     background-size: 100% 100%;
     background-repeat: no-repeat;
@@ -2574,6 +2580,6 @@
   <img 
     src="{controlsPath}/Control_rightend.png" 
     alt="Right End"
-    style="height: {CONTROL_PANEL_HEIGHT}px; flex-shrink: 0;"
+    style="height: {CONTROL_PANEL_HEIGHT * CONTROL_PANEL_SCALE_Y}px; flex-shrink: 0;"
   />
 </div>
