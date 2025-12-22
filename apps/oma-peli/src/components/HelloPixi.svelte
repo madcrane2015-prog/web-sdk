@@ -147,20 +147,20 @@
   
   // ===== CONTROL PANEL ASETUKSET (v1.1.0) =====
   const CONTROL_PANEL_Y = 750;         // Paneelin Y-koordinaatti (sama kuin vanha BUTTON_Y)
-  const CONTROL_PANEL_HEIGHT = 120;    // Paneelin korkeus
+  const CONTROL_PANEL_HEIGHT = 80;    // Paneelin korkeus
   const REEL_FRAMES_X = 250;           // Kehysten X-sijainti (sama kuin kehyksissä)
   const REEL_FRAMES_WIDTH = 945;       // Kehysten leveys (arvio, päivitetään dynaamisesti)
   
   // Control Panel Fine-Tuning (säädettävissä)
-  const CONTROL_PANEL_OFFSET_X = 300;    // X-siirtymä (+ = oikealle, - = vasemmalle)
-  const CONTROL_PANEL_OFFSET_Y = 20;    // Y-siirtymä (+ = alaspäin, - = ylöspäin)
+  const CONTROL_PANEL_OFFSET_X = 425;    // X-siirtymä (+ = oikealle, - = vasemmalle)
+  const CONTROL_PANEL_OFFSET_Y = 70;    // Y-siirtymä (+ = alaspäin, - = ylöspäin)
   const CONTROL_PANEL_SCALE_X = 1.0;   // X-skaalaus (1.0 = normaali, >1 = leveämpi, <1 = kapeampi)
-  const CONTROL_PANEL_SCALE_Y = 1.0;   // Y-skaalaus (1.0 = normaali, >1 = korkeampi, <1 = matalampi)
+  const CONTROL_PANEL_SCALE_Y = 1.1;   // Y-skaalaus (1.0 = normaali, >1 = korkeampi, <1 = matalampi)
   
   // LOGO-asetukset (helppo säätää)
-  const LOGO_SCALE = 0.8;     // Logon koko kerroin (1.0 = alkuperäinen koko)
-  const LOGO_X = 50;          // Logon X-siirtymä keskikohdasta (+ = oikealle, - = vasemmalle)
-  const LOGO_Y = 30;          // Logon Y-koordinaatti (+ = alaspäin, - = ylöspäin)
+  const LOGO_SCALE = 0.5;     // Logon koko kerroin (1.0 = alkuperäinen koko)
+  const LOGO_X = 40;          // Logon X-siirtymä keskikohdasta (+ = oikealle, - = vasemmalle)
+  const LOGO_Y = 0;          // Logon Y-koordinaatti (+ = alaspäin, - = ylöspäin)
   
   // Taustakuvan (bg.jpg) säädöt
   const BACKGROUND_Y_SHIFT = -40;  // Pystysiirtymä (+ = alaspäin, - = ylöspäin)
@@ -2510,23 +2510,27 @@
       style="height: {CONTROL_PANEL_HEIGHT * CONTROL_PANEL_SCALE_Y * 0.8}px; flex-shrink: 0;"
     />
     
-    <!-- PLAY nappi (keskellä, iso) -->
-    <button
-      on:click={spin}
-      disabled={isAutoPlaying}
-      style="
-        width: 80px;
-        height: 80px;
-        background-image: url('{controlsPath}/Control_playbutton.png');
-        background-size: contain;
-        background-repeat: no-repeat;
-        border: none;
-        cursor: {isAutoPlaying ? 'not-allowed' : 'pointer'};
-        background-color: transparent;
-        opacity: {isAutoPlaying ? 0.5 : 1};
-      "
-      title="SPIN"
-    ></button>
+    <!-- PLAY nappi (keskellä, iso - tulee paneelin yli) -->
+    <div style="position: relative; display: flex; align-items: center; justify-content: center;">
+      <button
+        on:click={spin}
+        disabled={isAutoPlaying}
+        style="
+          width: 140px;
+          height: 140px;
+          background-image: url('{controlsPath}/Control_playbutton.png');
+          background-size: contain;
+          background-repeat: no-repeat;
+          border: none;
+          cursor: {isAutoPlaying ? 'not-allowed' : 'pointer'};
+          background-color: transparent;
+          opacity: {isAutoPlaying ? 0.5 : 1};
+          position: relative;
+          z-index: 10;
+        "
+        title="SPIN"
+      ></button>
+    </div>
     
     <!-- Divider -->
     <img 
@@ -2536,36 +2540,57 @@
     />
     
     <!-- Autoplay nappi -->
-    <button
-      on:click={() => { showAutoPlayMenu = !showAutoPlayMenu; }}
-      style="
-        width: 50px;
-        height: 50px;
-        background-image: url('{controlsPath}/{isAutoPlaying ? 'Control_autoplay_stop.png' : 'Control_autoplay_select.png'}');
-        background-size: contain;
-        background-repeat: no-repeat;
-        border: none;
-        cursor: pointer;
-        background-color: transparent;
-      "
-      title="Autoplay"
-    ></button>
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+      <button
+        on:click={() => { showAutoPlayMenu = !showAutoPlayMenu; }}
+        style="
+          width: 50px;
+          height: 50px;
+          background-image: url('{controlsPath}/{isAutoPlaying ? 'Control_autoplay_stop.png' : 'Control_autoplay_select.png'}');
+          background-size: contain;
+          background-repeat: no-repeat;
+          border: none;
+          cursor: pointer;
+          background-color: transparent;
+        "
+        title="Autoplay"
+      ></button>
+      <img 
+        src="{controlsPath}/{isAutoPlaying ? 'Control_bar_select.png' : 'Control_bar_deselect.png'}" 
+        alt="Status bar"
+        style="width: 50px; height: auto;"
+      />
+    </div>
+    
+    <!-- Divider -->
+    <img 
+      src="{controlsPath}/Control_divider.png" 
+      alt="Divider"
+      style="height: {CONTROL_PANEL_HEIGHT * CONTROL_PANEL_SCALE_Y * 0.8}px; flex-shrink: 0;"
+    />
     
     <!-- Fast Play nappi -->
-    <button
-      on:click={() => { isFastPlayEnabled = !isFastPlayEnabled; }}
-      style="
-        width: 50px;
-        height: 50px;
-        background-image: url('{controlsPath}/{isFastPlayEnabled ? 'Control_fastplay_select.png' : 'Control_fastplay_deselect.png'}');
-        background-size: contain;
-        background-repeat: no-repeat;
-        border: none;
-        cursor: pointer;
-        background-color: transparent;
-      "
-      title="Fast Play"
-    ></button>
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+      <button
+        on:click={() => { isFastPlayEnabled = !isFastPlayEnabled; }}
+        style="
+          width: 50px;
+          height: 50px;
+          background-image: url('{controlsPath}/{isFastPlayEnabled ? 'Control_fastplay_select.png' : 'Control_fastplay_deselect.png'}');
+          background-size: contain;
+          background-repeat: no-repeat;
+          border: none;
+          cursor: pointer;
+          background-color: transparent;
+        "
+        title="Fast Play"
+      ></button>
+      <img 
+        src="{controlsPath}/{isFastPlayEnabled ? 'Control_bar_select.png' : 'Control_bar_deselect.png'}" 
+        alt="Status bar"
+        style="width: 50px; height: auto;"
+      />
+    </div>
     
     <!-- Divider -->
     <img 
