@@ -152,8 +152,8 @@
   const REEL_FRAMES_WIDTH = 945;       // Kehysten leveys (arvio, päivitetään dynaamisesti)
   
   // Control Panel Fine-Tuning (säädettävissä)
-  const CONTROL_PANEL_OFFSET_X = 425;    // X-siirtymä (+ = oikealle, - = vasemmalle)
-  const CONTROL_PANEL_OFFSET_Y = 70;    // Y-siirtymä (+ = alaspäin, - = ylöspäin)
+  const CONTROL_PANEL_OFFSET_X = -230;    // X-siirtymä (+ = oikealle, - = vasemmalle)
+  const CONTROL_PANEL_OFFSET_Y = -390;    // Y-siirtymä (+ = alaspäin, - = ylöspäin)
   const CONTROL_PANEL_SCALE_X = 1.0;   // X-skaalaus (1.0 = normaali, >1 = leveämpi, <1 = kapeampi)
   const CONTROL_PANEL_SCALE_Y = 1.1;   // Y-skaalaus (1.0 = normaali, >1 = korkeampi, <1 = matalampi)
   
@@ -2408,13 +2408,20 @@
   - Vasen pää (Control_leftend.png)
   - Keskikohta (Control_scalablebg.png - skaalautuva)
   - Oikea pää (Control_rightend.png)
+  
+  v1.1.3: Muutettu käyttämään transform-pohjaista positionointia selaimen zoomin tukemiseksi
 -->
 <div style="
   position: absolute;
-  left: {(reelFramesSpriteRef ? reelFramesSpriteRef.x : REEL_FRAMES_X) + CONTROL_PANEL_OFFSET_X}px;
-  top: {CONTROL_PANEL_Y + CONTROL_PANEL_OFFSET_Y}px;
-  width: {controlPanelWidth * CONTROL_PANEL_SCALE_X}px;
-  height: {CONTROL_PANEL_HEIGHT * CONTROL_PANEL_SCALE_Y}px;
+  left: 50%;
+  top: 50%;
+  transform: translate(
+    calc(-50% + {(reelFramesSpriteRef ? reelFramesSpriteRef.x : REEL_FRAMES_X) + CONTROL_PANEL_OFFSET_X}px),
+    calc(-50% + {CONTROL_PANEL_Y + CONTROL_PANEL_OFFSET_Y}px)
+  ) scale({CONTROL_PANEL_SCALE_X}, {CONTROL_PANEL_SCALE_Y});
+  transform-origin: center center;
+  width: {controlPanelWidth}px;
+  height: {CONTROL_PANEL_HEIGHT}px;
   display: flex;
   align-items: center;
   z-index: 1000;
@@ -2423,13 +2430,13 @@
   <img 
     src="{controlsPath}/Control_leftend.png" 
     alt="Left End"
-    style="height: {CONTROL_PANEL_HEIGHT * CONTROL_PANEL_SCALE_Y}px; flex-shrink: 0;"
+    style="height: {CONTROL_PANEL_HEIGHT}px; flex-shrink: 0;"
   />
   
   <!-- Keskiosa (skaalautuva tausta) -->
   <div style="
     flex-grow: 1;
-    height: {CONTROL_PANEL_HEIGHT * CONTROL_PANEL_SCALE_Y}px;
+    height: {CONTROL_PANEL_HEIGHT}px;
     background-image: url('{controlsPath}/Control_scalablebg.png');
     background-size: 100% 100%;
     background-repeat: no-repeat;
@@ -2487,7 +2494,7 @@
     <img 
       src="{controlsPath}/Control_divider.png" 
       alt="Divider"
-      style="height: {CONTROL_PANEL_HEIGHT * CONTROL_PANEL_SCALE_Y * 0.8}px; flex-shrink: 0;"
+      style="height: {CONTROL_PANEL_HEIGHT * 0.8}px; flex-shrink: 0;"
     />
     
     <!-- BALANCE näyttö -->
@@ -2507,19 +2514,20 @@
     <img 
       src="{controlsPath}/Control_divider.png" 
       alt="Divider"
-      style="height: {CONTROL_PANEL_HEIGHT * CONTROL_PANEL_SCALE_Y * 0.8}px; flex-shrink: 0;"
+      style="height: {CONTROL_PANEL_HEIGHT * 0.8}px; flex-shrink: 0;"
     />
     
     <!-- PLAY nappi (keskellä, iso - tulee paneelin yli) -->
-    <div style="position: relative; display: flex; align-items: center; justify-content: center;">
+    <div style="position: relative; display: flex; align-items: center; justify-content: center; flex-grow: 0.5;">
       <button
         on:click={spin}
         disabled={isAutoPlaying}
         style="
-          width: 140px;
-          height: 140px;
+          width: 130px;
+          height: 130px;
           background-image: url('{controlsPath}/Control_playbutton.png');
-          background-size: contain;
+          background-size: cover;
+          background-position: center;
           background-repeat: no-repeat;
           border: none;
           cursor: {isAutoPlaying ? 'not-allowed' : 'pointer'};
@@ -2527,6 +2535,7 @@
           opacity: {isAutoPlaying ? 0.5 : 1};
           position: relative;
           z-index: 10;
+          border-radius: 50%;
         "
         title="SPIN"
       ></button>
@@ -2536,7 +2545,7 @@
     <img 
       src="{controlsPath}/Control_divider.png" 
       alt="Divider"
-      style="height: {CONTROL_PANEL_HEIGHT * CONTROL_PANEL_SCALE_Y * 0.8}px; flex-shrink: 0;"
+      style="height: {CONTROL_PANEL_HEIGHT * 0.8}px; flex-shrink: 0;"
     />
     
     <!-- Autoplay nappi -->
@@ -2566,7 +2575,7 @@
     <img 
       src="{controlsPath}/Control_divider.png" 
       alt="Divider"
-      style="height: {CONTROL_PANEL_HEIGHT * CONTROL_PANEL_SCALE_Y * 0.8}px; flex-shrink: 0;"
+      style="height: {CONTROL_PANEL_HEIGHT * 0.8}px; flex-shrink: 0;"
     />
     
     <!-- Fast Play nappi -->
@@ -2596,7 +2605,7 @@
     <img 
       src="{controlsPath}/Control_divider.png" 
       alt="Divider"
-      style="height: {CONTROL_PANEL_HEIGHT * CONTROL_PANEL_SCALE_Y * 0.8}px; flex-shrink: 0;"
+      style="height: {CONTROL_PANEL_HEIGHT * 0.8}px; flex-shrink: 0;"
     />
     
     <!-- WIN näyttö -->
@@ -2616,7 +2625,7 @@
     <img 
       src="{controlsPath}/Control_divider.png" 
       alt="Divider"
-      style="height: {CONTROL_PANEL_HEIGHT * CONTROL_PANEL_SCALE_Y * 0.8}px; flex-shrink: 0;"
+      style="height: {CONTROL_PANEL_HEIGHT * 0.8}px; flex-shrink: 0;"
     />
     
     <!-- Menu nappi -->
@@ -2640,6 +2649,6 @@
   <img 
     src="{controlsPath}/Control_rightend.png" 
     alt="Right End"
-    style="height: {CONTROL_PANEL_HEIGHT * CONTROL_PANEL_SCALE_Y}px; flex-shrink: 0;"
+    style="height: {CONTROL_PANEL_HEIGHT}px; flex-shrink: 0;"
   />
 </div>
