@@ -152,8 +152,8 @@
   const REEL_FRAMES_WIDTH = 945;       // Kehysten leveys (arvio, päivitetään dynaamisesti)
   
   // Control Panel Fine-Tuning (säädettävissä)
-  const CONTROL_PANEL_OFFSET_X = 0;    // X-siirtymä (+ = oikealle, - = vasemmalle)
-  const CONTROL_PANEL_OFFSET_Y = 0;    // Y-siirtymä (+ = alaspäin, - = ylöspäin)
+  const CONTROL_PANEL_OFFSET_X = 300;    // X-siirtymä (+ = oikealle, - = vasemmalle)
+  const CONTROL_PANEL_OFFSET_Y = 20;    // Y-siirtymä (+ = alaspäin, - = ylöspäin)
   const CONTROL_PANEL_SCALE_X = 1.0;   // X-skaalaus (1.0 = normaali, >1 = leveämpi, <1 = kapeampi)
   const CONTROL_PANEL_SCALE_Y = 1.0;   // Y-skaalaus (1.0 = normaali, >1 = korkeampi, <1 = matalampi)
   
@@ -2483,6 +2483,13 @@
       </div>
     </div>
     
+    <!-- Divider -->
+    <img 
+      src="{controlsPath}/Control_divider.png" 
+      alt="Divider"
+      style="height: {CONTROL_PANEL_HEIGHT * CONTROL_PANEL_SCALE_Y * 0.8}px; flex-shrink: 0;"
+    />
+    
     <!-- BALANCE näyttö -->
     <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
       <div style="color: #00ff00; font-size: 12px; font-weight: bold;">BALANCE</div>
@@ -2495,6 +2502,13 @@
         {balance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
       </div>
     </div>
+    
+    <!-- Divider -->
+    <img 
+      src="{controlsPath}/Control_divider.png" 
+      alt="Divider"
+      style="height: {CONTROL_PANEL_HEIGHT * CONTROL_PANEL_SCALE_Y * 0.8}px; flex-shrink: 0;"
+    />
     
     <!-- PLAY nappi (keskellä, iso) -->
     <button
@@ -2513,6 +2527,13 @@
       "
       title="SPIN"
     ></button>
+    
+    <!-- Divider -->
+    <img 
+      src="{controlsPath}/Control_divider.png" 
+      alt="Divider"
+      style="height: {CONTROL_PANEL_HEIGHT * CONTROL_PANEL_SCALE_Y * 0.8}px; flex-shrink: 0;"
+    />
     
     <!-- Autoplay nappi -->
     <button
@@ -2546,6 +2567,13 @@
       title="Fast Play"
     ></button>
     
+    <!-- Divider -->
+    <img 
+      src="{controlsPath}/Control_divider.png" 
+      alt="Divider"
+      style="height: {CONTROL_PANEL_HEIGHT * CONTROL_PANEL_SCALE_Y * 0.8}px; flex-shrink: 0;"
+    />
+    
     <!-- WIN näyttö -->
     <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
       <div style="color: #00ff00; font-size: 12px; font-weight: bold;">WIN</div>
@@ -2558,6 +2586,13 @@
         {totalWin.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
       </div>
     </div>
+    
+    <!-- Divider -->
+    <img 
+      src="{controlsPath}/Control_divider.png" 
+      alt="Divider"
+      style="height: {CONTROL_PANEL_HEIGHT * CONTROL_PANEL_SCALE_Y * 0.8}px; flex-shrink: 0;"
+    />
     
     <!-- Menu nappi -->
     <button
