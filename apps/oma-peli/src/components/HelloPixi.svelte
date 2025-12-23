@@ -97,6 +97,52 @@
     }
   }
   
+  /* Glare effect for PLAY button */
+  .play-button-wrapper {
+    position: relative;
+    display: inline-block;
+    overflow: hidden;
+    border-radius: 50%;
+  }
+
+  .play-button-wrapper::after {
+    content: "";
+    position: absolute;
+    top: -150%;
+    left: -150%;
+    width: 300%;
+    height: 300%;
+    background: linear-gradient(
+      45deg,
+      rgba(255,255,255,0) 40%,
+      rgba(255,255,255,0.55) 50%,
+      rgba(255,255,255,0) 60%
+    );
+    transform: translateX(-100%) translateY(-100%);
+    pointer-events: none;
+    opacity: 0;
+    filter: blur(2px);
+  }
+
+  .play-button-wrapper.glare-animate::after {
+    animation: glareSweep 1.2s ease-out forwards;
+    opacity: 1;
+  }
+
+  @keyframes glareSweep {
+    0% {
+      transform: translate(-120%, -120%);
+      opacity: 0;
+    }
+    15% {
+      opacity: 1;
+    }
+    100% {
+      transform: translate(120%, 120%);
+      opacity: 0;
+    }
+  }
+  
   .bet-btn-minus:hover {
     background: #ff6666 !important;
   }
@@ -276,11 +322,7 @@
         onload: () => {
           console.log('✅ Background music loaded');
           musicLoaded = true;
-          // Käynnistä taustamusiikki automaattisesti kun se on ladattu
-          if (musicEnabled) {
-            backgroundMusic.play();
-            console.log('🎵 Background music auto-started');
-          }
+          // Musiikki käynnistyy vain kun käyttäjä painaa PLAY-nappia
         },
         onloaderror: (id: any, error: any) => {
           console.warn('⚠️ Background music not found (generate with Suno AI):', error);
@@ -324,6 +366,27 @@
       backgroundMusic.fade(backgroundMusic.volume(), 0, 500); // Fade out 500ms
       setTimeout(() => backgroundMusic.stop(), 500);
     }
+  }
+  
+  // Feidaa musiikki alas kierroksen lopussa
+  function fadeOutMusicAfterSpin() {
+    if (backgroundMusic && backgroundMusic.playing()) {
+      const currentVolume = backgroundMusic.volume();
+      backgroundMusic.fade(currentVolume, 0, 1000); // Fade out 1 second
+      setTimeout(() => {
+        backgroundMusic.stop();
+        backgroundMusic.volume(0.3); // Reset volume for next spin
+      }, 1000);
+    }
+  }
+  
+  // Glare effect for play button
+  let playButtonGlareActive = $state(false);
+  function triggerPlayButtonGlare() {
+    playButtonGlareActive = false;
+    setTimeout(() => {
+      playButtonGlareActive = true;
+    }, 10);
   }
   
   // Toggle musiikin on/off
@@ -1470,6 +1533,10 @@
     // Tarkista voitot kun kaikki kiekot ovat pysähtyneet JA voittoja ei ole vielä tarkistettu
     if (!isShowingWin && !winsCheckedForCurrentSpin && reels.every(r => r.state === "stopped")) {
       winsCheckedForCurrentSpin = true; // Merkitse että voitot on tarkistettu
+      
+      // Feidaa musiikki alas kun kierros on ohi
+      fadeOutMusicAfterSpin();
+      
       const wins = checkWins();
       console.log(`Checking wins, found ${wins.length} wins`);
       
@@ -1546,6 +1613,15 @@
   // SPIN NAPPI - Käynnistää uuden pyöräytyksen
   // ===================================================================
   function spin() {
+    // Käynnistä taustamusiikki ensimmäisellä kierroksella
+    if (backgroundMusic && musicEnabled && !backgroundMusic.playing()) {
+      backgroundMusic.play();
+      console.log('🎵 Background music started on first spin');
+    }
+    
+    // Trigger glare effect on play button
+    triggerPlayButtonGlare();
+    
     // Free spins mode - no bet deduction
     if (isFreeSpinMode && freeSpinsRemaining > 0) {
       freeSpinsRemaining--;
@@ -2532,26 +2608,28 @@
     
     <!-- PLAY nappi (keskellä, iso - tulee paneelin yli) -->
     <div style="position: relative; display: flex; align-items: center; justify-content: center; flex-grow: 0.5;">
-      <button
-        on:click={spin}
-        disabled={isAutoPlaying}
-        style="
-          width: 130px;
-          height: 130px;
-          background-image: url('{controlsPath}/Control_playbutton.png');
-          background-size: cover;
-          background-position: center;
-          background-repeat: no-repeat;
-          border: none;
-          cursor: {isAutoPlaying ? 'not-allowed' : 'pointer'};
-          background-color: transparent;
-          opacity: {isAutoPlaying ? 0.5 : 1};
-          position: relative;
-          z-index: 10;
-          border-radius: 50%;
-        "
-        title="SPIN"
-      ></button>
+      <div class="play-button-wrapper {playButtonGlareActive ? 'glare-animate' : ''}">
+        <button
+          on:click={spin}
+          disabled={isAutoPlaying}
+          style="
+            width: 130px;
+            height: 130px;
+            background-image: url('{controlsPath}/Control_playbutton.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            border: none;
+            cursor: {isAutoPlaying ? 'not-allowed' : 'pointer'};
+            background-color: transparent;
+            opacity: {isAutoPlaying ? 0.5 : 1};
+            position: relative;
+            z-index: 10;
+            border-radius: 50%;
+          "
+          title="SPIN"
+        ></button>
+      </div>
     </div>
     
     <!-- Divider -->
