@@ -6,7 +6,7 @@
   ============================================================================
   HelloPixi.svelte - ROCKABILLY REELS Slot Machine
   ============================================================================
-  VERSION: 1.1.4 (December 2025) - Control Panel Responsive Scaling
+  VERSION: 1.1.5 (December 2025) - Updated stop.mp3 sound
   
   GAME ARCHITECTURE:
   - 5-reel slot with 3×3×1×3×3 grid layout (13 total independent reels)
@@ -66,6 +66,7 @@
   - Wild on middle reel: 55% probability
   
   VERSION HISTORY:
+  - v1.1.5: Updated stop.mp3 sound effect
   - v1.1.4: Fixed control panel responsive scaling (transform-based positioning)
   - v1.1.3: Enhanced control panel (enlarged PLAY button, status bars)
   - v1.1.2: Added divider graphics between control panel sections
@@ -222,7 +223,7 @@
   };
   
   // Version number
-  const GAME_VERSION = "1.1.4"; // Update this with each deploy
+  const GAME_VERSION = "1.1.5"; // Update this with each deploy
   
   // Äänien hallinta
   let soundEnabled = $state(true);              // Voi käyttäjä halutessaan mykistää
