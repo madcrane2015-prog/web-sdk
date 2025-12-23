@@ -6,7 +6,7 @@
   ============================================================================
   HelloPixi.svelte - ROCKABILLY REELS Slot Machine
   ============================================================================
-  VERSION: 1.1.5 (December 2025) - Updated stop.mp3 sound
+  VERSION: Auto-loaded from package.json
   
   GAME ARCHITECTURE:
   - 5-reel slot with 3×3×1×3×3 grid layout (13 total independent reels)
@@ -110,6 +110,10 @@
   }
 </style>
 <script lang="ts">
+  // Package.json version - automaattinen päivitys
+  import pkg from '../../package.json';
+  const GAME_VERSION = pkg.version;
+  
   // Svelte lifecycle ja routing
   import { onMount } from "svelte";
   import { base } from "$app/paths";
@@ -221,9 +225,6 @@
     stop: `${base}/sounds/stop.mp3`,     // Kiekon pysähtymisääni (chunk)
     win: `${base}/sounds/win.mp3`        // Voittoääni (tulevaisuudessa)
   };
-  
-  // Version number
-  const GAME_VERSION = "1.1.5"; // Update this with each deploy
   
   // Äänien hallinta
   let soundEnabled = $state(true);              // Voi käyttäjä halutessaan mykistää
