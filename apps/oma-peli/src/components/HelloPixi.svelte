@@ -276,6 +276,11 @@
         onload: () => {
           console.log('✅ Background music loaded');
           musicLoaded = true;
+          // Käynnistä taustamusiikki automaattisesti kun se on ladattu
+          if (musicEnabled) {
+            backgroundMusic.play();
+            console.log('🎵 Background music auto-started');
+          }
         },
         onloaderror: (id: any, error: any) => {
           console.warn('⚠️ Background music not found (generate with Suno AI):', error);
