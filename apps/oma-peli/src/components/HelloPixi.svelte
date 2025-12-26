@@ -164,6 +164,9 @@
   import { onMount } from "svelte";
   import { base } from "$app/paths";
   
+  // Win animation component
+  import VinylWinAnimation from './VinylWinAnimation.svelte';
+  
   // PixiJS kirjaston komponentit pelimoottoria varten
   import {
     Application,    // Pelin pääsovellus
@@ -388,6 +391,9 @@
       playButtonGlareActive = true;
     }, 10);
   }
+  
+  // Vinyl win animation reference
+  let vinylWinAnimationRef: any = null;
   
   // Toggle musiikin on/off
   function toggleMusic() {
@@ -1691,6 +1697,20 @@
       if (winMultiplier >= 10) {
         playWinTheme();
       }
+      
+      // v1.1.6: Show vinyl win animation based on win size
+      if (vinylWinAnimationRef) {
+        if (winMultiplier >= 50) {
+          // JACKPOT win (50x+)
+          vinylWinAnimationRef.show();
+        } else if (winMultiplier >= 20) {
+          // MEDIUM win (20x-49x)
+          setTimeout(() => vinylWinAnimationRef.show(), 200);
+        } else if (winMultiplier >= 10) {
+          // SMALL win (10x-19x)
+          setTimeout(() => vinylWinAnimationRef.show(), 400);
+        }
+      }
     }
   }
   
@@ -2743,3 +2763,9 @@
     style="height: {CONTROL_PANEL_HEIGHT}px; flex-shrink: 0;"
   />
 </div>
+
+<!-- Vinyl Win Animation -->
+<VinylWinAnimation 
+  bind:this={vinylWinAnimationRef}
+  winLevel={totalWin / betAmount >= 50 ? 'jackpot' : totalWin / betAmount >= 20 ? 'medium' : 'small'}
+/>
