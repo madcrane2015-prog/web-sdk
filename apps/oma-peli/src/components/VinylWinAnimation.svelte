@@ -3,19 +3,20 @@
 
 	interface Props {
 		winLevel: 'small' | 'medium' | 'jackpot';
+		winAmount?: number;
 		onComplete?: () => void;
 	}
 
-	let { winLevel = 'small', onComplete }: Props = $props();
+	let { winLevel = 'small', winAmount = 0, onComplete }: Props = $props();
 
 	let visible = $state(false);
 	let animating = $state(false);
 
-	// Win level configurations
+	// Win level configurations (reduced spread to keep on screen)
 	const config = {
-		small: { vinyls: 5, sparkles: 8 },
-		medium: { vinyls: 12, sparkles: 16 },
-		jackpot: { vinyls: 24, sparkles: 30 }
+		small: { vinyls: 5, sparkles: 8, maxRadius: 150 },
+		medium: { vinyls: 12, sparkles: 16, maxRadius: 200 },
+		jackpot: { vinyls: 24, sparkles: 30, maxRadius: 280 }
 	};
 
 	const currentConfig = $derived(config[winLevel]);
@@ -23,23 +24,22 @@
 	// Label colors for variety
 	const labelColors = ['#f04e37', '#ffd966', '#ff8533', '#4ecdc4', '#ff6b9d'];
 
-	// Generate vinyl positions (center-weighted)
+	// Generate vinyl positions (center-weighted, stays on screen)
 	function generateVinylPositions(count: number) {
 		const positions = [];
 		const centerX = 512;
 		const centerY = 400;
+		const maxRadius = currentConfig.maxRadius;
 
 		for (let i = 0; i < count; i++) {
-			// More vinyls = wider spread
-			const maxRadius = winLevel === 'jackpot' ? 350 : winLevel === 'medium' ? 280 : 220;
 			const angle = (Math.PI * 2 * i) / count + Math.random() * 0.4;
-			const radius = Math.random() * maxRadius * 0.7 + maxRadius * 0.3;
+			const radius = Math.random() * maxRadius * 0.6 + maxRadius * 0.3; // Tighter spread
 
 			positions.push({
 				x: centerX + Math.cos(angle) * radius,
 				y: centerY + Math.sin(angle) * radius,
 				rotation: Math.random() * 30 - 15,
-				scale: 0.6 + Math.random() * 0.6,
+				scale: 0.4 + Math.random() * 0.3, // Smaller vinyls (0.4-0.7 vs 0.6-1.2)
 				delay: i * 0.05,
 				color: labelColors[i % labelColors.length]
 			});
@@ -117,10 +117,10 @@
 		height: 100%;
 	}
 
-	/* Vinyl zoom-in animation */
+	/* Vinyl zoom-in animation - starts from tiny center point */
 	@keyframes vinylZoomIn {
 		0% {
-			transform: translate(var(--tx), var(--ty)) scale(0) rotate(0deg);
+			transform: translate(512px, 400px) scale(0.01) rotate(0deg);
 			opacity: 0;
 		}
 		50% {
@@ -174,10 +174,59 @@
 		animation: sparkleTwinkle var(--duration) ease-in-out infinite;
 		animation-delay: var(--sparkle-delay);
 	}
+
+	/* Win amount display */
+	.win-amount-display {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		font-size: 120px;
+		font-weight: bold;
+		color: #ffd700;
+		text-shadow: 0 0 20px rgba(255, 215, 0, 0.8), 0 0 40px rgba(255, 215, 0, 0.6),
+			0 4px 8px rgba(0, 0, 0, 0.8);
+		font-family: 'Arial Black', sans-serif;
+		z-index: 10;
+		animation: winAmountPulse 1s ease-in-out infinite;
+		pointer-events: none;
+	}
+
+	@keyframes winAmountPulse {
+		0%,
+		100% {
+			transform: translate(-50%, -50%) scale(1);
+		}
+		50% {
+			transform: translate(-50%, -50%) scale(1.1);
+		}
+	}
+
+	.win-label {
+		position: absolute;
+		top: 35%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		font-size: 48px;
+		font-weight: bold;
+		color: #ffffff;
+		text-shadow: 0 0 15px rgba(255, 255, 255, 0.8), 0 4px 8px rgba(0, 0, 0, 0.8);
+		font-family: 'Arial Black', sans-serif;
+		z-index: 10;
+		pointer-events: none;
+	}
 </style>
 
 {#if visible}
 	<div class="vinyl-win-container" class:visible={animating} class:hiding={!animating}>
+		<!-- Win amount display -->
+		{#if winAmount > 0}
+			<div class="win-label">BIG WIN!</div>
+			<div class="win-amount-display">
+				{winAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+			</div>
+		{/if}
+
 		<svg class="vinyl-canvas" viewBox="0 0 1024 800" xmlns="http://www.w3.org/2000/svg">
 			<!-- Define reusable vinyl record symbol -->
 			<defs>

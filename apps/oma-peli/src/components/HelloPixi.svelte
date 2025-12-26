@@ -2768,4 +2768,5 @@
 <VinylWinAnimation 
   bind:this={vinylWinAnimationRef}
   winLevel={totalWin / betAmount >= 50 ? 'jackpot' : totalWin / betAmount >= 20 ? 'medium' : 'small'}
+  winAmount={totalWin}
 />
