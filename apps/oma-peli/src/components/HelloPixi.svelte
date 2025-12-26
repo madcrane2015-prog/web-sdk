@@ -299,6 +299,11 @@
   let controlPanelWidth = $state(945);       // Paneelin leveys (päivittyy dynaamisesti)
   let reelFramesSpriteRef: any = null;       // Viittaus reel frames spriteen
   
+  // Spinninopeus-asetukset
+  type SpinSpeed = 'slow' | 'medium' | 'fast';
+  let spinSpeed = $state<SpinSpeed>('medium'); // Nykyinen spinninopeus
+  let showSpinSpeedMenu = $state(false);       // Näytetäänkö nopeusvalikko
+  
   // Musiikkitiedostojen URLit (päivitetään kun musiikki on luotu)
   const MUSIC_URLS = {
     background: `${base}/music/rockabilly-loop.mp3`,    // Taustamusiikki (generoi Suno AI:lla)
@@ -1128,7 +1133,16 @@
     start(delay: number) {
       this.state = "spinning";    // Aseta pyörivä tila
       this.speed = 0;            // Aloita nopeudesta 0
-      this.targetSpeed = 35;     // Aseta tavoitenopeus
+      
+      // Aseta tavoitenopeus spinSpeed-asetuksen mukaan
+      if (spinSpeed === 'slow') {
+        this.targetSpeed = 20;   // Hidas nopeus
+      } else if (spinSpeed === 'medium') {
+        this.targetSpeed = 35;   // Keskitason nopeus (oletus)
+      } else { // fast
+        this.targetSpeed = 50;   // Nopea nopeus
+      }
+      
       this.stopDelay = delay;    // Aseta pysäytysviive (kiekot pysähtyvät eri aikoina)
     }
     
@@ -1152,7 +1166,9 @@
 
       // HIDASTUS-VAIHE: vähennetään nopeutta kunnes aloitetaan bounce
       if (this.state === "slowing") {
-        this.speed *= 0.92; // Eksponentiaalinen hidastus (8% vähenee joka frame)
+        // Hidastuskerroin riippuu nopeusasetuksesta
+        const slowDownFactor = spinSpeed === 'slow' ? 0.88 : spinSpeed === 'medium' ? 0.92 : 0.95;
+        this.speed *= slowDownFactor; // Eksponentiaalinen hidastus
 
         // Aloita bounce-efekti kun nopeus on riittävän pieni
         if (this.speed < 2.5) {
@@ -2680,6 +2696,120 @@
         alt="Status bar"
         style="width: 50px; height: auto;"
       />
+    </div>
+    
+    <!-- Divider -->
+    <img 
+      src="{controlsPath}/Control_divider.png" 
+      alt="Divider"
+      style="height: {CONTROL_PANEL_HEIGHT * 0.8}px; flex-shrink: 0;"
+    />
+    
+    <!-- Spin Speed nappi -->
+    <div style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 5px;">
+      <button
+        on:click={() => { showSpinSpeedMenu = !showSpinSpeedMenu; }}
+        style="
+          width: 50px;
+          height: 50px;
+          background-image: url('{controlsPath}/Control_fastplay_select.png');
+          background-size: contain;
+          background-repeat: no-repeat;
+          border: none;
+          cursor: pointer;
+          background-color: transparent;
+        "
+        title="Spin Speed: {spinSpeed === 'slow' ? 'Slow' : spinSpeed === 'medium' ? 'Medium' : 'Fast'}"
+      ></button>
+      <div style="
+        color: #ffffff;
+        font-size: 10px;
+        font-weight: bold;
+        text-transform: uppercase;
+      ">
+        {spinSpeed === 'slow' ? 'Slow' : spinSpeed === 'medium' ? 'Med' : 'Fast'}
+      </div>
+      
+      <!-- Spin Speed Valikko -->
+      {#if showSpinSpeedMenu}
+        <div style="
+          position: absolute;
+          bottom: 80px;
+          left: 50%;
+          transform: translateX(-50%);
+          background: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%);
+          border: 2px solid #ffd700;
+          border-radius: 10px;
+          padding: 10px;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          z-index: 1000;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+        ">
+          <div style="
+            color: #ffd700;
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+            border-bottom: 1px solid #444;
+            padding-bottom: 5px;
+          ">
+            SPIN SPEED
+          </div>
+          
+          <button
+            on:click={() => { spinSpeed = 'slow'; showSpinSpeedMenu = false; }}
+            style="
+              background: {spinSpeed === 'slow' ? 'linear-gradient(180deg, #4a4a4a 0%, #2a2a2a 100%)' : 'linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 100%)'};
+              border: 2px solid {spinSpeed === 'slow' ? '#ffd700' : '#666'};
+              color: {spinSpeed === 'slow' ? '#ffd700' : '#ffffff'};
+              padding: 8px 20px;
+              border-radius: 5px;
+              cursor: pointer;
+              font-weight: bold;
+              font-size: 12px;
+              transition: all 0.2s;
+            "
+          >
+            🐌 SLOW
+          </button>
+          
+          <button
+            on:click={() => { spinSpeed = 'medium'; showSpinSpeedMenu = false; }}
+            style="
+              background: {spinSpeed === 'medium' ? 'linear-gradient(180deg, #4a4a4a 0%, #2a2a2a 100%)' : 'linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 100%)'};
+              border: 2px solid {spinSpeed === 'medium' ? '#ffd700' : '#666'};
+              color: {spinSpeed === 'medium' ? '#ffd700' : '#ffffff'};
+              padding: 8px 20px;
+              border-radius: 5px;
+              cursor: pointer;
+              font-weight: bold;
+              font-size: 12px;
+              transition: all 0.2s;
+            "
+          >
+            ⚡ MEDIUM
+          </button>
+          
+          <button
+            on:click={() => { spinSpeed = 'fast'; showSpinSpeedMenu = false; }}
+            style="
+              background: {spinSpeed === 'fast' ? 'linear-gradient(180deg, #4a4a4a 0%, #2a2a2a 100%)' : 'linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 100%)'};
+              border: 2px solid {spinSpeed === 'fast' ? '#ffd700' : '#666'};
+              color: {spinSpeed === 'fast' ? '#ffd700' : '#ffffff'};
+              padding: 8px 20px;
+              border-radius: 5px;
+              cursor: pointer;
+              font-weight: bold;
+              font-size: 12px;
+              transition: all 0.2s;
+            "
+          >
+            🚀 FAST
+          </button>
+        </div>
+      {/if}
     </div>
     
     <!-- Divider -->
