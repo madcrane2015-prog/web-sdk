@@ -12,11 +12,11 @@
 	let visible = $state(false);
 	let animating = $state(false);
 
-	// Win level configurations (reduced spread to keep on screen)
+	// Win level configurations (tighter spread to keep vinyls on screen)
 	const config = {
-		small: { vinyls: 5, sparkles: 8, maxRadius: 150 },
-		medium: { vinyls: 12, sparkles: 16, maxRadius: 200 },
-		jackpot: { vinyls: 24, sparkles: 30, maxRadius: 280 }
+		small: { vinyls: 5, sparkles: 8, maxRadius: 100 },
+		medium: { vinyls: 12, sparkles: 16, maxRadius: 140 },
+		jackpot: { vinyls: 24, sparkles: 30, maxRadius: 180 }
 	};
 
 	const currentConfig = $derived(config[winLevel]);
@@ -33,13 +33,13 @@
 
 		for (let i = 0; i < count; i++) {
 			const angle = (Math.PI * 2 * i) / count + Math.random() * 0.4;
-			const radius = Math.random() * maxRadius * 0.6 + maxRadius * 0.3; // Tighter spread
+			const radius = Math.random() * maxRadius * 0.7 + maxRadius * 0.2; // Tighter spread
 
 			positions.push({
 				x: centerX + Math.cos(angle) * radius,
 				y: centerY + Math.sin(angle) * radius,
 				rotation: Math.random() * 30 - 15,
-				scale: 0.4 + Math.random() * 0.3, // Smaller vinyls (0.4-0.7 vs 0.6-1.2)
+				scale: 0.3 + Math.random() * 0.25, // Even smaller vinyls (0.3-0.55)
 				delay: i * 0.05,
 				color: labelColors[i % labelColors.length]
 			});
