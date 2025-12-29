@@ -2060,6 +2060,8 @@
     position: relative;
     width: {CANVAS_WIDTH}px;
     height: {CANVAS_HEIGHT}px;
+    max-width: 100vw;
+    max-height: 100vh;
     transform: scale({gameScale});
     transform-origin: center center;
   ">
