@@ -1309,16 +1309,22 @@
     // Liitä canvas HTML-elementtiin
     container.appendChild(app.canvas);
     
-    // Lisää responsiivinen skaalaus (skaalaa koko konttia HTML-tasolla)
+    // Lisää responsiivinen skaalaus
     const resizeGame = () => {
       const windowWidth = window.innerWidth;
       const windowHeight = window.innerHeight;
       const scaleX = windowWidth / CANVAS_WIDTH;
       const scaleY = windowHeight / CANVAS_HEIGHT;
-      const newScale = Math.min(scaleX, scaleY);
+      const newScale = Math.min(scaleX, scaleY, 1); // Ei skaalata suuremmaksi kuin 1
       
       // Päivitä reactive skaalaus
       gameScale = newScale;
+      
+      // Skaalaa PixiJS stage vastaamaan uutta kokoa
+      app.stage.scale.set(newScale);
+      
+      // Päivitä rendererin kokoa
+      app.renderer.resize(CANVAS_WIDTH * newScale, CANVAS_HEIGHT * newScale);
     };
     
     // Kutsu heti alussa
@@ -2058,12 +2064,8 @@
 ">
   <div style="
     position: relative;
-    width: {CANVAS_WIDTH}px;
-    height: {CANVAS_HEIGHT}px;
-    max-width: 100vw;
-    max-height: 100vh;
-    transform: scale({gameScale});
-    transform-origin: center center;
+    width: {CANVAS_WIDTH * gameScale}px;
+    height: {CANVAS_HEIGHT * gameScale}px;
   ">
     <!-- PixiJS canvas sijoitetaan tähän -->
     <div 
