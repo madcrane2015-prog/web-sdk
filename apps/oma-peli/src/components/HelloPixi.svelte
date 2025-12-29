@@ -1293,6 +1293,9 @@
   // PIXIJS ALUSTUS - Suoritetaan kun komponentti on ladattu
   // ===================================================================
   // Tämä funktio käynnistyy kun Svelte komponentti on valmis
+  // Lisää reactive skaalausmuuttuja
+  let gameScale = $state(1);
+  
   onMount(async () => {
     // ===== 1) PIXIJS SOVELLUKSEN LUONTI =====
     // Luo PixiJS Application joka hallinnoi koko peliä
@@ -1306,29 +1309,23 @@
     // Liitä canvas HTML-elementtiin
     container.appendChild(app.canvas);
     
-    // Lisää responsiivinen skaalaus
-    const resizeCanvas = () => {
+    // Lisää responsiivinen skaalaus (skaalaa koko konttia HTML-tasolla)
+    const resizeGame = () => {
       const windowWidth = window.innerWidth;
       const windowHeight = window.innerHeight;
       const scaleX = windowWidth / CANVAS_WIDTH;
       const scaleY = windowHeight / CANVAS_HEIGHT;
-      const scale = Math.min(scaleX, scaleY); // Käytä pienempää skaalausta säilyttääksesi kuvasuhteen
+      const newScale = Math.min(scaleX, scaleY);
       
-      // Skaalaa koko stage
-      app.stage.scale.set(scale);
-      
-      // Aseta canvasin koko sopimaan näyttöön
-      const scaledWidth = CANVAS_WIDTH * scale;
-      const scaledHeight = CANVAS_HEIGHT * scale;
-      
-      app.renderer.resize(scaledWidth, scaledHeight);
+      // Päivitä reactive skaalaus
+      gameScale = newScale;
     };
     
     // Kutsu heti alussa
-    resizeCanvas();
+    resizeGame();
     
     // Päivitä kun ikkunan kokoa muutetaan
-    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('resize', resizeGame);
 
     // ===== 2) KUVIEN LATAUS JA TEKSTUURIEN LUONTI =====
     // Käytetään PIXI.Assets.load modernin latauksen takaamiseksi
@@ -2049,55 +2046,71 @@
   </div>
 {/if}
 
-<!-- PixiJS canvas sijoitetaan tähän div-elementtiin -->
-<div 
-  bind:this={container}
-  style="
-    position: relative;
-    width: 100%;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  "
-></div>
-
-<!-- Credit ja Bet näyttö (oikeassa yläkulmassa) -->
+<!-- PixiJS canvas ja kaikki UI-elementit skaalautuvassa konteissa -->
 <div style="
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  background: rgba(0, 0, 0, 0.85);
-  color: #ffd700;
-  padding: 15px 20px;
-  border-radius: 10px;
-  font-family: 'Courier New', monospace;
-  font-size: 18px;
-  font-weight: bold;
-  border: 2px solid {isFreeSpinMode ? '#ff00ff' : '#ffd700'};
-  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.5);
-  z-index: 1500;
-  min-width: 180px;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  background: #000;
 ">
-  {#if isFreeSpinMode}
-    <div style="display: flex; justify-content: space-between; margin-bottom: 8px; color: #ff00ff; font-size: 16px; animation: pulse 1s infinite;">
-      <span>🎰 FREE SPINS:</span>
-      <span>{freeSpinsRemaining}</span>
+  <div style="
+    position: relative;
+    width: {CANVAS_WIDTH}px;
+    height: {CANVAS_HEIGHT}px;
+    transform: scale({gameScale});
+    transform-origin: center center;
+  ">
+    <!-- PixiJS canvas sijoitetaan tähän -->
+    <div 
+      bind:this={container}
+      style="
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: {CANVAS_WIDTH}px;
+        height: {CANVAS_HEIGHT}px;
+      "
+    ></div>
+
+    <!-- Credit ja Bet näyttö (oikeassa yläkulmassa) -->
+    <div style="
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(0, 0, 0, 0.85);
+      color: #ffd700;
+      padding: 15px 20px;
+      border-radius: 10px;
+      font-family: 'Courier New', monospace;
+      font-size: 18px;
+      font-weight: bold;
+      border: 2px solid {isFreeSpinMode ? '#ff00ff' : '#ffd700'};
+      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.5);
+      z-index: 1500;
+      min-width: 180px;
+    ">
+      {#if isFreeSpinMode}
+        <div style="display: flex; justify-content: space-between; margin-bottom: 8px; color: #ff00ff; font-size: 16px; animation: pulse 1s infinite;">
+          <span>🎰 FREE SPINS:</span>
+          <span>{freeSpinsRemaining}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 8px; border-top: 1px solid #555; padding-top: 8px;">
+          <span style="color: #fff; font-size: 14px;">Total Won:</span>
+          <span style="color: #00ff00; font-size: 14px;">{freeSpinsTotalWon.toFixed(2)}</span>
+        </div>
+      {/if}
+      <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+        <span style="color: #fff;">CREDITS:</span>
+        <span style="color: #ffd700;">{balance.toLocaleString()}</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; border-top: 1px solid #555; padding-top: 8px;">
+        <span style="color: #fff;">BET:</span>
+        <span style="color: #00ff00;">{betAmount}</span>
+      </div>
     </div>
-    <div style="display: flex; justify-content: space-between; margin-bottom: 8px; border-top: 1px solid #555; padding-top: 8px;">
-      <span style="color: #fff; font-size: 14px;">Total Won:</span>
-      <span style="color: #00ff00; font-size: 14px;">{freeSpinsTotalWon.toFixed(2)}</span>
-    </div>
-  {/if}
-  <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-    <span style="color: #fff;">CREDITS:</span>
-    <span style="color: #ffd700;">{balance.toLocaleString()}</span>
-  </div>
-  <div style="display: flex; justify-content: space-between; border-top: 1px solid #555; padding-top: 8px;">
-    <span style="color: #fff;">BET:</span>
-    <span style="color: #00ff00;">{betAmount}</span>
-  </div>
-</div>
 
 <!-- Bet kontrollit (vasemmassa alakulmassa) -->
 <div style="
@@ -2970,3 +2983,6 @@
   winLevel={totalWin / betAmount >= 50 ? 'jackpot' : totalWin / betAmount >= 20 ? 'medium' : 'small'}
   winAmount={totalWin}
 />
+
+  </div> <!-- Päätä skaalautuva wrapper -->
+</div> <!-- Päätä ulompi wrapper -->
