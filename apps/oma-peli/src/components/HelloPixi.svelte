@@ -282,6 +282,7 @@
   // ===== MUSIIKKIJÄRJESTELMÄ (v1.0.9) =====
   // Howler.js-pohjaiset musiikkisoittimet
   let backgroundMusic: any = null;  // Taustamusiikki (rockabilly loop)
+  let freeSpinsMusic: any = null;   // Free spins musiikki
   let drumHitSound: any = null;     // Rumpuisku kiekkojen pysähtyessä
   let winThemeSound: any = null;    // Voittoteema
   
@@ -304,11 +305,15 @@
   let spinSpeed = $state<SpinSpeed>('medium'); // Nykyinen spinninopeus
   let showSpinSpeedMenu = $state(false);       // Näytetäänkö nopeusvalikko
   
-  // Musiikkitiedostojen URLit (päivitetään kun musiikki on luotu)
+  // Arvo satunnainen loop-tiedosto (1-20) peruspelille
+  const randomLoopNumber = Math.floor(Math.random() * 20) + 1;
+  
+  // Musiikkitiedostojen URLit
   const MUSIC_URLS = {
-    background: `${base}/music/rockabilly-loop.mp3`,    // Taustamusiikki (generoi Suno AI:lla)
-    drumHit: `${base}/music/drum-hit.mp3`,             // Rumpuisku (lyhyt, 0.1-0.2s)
-    winTheme: `${base}/music/win-stinger.mp3`          // Voittoteema (2-3s)
+    background: `${base}/music/rockabilly reels loop ${randomLoopNumber}.mp3`,  // Satunnainen loop peruspelille
+    freeSpins: `${base}/music/rockabilly-loop_long.mp3`,    // Free spins musiikki
+    drumHit: `${base}/music/drum-hit.mp3`,                  // Rumpuisku
+    winTheme: `${base}/music/win-stinger.mp3`               // Voittoteema
   };
 
   // Alusta musiikkijärjestelmä Howler.js:llä
@@ -322,19 +327,27 @@
     const Howl = (window as any).Howl;
     
     try {
-      // Taustamusiikki (looppaa jatkuvasti)
+      // Taustamusiikki peruspelille (looppaa jatkuvasti)
       backgroundMusic = new Howl({
         src: [MUSIC_URLS.background],
         loop: true,
-        volume: 0.3,  // 30% volume (taustamusiikin ei pidä olla liian dominoiva)
+        volume: 0.3,  // 30% volume
         onload: () => {
-          console.log('✅ Background music loaded');
+          console.log('✅ Background music loaded (loop #' + randomLoopNumber + ')');
           musicLoaded = true;
-          // Musiikki käynnistyy vain kun käyttäjä painaa PLAY-nappia
         },
         onloaderror: (id: any, error: any) => {
-          console.warn('⚠️ Background music not found (generate with Suno AI):', error);
+          console.warn('⚠️ Background music not found:', error);
         }
+      });
+      
+      // Free spins musiikki
+      freeSpinsMusic = new Howl({
+        src: [MUSIC_URLS.freeSpins],
+        loop: true,
+        volume: 0.3,
+        onload: () => console.log('✅ Free spins music loaded'),
+        onloaderror: (id: any, error: any) => console.warn('⚠️ Free spins music not found:', error)
       });
       
       // Rumpuisku-efekti (soitetaan kiekkojen pysähtyessä)
@@ -360,11 +373,12 @@
     }
   }
   
-  // Käynnistä taustamusiikki
+  // Käynnistä taustamusiikki (valitaan peruspeli tai free spins musiikki)
   function startBackgroundMusic() {
-    if (backgroundMusic && musicEnabled && !backgroundMusic.playing()) {
-      backgroundMusic.play();
-      console.log('🎵 Background music started');
+    const currentMusic = isFreeSpinMode ? freeSpinsMusic : backgroundMusic;
+    if (currentMusic && musicEnabled && !currentMusic.playing()) {
+      currentMusic.play();
+      console.log('🎵 ' + (isFreeSpinMode ? 'Free spins' : 'Background') + ' music started');
     }
   }
   
@@ -374,6 +388,30 @@
       backgroundMusic.fade(backgroundMusic.volume(), 0, 500); // Fade out 500ms
       setTimeout(() => backgroundMusic.stop(), 500);
     }
+    if (freeSpinsMusic && freeSpinsMusic.playing()) {
+      freeSpinsMusic.fade(freeSpinsMusic.volume(), 0, 500);
+      setTimeout(() => freeSpinsMusic.stop(), 500);
+    }
+  }
+  
+  // Vaihda musiikkia free spins -tilan mukaan
+  function switchMusic() {
+    // Pysäytä nykyinen musiikki
+    if (backgroundMusic && backgroundMusic.playing()) {
+      backgroundMusic.fade(backgroundMusic.volume(), 0, 500);
+      setTimeout(() => backgroundMusic.stop(), 500);
+    }
+    if (freeSpinsMusic && freeSpinsMusic.playing()) {
+      freeSpinsMusic.fade(freeSpinsMusic.volume(), 0, 500);
+      setTimeout(() => freeSpinsMusic.stop(), 500);
+    }
+    
+    // Aloita uusi musiikki pienen viiveen jälkeen
+    setTimeout(() => {
+      if (musicEnabled) {
+        startBackgroundMusic();
+      }
+    }, 600);
   }
   
   // Feidaa musiikki alas kierroksen lopussa
@@ -524,6 +562,9 @@
       freeSpinsTotalWon = 0;
       freeSpinsTriggerCount++;
       console.log('🎰 TEST MODE: Free spins activated! 10 spins granted.');
+      
+      // Vaihda musiikkia free spins -musiikiksi
+      switchMusic();
     }
   }
 
@@ -764,6 +805,9 @@
         freeSpinsTotalWon = 0;
         freeSpinsTriggerCount++; // Laske uusi vapaaerä
         console.log(`🎰 FREE SPINS TRIGGERED! ${scatterPositions.length} scatters = ${freeSpinsTriggered} FREE SPINS!`);
+        
+        // Vaihda musiikkia free spins -musiikiksi
+        switchMusic();
       } else {
         console.log(`🎰 FREE SPINS RETRIGGERED! +${freeSpinsTriggered} FREE SPINS! Total: ${freeSpinsRemaining}`);
       }
@@ -1626,6 +1670,9 @@
           alert(`Free Spins Ended!\nTotal Won: ${freeSpinsTotalWon.toFixed(2)}`);
           isFreeSpinMode = false;
           freeSpinsTotalWon = 0;
+          
+          // Palauta peruspelin musiikki
+          switchMusic();
         }, 2000);
       }
     }
