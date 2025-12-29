@@ -1300,8 +1300,7 @@
     await app.init({
       width: CANVAS_WIDTH,     // Canvas leveys
       height: CANVAS_HEIGHT,   // Canvas korkeus
-      background: "#001a33",    // Tummansininen tausta (näkyy ennen taustakuvaa)
-      resizeTo: window          // Skaalaa automaattisesti ikkunan koon mukaan
+      background: "#001a33"     // Tummansininen tausta (näkyy ennen taustakuvaa)
     });
 
     // Liitä canvas HTML-elementtiin
@@ -1318,8 +1317,11 @@
       // Skaalaa koko stage
       app.stage.scale.set(scale);
       
-      // Keskitä canvas
-      app.renderer.resize(windowWidth, windowHeight);
+      // Aseta canvasin koko sopimaan näyttöön
+      const scaledWidth = CANVAS_WIDTH * scale;
+      const scaledHeight = CANVAS_HEIGHT * scale;
+      
+      app.renderer.resize(scaledWidth, scaledHeight);
     };
     
     // Kutsu heti alussa
