@@ -1300,11 +1300,33 @@
     await app.init({
       width: CANVAS_WIDTH,     // Canvas leveys
       height: CANVAS_HEIGHT,   // Canvas korkeus
-      background: "#001a33"     // Tummansininen tausta (näkyy ennen taustakuvaa)
+      background: "#001a33",    // Tummansininen tausta (näkyy ennen taustakuvaa)
+      resizeTo: window          // Skaalaa automaattisesti ikkunan koon mukaan
     });
 
     // Liitä canvas HTML-elementtiin
     container.appendChild(app.canvas);
+    
+    // Lisää responsiivinen skaalaus
+    const resizeCanvas = () => {
+      const windowWidth = window.innerWidth;
+      const windowHeight = window.innerHeight;
+      const scaleX = windowWidth / CANVAS_WIDTH;
+      const scaleY = windowHeight / CANVAS_HEIGHT;
+      const scale = Math.min(scaleX, scaleY); // Käytä pienempää skaalausta säilyttääksesi kuvasuhteen
+      
+      // Skaalaa koko stage
+      app.stage.scale.set(scale);
+      
+      // Keskitä canvas
+      app.renderer.resize(windowWidth, windowHeight);
+    };
+    
+    // Kutsu heti alussa
+    resizeCanvas();
+    
+    // Päivitä kun ikkunan kokoa muutetaan
+    window.addEventListener('resize', resizeCanvas);
 
     // ===== 2) KUVIEN LATAUS JA TEKSTUURIEN LUONTI =====
     // Käytetään PIXI.Assets.load modernin latauksen takaamiseksi
