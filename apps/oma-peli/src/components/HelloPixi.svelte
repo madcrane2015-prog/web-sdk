@@ -1685,10 +1685,9 @@
     
     // v1.0.9: BPM-synkronoitu pysähtyminen (130 BPM)
     // Kiekot pysähtyvät rytmisesti musiikin tahtiin
-    // Ryhmitellään kiekot 5 sarakkeeseen rytmistä pysähtymistä varten
+    // Jokainen ruutu pysähtyy yksi kerrallaan järjestyksessä: 0-1-2-3-4-5-6-7-8-9-10-11-12
     reels.forEach((r, i) => {
-      const col = Math.floor(i / 3); // Sarake (0-4)
-      r.startSynchronized(col);      // Synkronoitu start rytmin mukaan
+      r.startSynchronized(i);        // Jokainen kiekko pysähtyy eri aikaan
     });
     
     // Soita "whirr" SPIN-ääni
