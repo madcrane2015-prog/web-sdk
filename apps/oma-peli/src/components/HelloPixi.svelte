@@ -66,6 +66,7 @@
   - Wild on middle reel: 55% probability
   
   VERSION HISTORY:
+  - v1.2.7: Dynaaminen musiikkivaihto - eri satunnainen loop joka kierroksella (20 loopia)
   - v1.2.6: Fixed PixiJS scaling - use stage.scale instead of renderer resize
   - v1.2.5: Fixed canvas container size to match renderer size (background zoom fix)
   - v1.2.4: Fixed Control Panel position scaling - multiply positions by gameScale
@@ -188,7 +189,7 @@
 </style>
 <script lang="ts">
   // Game version
-  const GAME_VERSION = "1.2.6";
+  const GAME_VERSION = "1.2.7";
   
   // Svelte lifecycle ja routing
   import { onMount } from "svelte";
@@ -350,11 +351,11 @@
   let showSpinSpeedMenu = $state(false);       // Näytetäänkö nopeusvalikko
   
   // Arvo satunnainen loop-tiedosto (1-20) peruspelille
-  const randomLoopNumber = Math.floor(Math.random() * 20) + 1;
+  let randomLoopNumber = $state(Math.floor(Math.random() * 20) + 1);
   
   // Musiikkitiedostojen URLit
   const MUSIC_URLS = {
-    background: `${base}/music/rockabilly reels loop ${randomLoopNumber}.mp3`,  // Satunnainen loop peruspelille
+    background: () => `${base}/music/rockabilly reels loop ${randomLoopNumber}.mp3`,  // Satunnainen loop peruspelille
     freeSpins: `${base}/music/rockabilly-loop_long.mp3`,    // Free spins musiikki
     drumHit: `${base}/music/drum-hit.mp3`,                  // Rumpuisku
     winTheme: `${base}/music/win-stinger.mp3`               // Voittoteema
@@ -373,7 +374,7 @@
     try {
       // Taustamusiikki peruspelille (looppaa jatkuvasti)
       backgroundMusic = new Howl({
-        src: [MUSIC_URLS.background],
+        src: [MUSIC_URLS.background()],
         loop: true,
         volume: 0.3,  // 30% volume
         onload: () => {
@@ -423,6 +424,40 @@
     if (currentMusic && musicEnabled && !currentMusic.playing()) {
       currentMusic.play();
       console.log('🎵 ' + (isFreeSpinMode ? 'Free spins' : 'Background') + ' music started');
+    }
+  }
+  
+  // Vaihda uusi satunnainen loop peruspelille
+  function changeBackgroundLoop() {
+    if (isFreeSpinMode) return; // Ei vaihdeta free spins -tilassa
+    
+    // Valitse uusi satunnainen loop
+    const newLoopNumber = Math.floor(Math.random() * 20) + 1;
+    randomLoopNumber = newLoopNumber;
+    
+    // Pysäytä vanha musiikki
+    if (backgroundMusic) {
+      if (backgroundMusic.playing()) {
+        backgroundMusic.fade(backgroundMusic.volume(), 0, 300);
+        setTimeout(() => backgroundMusic.stop(), 300);
+      }
+      backgroundMusic.unload();
+    }
+    
+    // Lataa uusi loop
+    const Howl = (window as any).Howl;
+    if (Howl) {
+      backgroundMusic = new Howl({
+        src: [MUSIC_URLS.background()],
+        loop: true,
+        volume: 0.3,
+        onload: () => {
+          console.log('🎵 New background music loop #' + randomLoopNumber + ' loaded');
+          if (musicEnabled && !isFreeSpinMode) {
+            setTimeout(() => backgroundMusic.play(), 400);
+          }
+        }
+      });
     }
   }
   
@@ -1750,6 +1785,11 @@
   // SPIN NAPPI - Käynnistää uuden pyöräytyksen
   // ===================================================================
   function spin() {
+    // Vaihda uusi satunnainen loop peruspelissä
+    if (!isFreeSpinMode) {
+      changeBackgroundLoop();
+    }
+    
     // Käynnistä taustamusiikki ensimmäisellä kierroksella (EI vapaapeleissä)
     if (!isFreeSpinMode && backgroundMusic && musicEnabled && !backgroundMusic.playing()) {
       backgroundMusic.play();
