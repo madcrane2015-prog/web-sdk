@@ -66,6 +66,7 @@
   - Wild on middle reel: 55% probability
   
   VERSION HISTORY:
+  - v1.2.1: Fixed canvas container double-scaling issue (PLAY button growth)
   - v1.2.0: Fixed control panel scaling at high browser zoom (removed double scaling, scaled all elements)
   - v1.1.9: UI consolidation - removed redundant displays, added lastWin tracking, debug toggle
   - v1.1.8: Fixed browser zoom scaling for control panel and payout table
@@ -182,7 +183,7 @@
 </style>
 <script lang="ts">
   // Game version
-  const GAME_VERSION = "1.2.0";
+  const GAME_VERSION = "1.2.1";
   
   // Svelte lifecycle ja routing
   import { onMount } from "svelte";
