@@ -66,6 +66,7 @@
   - Wild on middle reel: 55% probability
   
   VERSION HISTORY:
+  - v1.2.9: Poistettu kiekon pomppuefekti pysähdyksestä - nyt kiekot pysähtyvät suoraan
   - v1.2.8: Korjattu musiikki - poistettu dynaamiset loop-vaihdot, yksi satunnainen loop koko session ajan
   - v1.2.7: Dynaaminen musiikkivaihto - eri satunnainen loop joka kierroksella (20 loopia) [PERUTTU]
   - v1.2.6: Fixed PixiJS scaling - use stage.scale instead of renderer resize
@@ -190,7 +191,7 @@
 </style>
 <script lang="ts">
   // Game version
-  const GAME_VERSION = "1.2.8";
+  const GAME_VERSION = "1.2.9";
   
   // Svelte lifecycle ja routing
   import { onMount } from "svelte";
@@ -1285,45 +1286,25 @@
         else this.state = "slowing";                        // Aloita hidastus kun viive on nolla
       }
 
-      // HIDASTUS-VAIHE: vähennetään nopeutta kunnes aloitetaan bounce
+      // HIDASTUS-VAIHE: vähennetään nopeutta kunnes pysähdytään
       if (this.state === "slowing") {
         // Hidastuskerroin riippuu nopeusasetuksesta
         const slowDownFactor = spinSpeed === 'slow' ? 0.88 : spinSpeed === 'medium' ? 0.92 : 0.95;
         this.speed *= slowDownFactor; // Eksponentiaalinen hidastus
 
-        // Aloita bounce-efekti kun nopeus on riittävän pieni
+        // Pysähdytään suoraan kun nopeus on riittävän pieni (EI POMPPUA)
         if (this.speed < 2.5) {
-          this.state = "bouncing";   // Siirry bounce-tilaan
-          this.bounceSpeed = -8;     // Alkuperäinen "tökkäys" ylöspäin
-          this.bounceFrames = 0;     // Nollaa bounce-laskuri
+          this.state = "stopped";   // Siirry suoraan stopped-tilaan
           this.speed = 0;           // Pysäytä normaali liike
           this.offset = 0;          // Nollaa scroll-offset
+          this.bounceOffset = 0;    // Varmista että bounce on nollassa
+          this.bounceSpeed = 0;     // Nollaa bounce-nopeus
           
           // Soita "chunk" pysähtymisääni
           playSound('stop');
           
           // Soita rumpuisku (v1.0.9 music integration)
           playDrumHit();
-        }
-      }
-      
-      // BOUNCE-VAIHE: "kimpoileva" pysähtyminen
-      if (this.state === "bouncing") {
-        this.bounceFrames++;
-        this.bounceSpeed += 0.8;              // Gravitation (hidastaa ylösnopeus, kiihdyttää alaspäin)
-        this.bounceOffset += this.bounceSpeed; // Päivitä bounce-sijainti
-        
-        // Jos "pomppi" menee liian alas, törmää "lattiaan" ja pomppii takaisin
-        if (this.bounceOffset > 3) {
-          this.bounceOffset = 3;
-          this.bounceSpeed *= -0.6; // Vaimenna pomppiminen (60% energia säilyy)
-        }
-        
-        // Lopeta bounce kun liike on riittävän pientä
-        if (this.bounceFrames > 45 || (Math.abs(this.bounceSpeed) < 0.5 && Math.abs(this.bounceOffset) < 1)) {
-          this.state = "stopped";    // Siirry lopulliseen pysähtynyt-tilaan
-          this.bounceOffset = 0;     // Nollaa bounce-offset
-          this.bounceSpeed = 0;      // Nollaa bounce-nopeus
         }
       }
 
