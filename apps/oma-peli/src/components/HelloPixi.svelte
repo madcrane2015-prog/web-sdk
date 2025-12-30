@@ -176,9 +176,8 @@
   }
 </style>
 <script lang="ts">
-  // Package.json version - automaattinen päivitys
-  import pkg from '../../package.json';
-  const GAME_VERSION = pkg.version;
+  // Game version
+  const GAME_VERSION = "1.1.8";
   
   // Svelte lifecycle ja routing
   import { onMount } from "svelte";
@@ -330,9 +329,9 @@
   // HUOM: Tämä EI muuta kiekkojen pyörimisnopeutta, vaan pysähtymisväliä!
   // Kiekkojen pyörimisnopeus on aina sama (medium = 35 px/frame)
   const SPIN_SPEED_CONFIG = {
-    fast: 15,    // Fast: ~3 sec (15 frames/kiekko * 13 kiekkoa = 195 frames = ~3.25s @ 60fps)
-    medium: 23,  // Medium: ~5 sec (23 frames/kiekko * 13 kiekkoa = 299 frames = ~5s @ 60fps)
-    slow: 32     // Slow: ~7 sec (32 frames/kiekko * 13 kiekkoa = 416 frames = ~6.9s @ 60fps)
+    fast: 1,    // Fast: ~3 sec (15 frames/kiekko * 13 kiekkoa = 195 frames = ~3.25s @ 60fps)
+    medium: 10,  // Medium: ~5 sec (23 frames/kiekko * 13 kiekkoa = 299 frames = ~5s @ 60fps)
+    slow: 18     // Slow: ~7 sec (32 frames/kiekko * 13 kiekkoa = 416 frames = ~6.9s @ 60fps)
   };
   
   type SpinSpeed = 'slow' | 'medium' | 'fast';
@@ -2630,6 +2629,7 @@
   position: absolute;
   top: 20px;
   left: 20px;
+  display: none;
   background: rgba(0, 0, 0, 0.9);
   color: #00ff00;
   padding: 15px 20px;
@@ -2818,6 +2818,7 @@
   bottom: 20px;
   right: 20px;
   z-index: 1500;
+  display: none;
 ">
   {#if isAutoPlaying}
     <!-- Autoplay aktiivinen - näytä Stop ja kierrosten määrä -->
@@ -2997,6 +2998,7 @@
     position: absolute;
     top: 10px;
     right: 10px;
+    display: none;
     width: 40px;
     height: 40px;
     border-radius: 50%;
