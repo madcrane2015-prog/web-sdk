@@ -66,6 +66,11 @@
   - Wild on middle reel: 55% probability
   
   VERSION HISTORY:
+  - v1.2.6: Fixed PixiJS scaling - use stage.scale instead of renderer resize
+  - v1.2.5: Fixed canvas container size to match renderer size (background zoom fix)
+  - v1.2.4: Fixed Control Panel position scaling - multiply positions by gameScale
+  - v1.2.3: Fixed Control Panel positioning - keep position scaling, remove content scaling
+  - v1.2.2: Fixed Paytable and Debug button scaling at high zoom (scale all dimensions)
   - v1.2.1: Fixed canvas container double-scaling issue (PLAY button growth)
   - v1.2.0: Fixed control panel scaling at high browser zoom (removed double scaling, scaled all elements)
   - v1.1.9: UI consolidation - removed redundant displays, added lastWin tracking, debug toggle
@@ -183,7 +188,7 @@
 </style>
 <script lang="ts">
   // Game version
-  const GAME_VERSION = "1.2.1";
+  const GAME_VERSION = "1.2.6";
   
   // Svelte lifecycle ja routing
   import { onMount } from "svelte";
@@ -237,8 +242,8 @@
   const REEL_FRAMES_WIDTH = 945;       // Kehysten leveys (arvio, päivitetään dynaamisesti)
   
   // Control Panel Fine-Tuning (säädettävissä)
-  const CONTROL_PANEL_OFFSET_X = -130;    // X-siirtymä (+ = oikealle, - = vasemmalle)
-  const CONTROL_PANEL_OFFSET_Y = -190;    // Y-siirtymä (+ = alaspäin, - = ylöspäin)
+  const CONTROL_PANEL_OFFSET_X = 0;    // X-siirtymä (+ = oikealle, - = vasemmalle)
+  const CONTROL_PANEL_OFFSET_Y = 50;    // Y-siirtymä (+ = alaspäin, - = ylöspäin)
   const CONTROL_PANEL_SCALE_X = 1.0;   // X-skaalaus (1.0 = normaali, >1 = leveämpi, <1 = kapeampi)
   const CONTROL_PANEL_SCALE_Y = 1.1;   // Y-skaalaus (1.0 = normaali, >1 = korkeampi, <1 = matalampi)
   
@@ -1359,8 +1364,8 @@
       // Skaalaa PixiJS stage vastaamaan uutta kokoa
       app.stage.scale.set(newScale);
       
-      // Päivitä rendererin kokoa
-      app.renderer.resize(CANVAS_WIDTH * newScale, CANVAS_HEIGHT * newScale);
+      // Renderer pysyy kiinteässä koossa
+      app.renderer.resize(CANVAS_WIDTH, CANVAS_HEIGHT);
     };
     
     // Kutsu heti alussa
@@ -2115,55 +2120,68 @@
         width: {CANVAS_WIDTH}px;
         height: {CANVAS_HEIGHT}px;
       "
-    ></div>
+    >
+      <!-- Paytable-nappi oikeassa reunassa -->
+      <button
+        on:click={() => { showPaytable = !showPaytable; }}
+        style="
+          position: absolute;
+          top: {130 * gameScale}px;
+          right: {20 * gameScale}px;
+          padding: {10 * gameScale}px {15 * gameScale}px;
+          background-color: rgba(255, 215, 0, 0.3);
+          border: {2 * gameScale}px solid rgba(255, 215, 0, 0.7);
+          border-radius: {8 * gameScale}px;
+          cursor: pointer;
+          font-weight: bold;
+          font-size: {16 * gameScale}px;
+          color: white;
+          text-shadow: 0 0 {5 * gameScale}px rgba(0,0,0,0.8);
+          z-index: 1000;
+          min-width: {180 * gameScale}px;
+        "
+      >
+        💰 PAYTABLE
+      </button>
+
+      <!-- Debug-nappi paytable-napin alapuolella -->
+      <button
+        on:click={() => { showDebugPanel = !showDebugPanel; }}
+        style="
+          position: absolute;
+          top: {190 * gameScale}px;
+          right: {20 * gameScale}px;
+          padding: {10 * gameScale}px {15 * gameScale}px;
+          background-color: rgba(0, 255, 0, 0.3);
+          border: {2 * gameScale}px solid rgba(0, 255, 0, 0.7);
+          border-radius: {8 * gameScale}px;
+          cursor: pointer;
+          font-weight: bold;
+          font-size: {16 * gameScale}px;
+          color: white;
+          text-shadow: 0 0 {5 * gameScale}px rgba(0,0,0,0.8);
+          z-index: 1000;
+          min-width: {180 * gameScale}px;
+        "
+      >
+        🛠️ DEBUG v{GAME_VERSION}
+      </button>
+
+      <!-- Control Panel sijoitetaan canvas-kontin sisään -->
+      <div class="control-panel-mobile" style="
+        position: absolute;
+        left: {((reelFramesSpriteRef ? reelFramesSpriteRef.x : REEL_FRAMES_X) + CONTROL_PANEL_OFFSET_X) * gameScale}px;
+        top: {(CONTROL_PANEL_Y + CONTROL_PANEL_OFFSET_Y) * gameScale}px;
+        width: {controlPanelWidth * gameScale}px;
+        height: {CONTROL_PANEL_HEIGHT * gameScale}px;
+        display: flex;
+        align-items: center;
+        z-index: 1000;
+      ">
 
 
 
 
-
-<!-- Paytable-nappi oikeassa reunassa credit-näytön alla -->
-<button
-  on:click={() => { showPaytable = !showPaytable; }}
-  style="
-    position: absolute;
-    top: 130px;
-    right: 20px;
-    padding: 10px 15px;
-    background-color: rgba(255, 215, 0, 0.3);
-    border: 2px solid rgba(255, 215, 0, 0.7);
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
-    color: white;
-    text-shadow: 0 0 5px rgba(0,0,0,0.8);
-    z-index: 1000;
-    min-width: 180px;
-  "
->
-  💰 PAYTABLE
-</button>
-
-<!-- Debug-nappi paytable-napin alapuolella -->
-<button
-  on:click={() => { showDebugPanel = !showDebugPanel; }}
-  style="
-    position: absolute;
-    top: 190px;
-    right: 20px;
-    padding: 10px 15px;
-    background-color: rgba(0, 255, 0, 0.3);
-    border: 2px solid rgba(0, 255, 0, 0.7);
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
-    color: white;
-    text-shadow: 0 0 5px rgba(0,0,0,0.8);
-    z-index: 1000;
-    min-width: 180px;
-  "
->
-  🛠️ DEBUG v{GAME_VERSION}
-</button>
 
 <!-- ===== CONTROL PANEL (v1.1.0) ===== -->
 <!-- 
@@ -2174,17 +2192,8 @@
   - Oikea pää (Control_rightend.png)
   
   v1.1.4: Korjattu käyttämään pikselikoordinaatteja zoomin tukemiseksi
+  v1.2.3: Siirretty canvas-kontin sisään oikean skaalauksen varmistamiseksi
 -->
-<div class="control-panel-mobile" style="
-  position: absolute;
-  left: {((reelFramesSpriteRef ? reelFramesSpriteRef.x : REEL_FRAMES_X) + CONTROL_PANEL_OFFSET_X) * gameScale}px;
-  top: {(CONTROL_PANEL_Y + CONTROL_PANEL_OFFSET_Y) * gameScale}px;
-  width: {controlPanelWidth * gameScale}px;
-  height: {CONTROL_PANEL_HEIGHT * gameScale}px;
-  display: flex;
-  align-items: center;
-  z-index: 1000;
-">
   <!-- Vasen pää -->
   <img 
     src="{controlsPath}/Control_leftend.png" 
@@ -2299,8 +2308,8 @@
           on:click={spin}
           disabled={isAutoPlaying}
           style="
-            width: 130px;
-            height: 130px;
+            width: {130 * gameScale}px;
+            height: {130 * gameScale}px;
             background-image: url('{controlsPath}/Control_playbutton.png');
             background-size: cover;
             background-position: center;
@@ -2384,26 +2393,26 @@
       {#if showSpinSpeedMenu}
         <div style="
           position: absolute;
-          bottom: 80px;
+          bottom: {80 * gameScale}px;
           left: 50%;
           transform: translateX(-50%);
           background: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%);
-          border: 2px solid #ffd700;
-          border-radius: 10px;
-          padding: 10px;
+          border: {2 * gameScale}px solid #ffd700;
+          border-radius: {10 * gameScale}px;
+          padding: {10 * gameScale}px;
           display: flex;
           flex-direction: column;
-          gap: 8px;
+          gap: {8 * gameScale}px;
           z-index: 1000;
           box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
         ">
           <div style="
             color: #ffd700;
-            font-size: 14px;
+            font-size: {14 * gameScale}px;
             font-weight: bold;
             text-align: center;
-            border-bottom: 1px solid #444;
-            padding-bottom: 5px;
+            border-bottom: {1 * gameScale}px solid #444;
+            padding-bottom: {5 * gameScale}px;
           ">
             SPIN SPEED
           </div>
@@ -2412,13 +2421,13 @@
             on:click={() => { spinSpeed = 'slow'; showSpinSpeedMenu = false; }}
             style="
               background: {spinSpeed === 'slow' ? 'linear-gradient(180deg, #4a4a4a 0%, #2a2a2a 100%)' : 'linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 100%)'};
-              border: 2px solid {spinSpeed === 'slow' ? '#ffd700' : '#666'};
+              border: {2 * gameScale}px solid {spinSpeed === 'slow' ? '#ffd700' : '#666'};
               color: {spinSpeed === 'slow' ? '#ffd700' : '#ffffff'};
-              padding: 8px 20px;
-              border-radius: 5px;
+              padding: {8 * gameScale}px {20 * gameScale}px;
+              border-radius: {5 * gameScale}px;
               cursor: pointer;
               font-weight: bold;
-              font-size: 12px;
+              font-size: {12 * gameScale}px;
               transition: all 0.2s;
             "
           >
@@ -2429,13 +2438,13 @@
             on:click={() => { spinSpeed = 'medium'; showSpinSpeedMenu = false; }}
             style="
               background: {spinSpeed === 'medium' ? 'linear-gradient(180deg, #4a4a4a 0%, #2a2a2a 100%)' : 'linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 100%)'};
-              border: 2px solid {spinSpeed === 'medium' ? '#ffd700' : '#666'};
+              border: {2 * gameScale}px solid {spinSpeed === 'medium' ? '#ffd700' : '#666'};
               color: {spinSpeed === 'medium' ? '#ffd700' : '#ffffff'};
-              padding: 8px 20px;
-              border-radius: 5px;
+              padding: {8 * gameScale}px {20 * gameScale}px;
+              border-radius: {5 * gameScale}px;
               cursor: pointer;
               font-weight: bold;
-              font-size: 12px;
+              font-size: {12 * gameScale}px;
               transition: all 0.2s;
             "
           >
@@ -2446,13 +2455,13 @@
             on:click={() => { spinSpeed = 'fast'; showSpinSpeedMenu = false; }}
             style="
               background: {spinSpeed === 'fast' ? 'linear-gradient(180deg, #4a4a4a 0%, #2a2a2a 100%)' : 'linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 100%)'};
-              border: 2px solid {spinSpeed === 'fast' ? '#ffd700' : '#666'};
+              border: {2 * gameScale}px solid {spinSpeed === 'fast' ? '#ffd700' : '#666'};
               color: {spinSpeed === 'fast' ? '#ffd700' : '#ffffff'};
-              padding: 8px 20px;
-              border-radius: 5px;
+              padding: {8 * gameScale}px {20 * gameScale}px;
+              border-radius: {5 * gameScale}px;
               cursor: pointer;
               font-weight: bold;
-              font-size: 12px;
+              font-size: {12 * gameScale}px;
               transition: all 0.2s;
             "
           >
@@ -2543,8 +2552,10 @@
     style="height: {CONTROL_PANEL_HEIGHT * gameScale}px; flex-shrink: 0;"
   />
 </div>
+    </div> <!-- Suljetaan sisempi canvas-kontti -->
 
-<!-- Vinyl Win Animation -->
+<!-- Paytable-nappi oikeassa reunassa credit-näytön alla -->
+<button
 <VinylWinAnimation 
   bind:this={vinylWinAnimationRef}
   winLevel={totalWin / betAmount >= 50 ? 'jackpot' : totalWin / betAmount >= 20 ? 'medium' : 'small'}
