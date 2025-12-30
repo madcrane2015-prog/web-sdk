@@ -2118,7 +2118,7 @@
   justify-content: center;
   align-items: center;
   overflow: hidden;
-  background: #000;
+  background: transparent;
 ">
   <div style="
     position: relative;
