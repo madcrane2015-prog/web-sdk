@@ -66,6 +66,11 @@
   - Wild on middle reel: 55% probability
   
   VERSION HISTORY:
+  - v1.2.0: Fixed control panel scaling at high browser zoom (removed double scaling, scaled all elements)
+  - v1.1.9: UI consolidation - removed redundant displays, added lastWin tracking, debug toggle
+  - v1.1.8: Fixed browser zoom scaling for control panel and payout table
+  - v1.1.7: Sequential reel stopping (0→12), dynamic music system (20 loops)
+  - v1.1.6: Spin speed configuration (fast ~3s, med ~5s, slow ~7s)
   - v1.1.5: Updated stop.mp3 sound effect
   - v1.1.4: Fixed control panel responsive scaling (transform-based positioning)
   - v1.1.3: Enhanced control panel (enlarged PLAY button, status bars)
@@ -177,7 +182,7 @@
 </style>
 <script lang="ts">
   // Game version
-  const GAME_VERSION = "1.1.8";
+  const GAME_VERSION = "1.2.0";
   
   // Svelte lifecycle ja routing
   import { onMount } from "svelte";
@@ -231,8 +236,8 @@
   const REEL_FRAMES_WIDTH = 945;       // Kehysten leveys (arvio, päivitetään dynaamisesti)
   
   // Control Panel Fine-Tuning (säädettävissä)
-  const CONTROL_PANEL_OFFSET_X = -230;    // X-siirtymä (+ = oikealle, - = vasemmalle)
-  const CONTROL_PANEL_OFFSET_Y = -390;    // Y-siirtymä (+ = alaspäin, - = ylöspäin)
+  const CONTROL_PANEL_OFFSET_X = -130;    // X-siirtymä (+ = oikealle, - = vasemmalle)
+  const CONTROL_PANEL_OFFSET_Y = -190;    // Y-siirtymä (+ = alaspäin, - = ylöspäin)
   const CONTROL_PANEL_SCALE_X = 1.0;   // X-skaalaus (1.0 = normaali, >1 = leveämpi, <1 = kapeampi)
   const CONTROL_PANEL_SCALE_Y = 1.1;   // Y-skaalaus (1.0 = normaali, >1 = korkeampi, <1 = matalampi)
   
@@ -510,6 +515,7 @@
   // Credit järjestelmä
   let balance = $state(1000); // Aloitussaldo
   let betAmount = $state(10);  // Panoksen määrä per spin
+  let lastWin = $state(0);  // Viimeisin voittosumma
   const MIN_BET = 1;
   const MAX_BET = 100;
 
@@ -517,6 +523,7 @@
   let isAutoPlaying = $state(false);
   let autoPlayRoundsLeft = $state(0);
   let showAutoPlayMenu = $state(false);
+  let showDebugPanel = $state(false); // Debug-paneelin näkyvyys
   let winPopupShownAt = $state(0); // Timestamp kun popup tuli näkyviin
   let isProcessingAutoPlay = false; // Lukko estää päällekkäiset kutsut
   let autoPlayTimeoutId: number | null = null; // Tallenna timeout ID
@@ -1800,6 +1807,7 @@
   function addWinToBalance(winAmount: number) {
     balance += winAmount;
     totalWon += winAmount;
+    lastWin = winAmount; // Track last win for display
     
     // Track free spins total wins separately
     if (isFreeSpinMode) {
@@ -1999,20 +2007,21 @@
 <!-- Paytable-näyttö -->
 {#if showPaytable}
   <div style="
-    position: fixed;
+    position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     background: rgba(0, 0, 0, 0.95);
     color: white;
-    padding: 30px;
-    border-radius: 15px;
+    padding: {30 * gameScale}px;
+    border-radius: {15 * gameScale}px;
     font-family: Arial, sans-serif;
     z-index: 3000;
-    border: 3px solid #ffd700;
-    max-width: 600px;
-    max-height: 80vh;
+    border: {3 * gameScale}px solid #ffd700;
+    max-width: {600 * gameScale}px;
+    max-height: {Math.min(CANVAS_HEIGHT * gameScale * 0.8, 80 * window.innerHeight / 100)}px;
     overflow-y: auto;
+    font-size: {gameScale}em;
   ">
     <h2 style="margin: 0 0 20px 0; text-align: center; color: #ffd700;">💰 PAYTABLE (81 WAYS)</h2>
     
@@ -2107,127 +2116,9 @@
       "
     ></div>
 
-    <!-- Credit ja Bet näyttö (oikeassa yläkulmassa) -->
-    <div style="
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      background: rgba(0, 0, 0, 0.85);
-      color: #ffd700;
-      padding: 15px 20px;
-      border-radius: 10px;
-      font-family: 'Courier New', monospace;
-      font-size: 18px;
-      font-weight: bold;
-      border: 2px solid {isFreeSpinMode ? '#ff00ff' : '#ffd700'};
-      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.5);
-      z-index: 1500;
-      min-width: 180px;
-    ">
-      {#if isFreeSpinMode}
-        <div style="display: flex; justify-content: space-between; margin-bottom: 8px; color: #ff00ff; font-size: 16px; animation: pulse 1s infinite;">
-          <span>🎰 FREE SPINS:</span>
-          <span>{freeSpinsRemaining}</span>
-        </div>
-        <div style="display: flex; justify-content: space-between; margin-bottom: 8px; border-top: 1px solid #555; padding-top: 8px;">
-          <span style="color: #fff; font-size: 14px;">Total Won:</span>
-          <span style="color: #00ff00; font-size: 14px;">{freeSpinsTotalWon.toFixed(2)}</span>
-        </div>
-      {/if}
-      <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-        <span style="color: #fff;">CREDITS:</span>
-        <span style="color: #ffd700;">{balance.toLocaleString()}</span>
-      </div>
-      <div style="display: flex; justify-content: space-between; border-top: 1px solid #555; padding-top: 8px;">
-        <span style="color: #fff;">BET:</span>
-        <span style="color: #00ff00;">{betAmount}</span>
-      </div>
-    </div>
 
-<!-- Bet kontrollit (vasemmassa alakulmassa) -->
-<div style="
-  position: absolute;
-  bottom: 20px;
-  left: 20px;
-  background: rgba(0, 0, 0, 0.85);
-  padding: 15px;
-  border-radius: 10px;
-  border: 2px solid #00ff00;
-  z-index: 1500;
-">
-  <div style="color: white; font-size: 14px; margin-bottom: 10px; text-align: center; font-weight: bold;">
-    BET CONTROLS
-  </div>
-  <div style="display: flex; gap: 10px; align-items: center;">
-    <button
-      on:click={decreaseBet}
-      style="
-        padding: 8px 15px;
-        background: #ff4444;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        font-size: 16px;
-        font-weight: bold;
-        transition: background 0.2s;
-      "
-      class="bet-btn-minus"
-    >
-      -
-    </button>
-    
-    <div style="
-      color: #00ff00;
-      font-family: 'Courier New', monospace;
-      font-size: 20px;
-      font-weight: bold;
-      min-width: 60px;
-      text-align: center;
-      background: rgba(0, 255, 0, 0.1);
-      padding: 5px 10px;
-      border-radius: 5px;
-    ">
-      {betAmount}
-    </div>
-    
-    <button
-      on:click={increaseBet}
-      style="
-        padding: 8px 15px;
-        background: #44ff44;
-        color: #000;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        font-size: 16px;
-        font-weight: bold;
-        transition: background 0.2s;
-      "
-      class="bet-btn-plus"
-    >
-      +
-    </button>
-    
-    <button
-      on:click={maxBet}
-      style="
-        padding: 8px 12px;
-        background: #ffd700;
-        color: #000;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        font-size: 14px;
-        font-weight: bold;
-        transition: background 0.2s;
-      "
-      class="bet-btn-max"
-    >
-      MAX
-    </button>
-  </div>
-</div>
+
+
 
 <!-- Paytable-nappi oikeassa reunassa credit-näytön alla -->
 <button
@@ -2251,6 +2142,28 @@
   💰 PAYTABLE
 </button>
 
+<!-- Debug-nappi paytable-napin alapuolella -->
+<button
+  on:click={() => { showDebugPanel = !showDebugPanel; }}
+  style="
+    position: absolute;
+    top: 190px;
+    right: 20px;
+    padding: 10px 15px;
+    background-color: rgba(0, 255, 0, 0.3);
+    border: 2px solid rgba(0, 255, 0, 0.7);
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    color: white;
+    text-shadow: 0 0 5px rgba(0,0,0,0.8);
+    z-index: 1000;
+    min-width: 180px;
+  "
+>
+  🛠️ DEBUG v{GAME_VERSION}
+</button>
+
 <!-- ===== CONTROL PANEL (v1.1.0) ===== -->
 <!-- 
   Moderni control panel joka skaalautuu reelien kehysten leveyteen.
@@ -2263,12 +2176,10 @@
 -->
 <div class="control-panel-mobile" style="
   position: absolute;
-  left: {(reelFramesSpriteRef ? reelFramesSpriteRef.x : REEL_FRAMES_X) + CONTROL_PANEL_OFFSET_X}px;
-  top: {CONTROL_PANEL_Y + CONTROL_PANEL_OFFSET_Y}px;
-  transform: scale({CONTROL_PANEL_SCALE_X * gameScale}, {CONTROL_PANEL_SCALE_Y * gameScale});
-  transform-origin: top left;
-  width: {controlPanelWidth}px;
-  height: {CONTROL_PANEL_HEIGHT}px;
+  left: {((reelFramesSpriteRef ? reelFramesSpriteRef.x : REEL_FRAMES_X) + CONTROL_PANEL_OFFSET_X) * gameScale}px;
+  top: {(CONTROL_PANEL_Y + CONTROL_PANEL_OFFSET_Y) * gameScale}px;
+  width: {controlPanelWidth * gameScale}px;
+  height: {CONTROL_PANEL_HEIGHT * gameScale}px;
   display: flex;
   align-items: center;
   z-index: 1000;
@@ -2277,30 +2188,30 @@
   <img 
     src="{controlsPath}/Control_leftend.png" 
     alt="Left End"
-    style="height: {CONTROL_PANEL_HEIGHT}px; flex-shrink: 0;"
+    style="height: {CONTROL_PANEL_HEIGHT * gameScale}px; flex-shrink: 0;"
   />
   
   <!-- Keskiosa (skaalautuva tausta) -->
   <div style="
     flex-grow: 1;
-    height: {CONTROL_PANEL_HEIGHT}px;
+    height: {CONTROL_PANEL_HEIGHT * gameScale}px;
     background-image: url('{controlsPath}/Control_scalablebg.png');
     background-size: 100% 100%;
     background-repeat: no-repeat;
     display: flex;
     align-items: center;
     justify-content: space-around;
-    padding: 0 20px;
+    padding: 0 {20 * gameScale}px;
   ">
     <!-- BET kontrollit -->
-    <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
-      <div style="color: #00ff00; font-size: 12px; font-weight: bold;">BET</div>
-      <div style="display: flex; gap: 5px; align-items: center;">
+    <div style="display: flex; flex-direction: column; align-items: center; gap: {5 * gameScale}px;">
+      <div style="color: #00ff00; font-size: {12 * gameScale}px; font-weight: bold;">BET</div>
+      <div style="display: flex; gap: {5 * gameScale}px; align-items: center;">
         <button
           on:click={decreaseBet}
           style="
-            width: 40px;
-            height: 40px;
+            width: {40 * gameScale}px;
+            height: {40 * gameScale}px;
             background-image: url('{controlsPath}/Control_lowerbet_select.png');
             background-size: contain;
             background-repeat: no-repeat;
@@ -2312,9 +2223,9 @@
         ></button>
         <div style="
           color: #fff;
-          font-size: 18px;
+          font-size: {18 * gameScale}px;
           font-weight: bold;
-          min-width: 80px;
+          min-width: {80 * gameScale}px;
           text-align: center;
           font-family: 'Courier New', monospace;
         ">
@@ -2323,8 +2234,8 @@
         <button
           on:click={increaseBet}
           style="
-            width: 40px;
-            height: 40px;
+            width: {40 * gameScale}px;
+            height: {40 * gameScale}px;
             background-image: url('{controlsPath}/Control_upperbet_select.png');
             background-size: contain;
             background-repeat: no-repeat;
@@ -2334,6 +2245,22 @@
           "
           title="Increase Bet"
         ></button>
+        <button
+          on:click={maxBet}
+          style="
+            padding: {6 * gameScale}px {10 * gameScale}px;
+            background: #ffd700;
+            color: #000;
+            border: {2 * gameScale}px solid #000;
+            border-radius: {5 * gameScale}px;
+            cursor: pointer;
+            font-size: {12 * gameScale}px;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            transition: background 0.2s;
+          "
+          title="Max Bet"
+        >MAX</button>
       </div>
     </div>
     
@@ -2341,15 +2268,15 @@
     <img 
       src="{controlsPath}/Control_divider.png" 
       alt="Divider"
-      style="height: {CONTROL_PANEL_HEIGHT * 0.8}px; flex-shrink: 0;"
+      style="height: {CONTROL_PANEL_HEIGHT * 0.8 * gameScale}px; flex-shrink: 0;"
     />
     
     <!-- BALANCE näyttö -->
-    <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
-      <div style="color: #00ff00; font-size: 12px; font-weight: bold;">BALANCE</div>
+    <div style="display: flex; flex-direction: column; align-items: center; gap: {5 * gameScale}px;">
+      <div style="color: #00ff00; font-size: {12 * gameScale}px; font-weight: bold;">BALANCE</div>
       <div style="
         color: #fff;
-        font-size: 20px;
+        font-size: {20 * gameScale}px;
         font-weight: bold;
         font-family: 'Courier New', monospace;
       ">
@@ -2361,7 +2288,7 @@
     <img 
       src="{controlsPath}/Control_divider.png" 
       alt="Divider"
-      style="height: {CONTROL_PANEL_HEIGHT * 0.8}px; flex-shrink: 0;"
+      style="height: {CONTROL_PANEL_HEIGHT * 0.8 * gameScale}px; flex-shrink: 0;"
     />
     
     <!-- PLAY nappi (keskellä, iso - tulee paneelin yli) -->
@@ -2394,16 +2321,16 @@
     <img 
       src="{controlsPath}/Control_divider.png" 
       alt="Divider"
-      style="height: {CONTROL_PANEL_HEIGHT * 0.8}px; flex-shrink: 0;"
+      style="height: {CONTROL_PANEL_HEIGHT * 0.8 * gameScale}px; flex-shrink: 0;"
     />
     
     <!-- Autoplay nappi -->
-    <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+    <div style="display: flex; flex-direction: column; align-items: center; gap: {5 * gameScale}px;">
       <button
         on:click={() => { showAutoPlayMenu = !showAutoPlayMenu; }}
         style="
-          width: 50px;
-          height: 50px;
+          width: {50 * gameScale}px;
+          height: {50 * gameScale}px;
           background-image: url('{controlsPath}/{isAutoPlaying ? 'Control_autoplay_stop.png' : 'Control_autoplay_select.png'}');
           background-size: contain;
           background-repeat: no-repeat;
@@ -2416,7 +2343,7 @@
       <img 
         src="{controlsPath}/{isAutoPlaying ? 'Control_bar_select.png' : 'Control_bar_deselect.png'}" 
         alt="Status bar"
-        style="width: 50px; height: auto;"
+        style="width: {50 * gameScale}px; height: auto;"
       />
     </div>
     
@@ -2424,16 +2351,16 @@
     <img 
       src="{controlsPath}/Control_divider.png" 
       alt="Divider"
-      style="height: {CONTROL_PANEL_HEIGHT * 0.8}px; flex-shrink: 0;"
+      style="height: {CONTROL_PANEL_HEIGHT * 0.8 * gameScale}px; flex-shrink: 0;"
     />
     
     <!-- Spin Speed nappi -->
-    <div style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 5px;">
+    <div style="position: relative; display: flex; flex-direction: column; align-items: center; gap: {5 * gameScale}px;">
       <button
         on:click={() => { showSpinSpeedMenu = !showSpinSpeedMenu; }}
         style="
-          width: 50px;
-          height: 50px;
+          width: {50 * gameScale}px;
+          height: {50 * gameScale}px;
           background-image: url('{controlsPath}/Control_fastplay_select.png');
           background-size: contain;
           background-repeat: no-repeat;
@@ -2445,7 +2372,7 @@
       ></button>
       <div style="
         color: #ffffff;
-        font-size: 10px;
+        font-size: {10 * gameScale}px;
         font-weight: bold;
         text-transform: uppercase;
       ">
@@ -2538,16 +2465,16 @@
     <img 
       src="{controlsPath}/Control_divider.png" 
       alt="Divider"
-      style="height: {CONTROL_PANEL_HEIGHT * 0.8}px; flex-shrink: 0;"
+      style="height: {CONTROL_PANEL_HEIGHT * 0.8 * gameScale}px; flex-shrink: 0;"
     />
     
     <!-- Fast Play nappi -->
-    <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+    <div style="display: flex; flex-direction: column; align-items: center; gap: {5 * gameScale}px;">
       <button
         on:click={() => { isFastPlayEnabled = !isFastPlayEnabled; }}
         style="
-          width: 50px;
-          height: 50px;
+          width: {50 * gameScale}px;
+          height: {50 * gameScale}px;
           background-image: url('{controlsPath}/{isFastPlayEnabled ? 'Control_fastplay_select.png' : 'Control_fastplay_deselect.png'}');
           background-size: contain;
           background-repeat: no-repeat;
@@ -2560,7 +2487,7 @@
       <img 
         src="{controlsPath}/{isFastPlayEnabled ? 'Control_bar_select.png' : 'Control_bar_deselect.png'}" 
         alt="Status bar"
-        style="width: 50px; height: auto;"
+        style="width: {50 * gameScale}px; height: auto;"
       />
     </div>
     
@@ -2568,19 +2495,19 @@
     <img 
       src="{controlsPath}/Control_divider.png" 
       alt="Divider"
-      style="height: {CONTROL_PANEL_HEIGHT * 0.8}px; flex-shrink: 0;"
+      style="height: {CONTROL_PANEL_HEIGHT * 0.8 * gameScale}px; flex-shrink: 0;"
     />
     
     <!-- WIN näyttö -->
-    <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
-      <div style="color: #00ff00; font-size: 12px; font-weight: bold;">WIN</div>
+    <div style="display: flex; flex-direction: column; align-items: center; gap: {5 * gameScale}px;">
+      <div style="color: #00ff00; font-size: {12 * gameScale}px; font-weight: bold;">WIN</div>
       <div style="
         color: #ffd700;
-        font-size: 20px;
+        font-size: {20 * gameScale}px;
         font-weight: bold;
         font-family: 'Courier New', monospace;
       ">
-        {totalWin.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+        {lastWin.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
       </div>
     </div>
     
@@ -2588,15 +2515,15 @@
     <img 
       src="{controlsPath}/Control_divider.png" 
       alt="Divider"
-      style="height: {CONTROL_PANEL_HEIGHT * 0.8}px; flex-shrink: 0;"
+      style="height: {CONTROL_PANEL_HEIGHT * 0.8 * gameScale}px; flex-shrink: 0;"
     />
     
     <!-- Menu nappi -->
     <button
       on:click={() => { showPaytable = !showPaytable; }}
       style="
-        width: 50px;
-        height: 50px;
+        width: {50 * gameScale}px;
+        height: {50 * gameScale}px;
         background-image: url('{controlsPath}/Control_menubar.png');
         background-size: contain;
         background-repeat: no-repeat;
@@ -2612,7 +2539,7 @@
   <img 
     src="{controlsPath}/Control_rightend.png" 
     alt="Right End"
-    style="height: {CONTROL_PANEL_HEIGHT}px; flex-shrink: 0;"
+    style="height: {CONTROL_PANEL_HEIGHT * gameScale}px; flex-shrink: 0;"
   />
 </div>
 
@@ -2629,7 +2556,7 @@
   position: absolute;
   top: 20px;
   left: 20px;
-  display: none;
+  display: {showDebugPanel ? 'block' : 'none'};
   background: rgba(0, 0, 0, 0.9);
   color: #00ff00;
   padding: 15px 20px;
@@ -2818,7 +2745,7 @@
   bottom: 20px;
   right: 20px;
   z-index: 1500;
-  display: none;
+  display: {showDebugPanel ? 'block' : 'none'};
 ">
   {#if isAutoPlaying}
     <!-- Autoplay aktiivinen - näytä Stop ja kierrosten määrä -->
