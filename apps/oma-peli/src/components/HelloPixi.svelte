@@ -66,6 +66,7 @@
   - Wild on middle reel: 55% probability
   
   VERSION HISTORY:
+  - v1.3.0: Poistettu reelien taustalla olevat värilliset debug-neliöt ja numerot
   - v1.2.9: Poistettu kiekon pomppuefekti pysähdyksestä - nyt kiekot pysähtyvät suoraan
   - v1.2.8: Korjattu musiikki - poistettu dynaamiset loop-vaihdot, yksi satunnainen loop koko session ajan
   - v1.2.7: Dynaaminen musiikkivaihto - eri satunnainen loop joka kierroksella (20 loopia) [PERUTTU]
@@ -191,7 +192,7 @@
 </style>
 <script lang="ts">
   // Game version
-  const GAME_VERSION = "1.2.9";
+  const GAME_VERSION = "1.3.0";
   
   // Svelte lifecycle ja routing
   import { onMount } from "svelte";
@@ -1580,35 +1581,32 @@
       reelCont.x = adjustedX + OFFSET_X;
       reelCont.y = adjustedY + OFFSET_Y;
 
-      // Lisää värillinen tausta kiekon alueelle (debug/visualisointi) - jokainen kiekko eri väri
-      const colors = [
-        0xff0000, 0x00ff00, 0x0000ff, // Sarake 0: punainen, vihreä, sininen
-        0xffff00, 0xff00ff, 0x00ffff, // Sarake 1: keltainen, magenta, cyan
-        0xffa500,                     // Keskikiekko: oranssi
-        0x800080, 0x008000, 0x000080, // Sarake 3: violetti, tumma vihreä, tumma sininen
-        0xff8000, 0x8000ff, 0x0080ff  // Sarake 4: oranssinpunainen, sinipurppura, siniturkoosi
-      ];
+      // *** POISTETTU: Värillinen tausta ja debug-numerot ***
+      // const colors = [
+      //   0xff0000, 0x00ff00, 0x0000ff,
+      //   0xffff00, 0xff00ff, 0x00ffff,
+      //   0xffa500,
+      //   0x800080, 0x008000, 0x000080,
+      //   0xff8000, 0x8000ff, 0x0080ff
+      // ];
+      // const reelBg = new Graphics()
+      //   .rect(0, 0, symbolWidth, symbolHeight)
+      //   .fill({ color: colors[reelIndex], alpha: 0.3 });
+      // reelBg.x = reelCont.x;
+      // reelBg.y = reelCont.y;
+      // app.stage.addChild(reelBg);
       
-      const reelBg = new Graphics()
-        .rect(0, 0, symbolWidth, symbolHeight)      // Yhden symbolin koko
-        .fill({ color: colors[reelIndex], alpha: 0.3 }); // Eri väri jokaiselle kiekolle, 30% läpinäkyvyys
-      reelBg.x = reelCont.x;
-      reelBg.y = reelCont.y;
-      app.stage.addChild(reelBg);  // Lisää tausta näytölle
-
-      // Lisää kiekon numero tekstinä debug-tarkoituksessa
-      const style = new TextStyle({
-        fontFamily: 'Arial',
-        fontSize: 20,
-        fill: 0xffffff,
-        fontWeight: 'bold',
-        stroke: { color: 0x000000, width: 2 }
-      });
-      
-      const reelText = new Text({ text: reelIndex.toString(), style });
-      reelText.x = reelCont.x + 5;
-      reelText.y = reelCont.y + 5;
-      app.stage.addChild(reelText);  // Lisää numero näytölle
+      // const style = new TextStyle({
+      //   fontFamily: 'Arial',
+      //   fontSize: 20,
+      //   fill: 0xffffff,
+      //   fontWeight: 'bold',
+      //   stroke: { color: 0x000000, width: 2 }
+      // });
+      // const reelText = new Text({ text: reelIndex.toString(), style });
+      // reelText.x = reelCont.x + 5;
+      // reelText.y = reelCont.y + 5;
+      // app.stage.addChild(reelText);
 
       // Luo maski joka rajaa kiekon näkyvän alueen
       const mask = new Graphics()
