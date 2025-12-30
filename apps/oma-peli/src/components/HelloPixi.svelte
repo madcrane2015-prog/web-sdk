@@ -1,13 +1,5 @@
 <svelte:head>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.4/howler.min.js"></script>
-  <style>
-    /* Piilotetaan debug-elementit mobiilissa */
-    @media (max-width: 768px) {
-      .debug-panel {
-        display: none !important;
-      }
-    }
-  </style>
 </svelte:head>
 
 <!--
@@ -162,6 +154,26 @@
   .bet-btn-max:hover {
     background: #ffed4e !important;
   }
+  
+  /* Piilotetaan debug-elementit mobiilissa ja skaalataan control panel */
+  @media (max-width: 768px) {
+    .debug-panel {
+      display: none !important;
+    }
+    
+    .control-panel-mobile {
+      transform: scale(0.7) !important;
+      transform-origin: bottom center !important;
+    }
+  }
+  
+  /* Mobiili portrait-tila - vielä pienempi skaalaus */
+  @media (max-width: 768px) and (orientation: portrait) {
+    .control-panel-mobile {
+      transform: scale(0.5) !important;
+      transform-origin: bottom center !important;
+    }
+  }
 </style>
 <script lang="ts">
   // Package.json version - automaattinen päivitys
@@ -308,7 +320,21 @@
   let controlPanelWidth = $state(945);       // Paneelin leveys (päivittyy dynaamisesti)
   let reelFramesSpriteRef: any = null;       // Viittaus reel frames spriteen
   
-  // Spinninopeus-asetukset
+  // ===================================================================
+  // SPIN SPEED KONFIGURAATIO
+  // ===================================================================
+  // Määrittää pelikierroksen kokonaisnopeuden (stop delay per kiekko)
+  // Pienempi arvo = nopeampi kierros (kiekot pysähtyvät nopeammin)
+  // Suurempi arvo = hitaampi kierros (kiekot pysähtyvät hitaammin)
+  // 
+  // HUOM: Tämä EI muuta kiekkojen pyörimisnopeutta, vaan pysähtymisväliä!
+  // Kiekkojen pyörimisnopeus on aina sama (medium = 35 px/frame)
+  const SPIN_SPEED_CONFIG = {
+    fast: 15,    // Fast: ~3 sec (15 frames/kiekko * 13 kiekkoa = 195 frames = ~3.25s @ 60fps)
+    medium: 23,  // Medium: ~5 sec (23 frames/kiekko * 13 kiekkoa = 299 frames = ~5s @ 60fps)
+    slow: 32     // Slow: ~7 sec (32 frames/kiekko * 13 kiekkoa = 416 frames = ~6.9s @ 60fps)
+  };
+  
   type SpinSpeed = 'slow' | 'medium' | 'fast';
   let spinSpeed = $state<SpinSpeed>('medium'); // Nykyinen spinninopeus
   let showSpinSpeedMenu = $state(false);       // Näytetäänkö nopeusvalikko
@@ -1186,22 +1212,17 @@
       this.state = "spinning";    // Aseta pyörivä tila
       this.speed = 0;            // Aloita nopeudesta 0
       
-      // Aseta tavoitenopeus spinSpeed-asetuksen mukaan
-      if (spinSpeed === 'slow') {
-        this.targetSpeed = 20;   // Hidas nopeus
-      } else if (spinSpeed === 'medium') {
-        this.targetSpeed = 35;   // Keskitason nopeus (oletus)
-      } else { // fast
-        this.targetSpeed = 50;   // Nopea nopeus
-      }
+      // Pyörimisnopeus on AINA sama (medium), vain pysähtymisviive muuttuu
+      this.targetSpeed = 35;     // Vakio pyörimisnopeus kaikille spinSpeed-asetuksille
       
       this.stopDelay = delay;    // Aseta pysäytysviive (kiekot pysähtyvät eri aikoina)
     }
     
     // BPM-synkronoitu start-metodi (v1.0.9)
-    // Pysäyttää kiekot rytmisesti 130 BPM tahtiin
+    // Pysäyttää kiekot peräkkäin spinSpeed-asetuksen mukaan
     startSynchronized(beatIndex: number) {
-      const delay = 60 + (beatIndex * FRAMES_PER_BEAT); // 60 base + rytminen viive
+      const framesPerReel = SPIN_SPEED_CONFIG[spinSpeed]; // Käytä konfiguraation arvoa
+      const delay = 60 + (beatIndex * framesPerReel); // 60 base + viive per kiekko
       this.start(delay);
     }
 
@@ -1717,8 +1738,8 @@
   // SPIN NAPPI - Käynnistää uuden pyöräytyksen
   // ===================================================================
   function spin() {
-    // Käynnistä taustamusiikki ensimmäisellä kierroksella
-    if (backgroundMusic && musicEnabled && !backgroundMusic.playing()) {
+    // Käynnistä taustamusiikki ensimmäisellä kierroksella (EI vapaapeleissä)
+    if (!isFreeSpinMode && backgroundMusic && musicEnabled && !backgroundMusic.playing()) {
       backgroundMusic.play();
       console.log('🎵 Background music started on first spin');
     }
@@ -2231,6 +2252,379 @@
   💰 PAYTABLE
 </button>
 
+<!-- ===== CONTROL PANEL (v1.1.0) ===== -->
+<!-- 
+  Moderni control panel joka skaalautuu reelien kehysten leveyteen.
+  Koostuu kolmesta osasta:
+  - Vasen pää (Control_leftend.png)
+  - Keskikohta (Control_scalablebg.png - skaalautuva)
+  - Oikea pää (Control_rightend.png)
+  
+  v1.1.4: Korjattu käyttämään pikselikoordinaatteja zoomin tukemiseksi
+-->
+<div class="control-panel-mobile" style="
+  position: absolute;
+  left: {(reelFramesSpriteRef ? reelFramesSpriteRef.x : REEL_FRAMES_X) + CONTROL_PANEL_OFFSET_X}px;
+  top: {CONTROL_PANEL_Y + CONTROL_PANEL_OFFSET_Y}px;
+  transform: scale({CONTROL_PANEL_SCALE_X * gameScale}, {CONTROL_PANEL_SCALE_Y * gameScale});
+  transform-origin: top left;
+  width: {controlPanelWidth}px;
+  height: {CONTROL_PANEL_HEIGHT}px;
+  display: flex;
+  align-items: center;
+  z-index: 1000;
+">
+  <!-- Vasen pää -->
+  <img 
+    src="{controlsPath}/Control_leftend.png" 
+    alt="Left End"
+    style="height: {CONTROL_PANEL_HEIGHT}px; flex-shrink: 0;"
+  />
+  
+  <!-- Keskiosa (skaalautuva tausta) -->
+  <div style="
+    flex-grow: 1;
+    height: {CONTROL_PANEL_HEIGHT}px;
+    background-image: url('{controlsPath}/Control_scalablebg.png');
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0 20px;
+  ">
+    <!-- BET kontrollit -->
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+      <div style="color: #00ff00; font-size: 12px; font-weight: bold;">BET</div>
+      <div style="display: flex; gap: 5px; align-items: center;">
+        <button
+          on:click={decreaseBet}
+          style="
+            width: 40px;
+            height: 40px;
+            background-image: url('{controlsPath}/Control_lowerbet_select.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            border: none;
+            cursor: pointer;
+            background-color: transparent;
+          "
+          title="Decrease Bet"
+        ></button>
+        <div style="
+          color: #fff;
+          font-size: 18px;
+          font-weight: bold;
+          min-width: 80px;
+          text-align: center;
+          font-family: 'Courier New', monospace;
+        ">
+          {betAmount.toFixed(2)}
+        </div>
+        <button
+          on:click={increaseBet}
+          style="
+            width: 40px;
+            height: 40px;
+            background-image: url('{controlsPath}/Control_upperbet_select.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            border: none;
+            cursor: pointer;
+            background-color: transparent;
+          "
+          title="Increase Bet"
+        ></button>
+      </div>
+    </div>
+    
+    <!-- Divider -->
+    <img 
+      src="{controlsPath}/Control_divider.png" 
+      alt="Divider"
+      style="height: {CONTROL_PANEL_HEIGHT * 0.8}px; flex-shrink: 0;"
+    />
+    
+    <!-- BALANCE näyttö -->
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+      <div style="color: #00ff00; font-size: 12px; font-weight: bold;">BALANCE</div>
+      <div style="
+        color: #fff;
+        font-size: 20px;
+        font-weight: bold;
+        font-family: 'Courier New', monospace;
+      ">
+        {balance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+      </div>
+    </div>
+    
+    <!-- Divider -->
+    <img 
+      src="{controlsPath}/Control_divider.png" 
+      alt="Divider"
+      style="height: {CONTROL_PANEL_HEIGHT * 0.8}px; flex-shrink: 0;"
+    />
+    
+    <!-- PLAY nappi (keskellä, iso - tulee paneelin yli) -->
+    <div style="position: relative; display: flex; align-items: center; justify-content: center; flex-grow: 0.5;">
+      <div class="play-button-wrapper {playButtonGlareActive ? 'glare-animate' : ''}">
+        <button
+          on:click={spin}
+          disabled={isAutoPlaying}
+          style="
+            width: 130px;
+            height: 130px;
+            background-image: url('{controlsPath}/Control_playbutton.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            border: none;
+            cursor: {isAutoPlaying ? 'not-allowed' : 'pointer'};
+            background-color: transparent;
+            opacity: {isAutoPlaying ? 0.5 : 1};
+            position: relative;
+            z-index: 10;
+            border-radius: 50%;
+          "
+          title="SPIN"
+        ></button>
+      </div>
+    </div>
+    
+    <!-- Divider -->
+    <img 
+      src="{controlsPath}/Control_divider.png" 
+      alt="Divider"
+      style="height: {CONTROL_PANEL_HEIGHT * 0.8}px; flex-shrink: 0;"
+    />
+    
+    <!-- Autoplay nappi -->
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+      <button
+        on:click={() => { showAutoPlayMenu = !showAutoPlayMenu; }}
+        style="
+          width: 50px;
+          height: 50px;
+          background-image: url('{controlsPath}/{isAutoPlaying ? 'Control_autoplay_stop.png' : 'Control_autoplay_select.png'}');
+          background-size: contain;
+          background-repeat: no-repeat;
+          border: none;
+          cursor: pointer;
+          background-color: transparent;
+        "
+        title="Autoplay"
+      ></button>
+      <img 
+        src="{controlsPath}/{isAutoPlaying ? 'Control_bar_select.png' : 'Control_bar_deselect.png'}" 
+        alt="Status bar"
+        style="width: 50px; height: auto;"
+      />
+    </div>
+    
+    <!-- Divider -->
+    <img 
+      src="{controlsPath}/Control_divider.png" 
+      alt="Divider"
+      style="height: {CONTROL_PANEL_HEIGHT * 0.8}px; flex-shrink: 0;"
+    />
+    
+    <!-- Spin Speed nappi -->
+    <div style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 5px;">
+      <button
+        on:click={() => { showSpinSpeedMenu = !showSpinSpeedMenu; }}
+        style="
+          width: 50px;
+          height: 50px;
+          background-image: url('{controlsPath}/Control_fastplay_select.png');
+          background-size: contain;
+          background-repeat: no-repeat;
+          border: none;
+          cursor: pointer;
+          background-color: transparent;
+        "
+        title="Spin Speed: {spinSpeed === 'slow' ? 'Slow' : spinSpeed === 'medium' ? 'Medium' : 'Fast'}"
+      ></button>
+      <div style="
+        color: #ffffff;
+        font-size: 10px;
+        font-weight: bold;
+        text-transform: uppercase;
+      ">
+        {spinSpeed === 'slow' ? 'Slow' : spinSpeed === 'medium' ? 'Med' : 'Fast'}
+      </div>
+      
+      <!-- Spin Speed Valikko -->
+      {#if showSpinSpeedMenu}
+        <div style="
+          position: absolute;
+          bottom: 80px;
+          left: 50%;
+          transform: translateX(-50%);
+          background: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%);
+          border: 2px solid #ffd700;
+          border-radius: 10px;
+          padding: 10px;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          z-index: 1000;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+        ">
+          <div style="
+            color: #ffd700;
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+            border-bottom: 1px solid #444;
+            padding-bottom: 5px;
+          ">
+            SPIN SPEED
+          </div>
+          
+          <button
+            on:click={() => { spinSpeed = 'slow'; showSpinSpeedMenu = false; }}
+            style="
+              background: {spinSpeed === 'slow' ? 'linear-gradient(180deg, #4a4a4a 0%, #2a2a2a 100%)' : 'linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 100%)'};
+              border: 2px solid {spinSpeed === 'slow' ? '#ffd700' : '#666'};
+              color: {spinSpeed === 'slow' ? '#ffd700' : '#ffffff'};
+              padding: 8px 20px;
+              border-radius: 5px;
+              cursor: pointer;
+              font-weight: bold;
+              font-size: 12px;
+              transition: all 0.2s;
+            "
+          >
+            🐌 SLOW
+          </button>
+          
+          <button
+            on:click={() => { spinSpeed = 'medium'; showSpinSpeedMenu = false; }}
+            style="
+              background: {spinSpeed === 'medium' ? 'linear-gradient(180deg, #4a4a4a 0%, #2a2a2a 100%)' : 'linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 100%)'};
+              border: 2px solid {spinSpeed === 'medium' ? '#ffd700' : '#666'};
+              color: {spinSpeed === 'medium' ? '#ffd700' : '#ffffff'};
+              padding: 8px 20px;
+              border-radius: 5px;
+              cursor: pointer;
+              font-weight: bold;
+              font-size: 12px;
+              transition: all 0.2s;
+            "
+          >
+            ⚡ MEDIUM
+          </button>
+          
+          <button
+            on:click={() => { spinSpeed = 'fast'; showSpinSpeedMenu = false; }}
+            style="
+              background: {spinSpeed === 'fast' ? 'linear-gradient(180deg, #4a4a4a 0%, #2a2a2a 100%)' : 'linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 100%)'};
+              border: 2px solid {spinSpeed === 'fast' ? '#ffd700' : '#666'};
+              color: {spinSpeed === 'fast' ? '#ffd700' : '#ffffff'};
+              padding: 8px 20px;
+              border-radius: 5px;
+              cursor: pointer;
+              font-weight: bold;
+              font-size: 12px;
+              transition: all 0.2s;
+            "
+          >
+            🚀 FAST
+          </button>
+        </div>
+      {/if}
+    </div>
+    
+    <!-- Divider -->
+    <img 
+      src="{controlsPath}/Control_divider.png" 
+      alt="Divider"
+      style="height: {CONTROL_PANEL_HEIGHT * 0.8}px; flex-shrink: 0;"
+    />
+    
+    <!-- Fast Play nappi -->
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+      <button
+        on:click={() => { isFastPlayEnabled = !isFastPlayEnabled; }}
+        style="
+          width: 50px;
+          height: 50px;
+          background-image: url('{controlsPath}/{isFastPlayEnabled ? 'Control_fastplay_select.png' : 'Control_fastplay_deselect.png'}');
+          background-size: contain;
+          background-repeat: no-repeat;
+          border: none;
+          cursor: pointer;
+          background-color: transparent;
+        "
+        title="Fast Play"
+      ></button>
+      <img 
+        src="{controlsPath}/{isFastPlayEnabled ? 'Control_bar_select.png' : 'Control_bar_deselect.png'}" 
+        alt="Status bar"
+        style="width: 50px; height: auto;"
+      />
+    </div>
+    
+    <!-- Divider -->
+    <img 
+      src="{controlsPath}/Control_divider.png" 
+      alt="Divider"
+      style="height: {CONTROL_PANEL_HEIGHT * 0.8}px; flex-shrink: 0;"
+    />
+    
+    <!-- WIN näyttö -->
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+      <div style="color: #00ff00; font-size: 12px; font-weight: bold;">WIN</div>
+      <div style="
+        color: #ffd700;
+        font-size: 20px;
+        font-weight: bold;
+        font-family: 'Courier New', monospace;
+      ">
+        {totalWin.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+      </div>
+    </div>
+    
+    <!-- Divider -->
+    <img 
+      src="{controlsPath}/Control_divider.png" 
+      alt="Divider"
+      style="height: {CONTROL_PANEL_HEIGHT * 0.8}px; flex-shrink: 0;"
+    />
+    
+    <!-- Menu nappi -->
+    <button
+      on:click={() => { showPaytable = !showPaytable; }}
+      style="
+        width: 50px;
+        height: 50px;
+        background-image: url('{controlsPath}/Control_menubar.png');
+        background-size: contain;
+        background-repeat: no-repeat;
+        border: none;
+        cursor: pointer;
+        background-color: transparent;
+      "
+      title="Menu"
+    ></button>
+  </div>
+  
+  <!-- Oikea pää -->
+  <img 
+    src="{controlsPath}/Control_rightend.png" 
+    alt="Right End"
+    style="height: {CONTROL_PANEL_HEIGHT}px; flex-shrink: 0;"
+  />
+</div>
+
+<!-- Vinyl Win Animation -->
+<VinylWinAnimation 
+  bind:this={vinylWinAnimationRef}
+  winLevel={totalWin / betAmount >= 50 ? 'jackpot' : totalWin / betAmount >= 20 ? 'medium' : 'small'}
+  winAmount={totalWin}
+/>
+
+<!-- DEBUG PANEELIT (pelialueen sisällä) -->
 <!-- RTP Debug näyttö (vasemmassa yläkulmassa) -->
 <div class="debug-panel" style="
   position: absolute;
@@ -2620,381 +3014,6 @@
 >
   {soundEnabled ? "🔊" : "🔇"}
 </button>
-
-<!-- ===== CONTROL PANEL (v1.1.0) ===== -->
-<!-- 
-  Moderni control panel joka skaalautuu reelien kehysten leveyteen.
-  Koostuu kolmesta osasta:
-  - Vasen pää (Control_leftend.png)
-  - Keskikohta (Control_scalablebg.png - skaalautuva)
-  - Oikea pää (Control_rightend.png)
-  
-  v1.1.3: Muutettu käyttämään transform-pohjaista positionointia selaimen zoomin tukemiseksi
--->
-<div style="
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(
-    calc(-50% + {(reelFramesSpriteRef ? reelFramesSpriteRef.x : REEL_FRAMES_X) + CONTROL_PANEL_OFFSET_X}px),
-    calc(-50% + {CONTROL_PANEL_Y + CONTROL_PANEL_OFFSET_Y}px)
-  ) scale({CONTROL_PANEL_SCALE_X}, {CONTROL_PANEL_SCALE_Y});
-  transform-origin: center center;
-  width: {controlPanelWidth}px;
-  height: {CONTROL_PANEL_HEIGHT}px;
-  display: flex;
-  align-items: center;
-  z-index: 1000;
-">
-  <!-- Vasen pää -->
-  <img 
-    src="{controlsPath}/Control_leftend.png" 
-    alt="Left End"
-    style="height: {CONTROL_PANEL_HEIGHT}px; flex-shrink: 0;"
-  />
-  
-  <!-- Keskiosa (skaalautuva tausta) -->
-  <div style="
-    flex-grow: 1;
-    height: {CONTROL_PANEL_HEIGHT}px;
-    background-image: url('{controlsPath}/Control_scalablebg.png');
-    background-size: 100% 100%;
-    background-repeat: no-repeat;
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
-    padding: 0 20px;
-  ">
-    <!-- BET kontrollit -->
-    <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
-      <div style="color: #00ff00; font-size: 12px; font-weight: bold;">BET</div>
-      <div style="display: flex; gap: 5px; align-items: center;">
-        <button
-          on:click={decreaseBet}
-          style="
-            width: 40px;
-            height: 40px;
-            background-image: url('{controlsPath}/Control_lowerbet_select.png');
-            background-size: contain;
-            background-repeat: no-repeat;
-            border: none;
-            cursor: pointer;
-            background-color: transparent;
-          "
-          title="Decrease Bet"
-        ></button>
-        <div style="
-          color: #fff;
-          font-size: 18px;
-          font-weight: bold;
-          min-width: 80px;
-          text-align: center;
-          font-family: 'Courier New', monospace;
-        ">
-          {betAmount.toFixed(2)}
-        </div>
-        <button
-          on:click={increaseBet}
-          style="
-            width: 40px;
-            height: 40px;
-            background-image: url('{controlsPath}/Control_upperbet_select.png');
-            background-size: contain;
-            background-repeat: no-repeat;
-            border: none;
-            cursor: pointer;
-            background-color: transparent;
-          "
-          title="Increase Bet"
-        ></button>
-      </div>
-    </div>
-    
-    <!-- Divider -->
-    <img 
-      src="{controlsPath}/Control_divider.png" 
-      alt="Divider"
-      style="height: {CONTROL_PANEL_HEIGHT * 0.8}px; flex-shrink: 0;"
-    />
-    
-    <!-- BALANCE näyttö -->
-    <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
-      <div style="color: #00ff00; font-size: 12px; font-weight: bold;">BALANCE</div>
-      <div style="
-        color: #fff;
-        font-size: 20px;
-        font-weight: bold;
-        font-family: 'Courier New', monospace;
-      ">
-        {balance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
-      </div>
-    </div>
-    
-    <!-- Divider -->
-    <img 
-      src="{controlsPath}/Control_divider.png" 
-      alt="Divider"
-      style="height: {CONTROL_PANEL_HEIGHT * 0.8}px; flex-shrink: 0;"
-    />
-    
-    <!-- PLAY nappi (keskellä, iso - tulee paneelin yli) -->
-    <div style="position: relative; display: flex; align-items: center; justify-content: center; flex-grow: 0.5;">
-      <div class="play-button-wrapper {playButtonGlareActive ? 'glare-animate' : ''}">
-        <button
-          on:click={spin}
-          disabled={isAutoPlaying}
-          style="
-            width: 130px;
-            height: 130px;
-            background-image: url('{controlsPath}/Control_playbutton.png');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            border: none;
-            cursor: {isAutoPlaying ? 'not-allowed' : 'pointer'};
-            background-color: transparent;
-            opacity: {isAutoPlaying ? 0.5 : 1};
-            position: relative;
-            z-index: 10;
-            border-radius: 50%;
-          "
-          title="SPIN"
-        ></button>
-      </div>
-    </div>
-    
-    <!-- Divider -->
-    <img 
-      src="{controlsPath}/Control_divider.png" 
-      alt="Divider"
-      style="height: {CONTROL_PANEL_HEIGHT * 0.8}px; flex-shrink: 0;"
-    />
-    
-    <!-- Autoplay nappi -->
-    <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
-      <button
-        on:click={() => { showAutoPlayMenu = !showAutoPlayMenu; }}
-        style="
-          width: 50px;
-          height: 50px;
-          background-image: url('{controlsPath}/{isAutoPlaying ? 'Control_autoplay_stop.png' : 'Control_autoplay_select.png'}');
-          background-size: contain;
-          background-repeat: no-repeat;
-          border: none;
-          cursor: pointer;
-          background-color: transparent;
-        "
-        title="Autoplay"
-      ></button>
-      <img 
-        src="{controlsPath}/{isAutoPlaying ? 'Control_bar_select.png' : 'Control_bar_deselect.png'}" 
-        alt="Status bar"
-        style="width: 50px; height: auto;"
-      />
-    </div>
-    
-    <!-- Divider -->
-    <img 
-      src="{controlsPath}/Control_divider.png" 
-      alt="Divider"
-      style="height: {CONTROL_PANEL_HEIGHT * 0.8}px; flex-shrink: 0;"
-    />
-    
-    <!-- Spin Speed nappi -->
-    <div style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 5px;">
-      <button
-        on:click={() => { showSpinSpeedMenu = !showSpinSpeedMenu; }}
-        style="
-          width: 50px;
-          height: 50px;
-          background-image: url('{controlsPath}/Control_fastplay_select.png');
-          background-size: contain;
-          background-repeat: no-repeat;
-          border: none;
-          cursor: pointer;
-          background-color: transparent;
-        "
-        title="Spin Speed: {spinSpeed === 'slow' ? 'Slow' : spinSpeed === 'medium' ? 'Medium' : 'Fast'}"
-      ></button>
-      <div style="
-        color: #ffffff;
-        font-size: 10px;
-        font-weight: bold;
-        text-transform: uppercase;
-      ">
-        {spinSpeed === 'slow' ? 'Slow' : spinSpeed === 'medium' ? 'Med' : 'Fast'}
-      </div>
-      
-      <!-- Spin Speed Valikko -->
-      {#if showSpinSpeedMenu}
-        <div style="
-          position: absolute;
-          bottom: 80px;
-          left: 50%;
-          transform: translateX(-50%);
-          background: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%);
-          border: 2px solid #ffd700;
-          border-radius: 10px;
-          padding: 10px;
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-          z-index: 1000;
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
-        ">
-          <div style="
-            color: #ffd700;
-            font-size: 14px;
-            font-weight: bold;
-            text-align: center;
-            border-bottom: 1px solid #444;
-            padding-bottom: 5px;
-          ">
-            SPIN SPEED
-          </div>
-          
-          <button
-            on:click={() => { spinSpeed = 'slow'; showSpinSpeedMenu = false; }}
-            style="
-              background: {spinSpeed === 'slow' ? 'linear-gradient(180deg, #4a4a4a 0%, #2a2a2a 100%)' : 'linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 100%)'};
-              border: 2px solid {spinSpeed === 'slow' ? '#ffd700' : '#666'};
-              color: {spinSpeed === 'slow' ? '#ffd700' : '#ffffff'};
-              padding: 8px 20px;
-              border-radius: 5px;
-              cursor: pointer;
-              font-weight: bold;
-              font-size: 12px;
-              transition: all 0.2s;
-            "
-          >
-            🐌 SLOW
-          </button>
-          
-          <button
-            on:click={() => { spinSpeed = 'medium'; showSpinSpeedMenu = false; }}
-            style="
-              background: {spinSpeed === 'medium' ? 'linear-gradient(180deg, #4a4a4a 0%, #2a2a2a 100%)' : 'linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 100%)'};
-              border: 2px solid {spinSpeed === 'medium' ? '#ffd700' : '#666'};
-              color: {spinSpeed === 'medium' ? '#ffd700' : '#ffffff'};
-              padding: 8px 20px;
-              border-radius: 5px;
-              cursor: pointer;
-              font-weight: bold;
-              font-size: 12px;
-              transition: all 0.2s;
-            "
-          >
-            ⚡ MEDIUM
-          </button>
-          
-          <button
-            on:click={() => { spinSpeed = 'fast'; showSpinSpeedMenu = false; }}
-            style="
-              background: {spinSpeed === 'fast' ? 'linear-gradient(180deg, #4a4a4a 0%, #2a2a2a 100%)' : 'linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 100%)'};
-              border: 2px solid {spinSpeed === 'fast' ? '#ffd700' : '#666'};
-              color: {spinSpeed === 'fast' ? '#ffd700' : '#ffffff'};
-              padding: 8px 20px;
-              border-radius: 5px;
-              cursor: pointer;
-              font-weight: bold;
-              font-size: 12px;
-              transition: all 0.2s;
-            "
-          >
-            🚀 FAST
-          </button>
-        </div>
-      {/if}
-    </div>
-    
-    <!-- Divider -->
-    <img 
-      src="{controlsPath}/Control_divider.png" 
-      alt="Divider"
-      style="height: {CONTROL_PANEL_HEIGHT * 0.8}px; flex-shrink: 0;"
-    />
-    
-    <!-- Fast Play nappi -->
-    <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
-      <button
-        on:click={() => { isFastPlayEnabled = !isFastPlayEnabled; }}
-        style="
-          width: 50px;
-          height: 50px;
-          background-image: url('{controlsPath}/{isFastPlayEnabled ? 'Control_fastplay_select.png' : 'Control_fastplay_deselect.png'}');
-          background-size: contain;
-          background-repeat: no-repeat;
-          border: none;
-          cursor: pointer;
-          background-color: transparent;
-        "
-        title="Fast Play"
-      ></button>
-      <img 
-        src="{controlsPath}/{isFastPlayEnabled ? 'Control_bar_select.png' : 'Control_bar_deselect.png'}" 
-        alt="Status bar"
-        style="width: 50px; height: auto;"
-      />
-    </div>
-    
-    <!-- Divider -->
-    <img 
-      src="{controlsPath}/Control_divider.png" 
-      alt="Divider"
-      style="height: {CONTROL_PANEL_HEIGHT * 0.8}px; flex-shrink: 0;"
-    />
-    
-    <!-- WIN näyttö -->
-    <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
-      <div style="color: #00ff00; font-size: 12px; font-weight: bold;">WIN</div>
-      <div style="
-        color: #ffd700;
-        font-size: 20px;
-        font-weight: bold;
-        font-family: 'Courier New', monospace;
-      ">
-        {totalWin.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
-      </div>
-    </div>
-    
-    <!-- Divider -->
-    <img 
-      src="{controlsPath}/Control_divider.png" 
-      alt="Divider"
-      style="height: {CONTROL_PANEL_HEIGHT * 0.8}px; flex-shrink: 0;"
-    />
-    
-    <!-- Menu nappi -->
-    <button
-      on:click={() => { showPaytable = !showPaytable; }}
-      style="
-        width: 50px;
-        height: 50px;
-        background-image: url('{controlsPath}/Control_menubar.png');
-        background-size: contain;
-        background-repeat: no-repeat;
-        border: none;
-        cursor: pointer;
-        background-color: transparent;
-      "
-      title="Menu"
-    ></button>
-  </div>
-  
-  <!-- Oikea pää -->
-  <img 
-    src="{controlsPath}/Control_rightend.png" 
-    alt="Right End"
-    style="height: {CONTROL_PANEL_HEIGHT}px; flex-shrink: 0;"
-  />
-</div>
-
-<!-- Vinyl Win Animation -->
-<VinylWinAnimation 
-  bind:this={vinylWinAnimationRef}
-  winLevel={totalWin / betAmount >= 50 ? 'jackpot' : totalWin / betAmount >= 20 ? 'medium' : 'small'}
-  winAmount={totalWin}
-/>
 
   </div> <!-- Päätä skaalautuva wrapper -->
 </div> <!-- Päätä ulompi wrapper -->
