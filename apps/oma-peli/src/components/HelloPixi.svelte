@@ -1,5 +1,13 @@
 <svelte:head>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.4/howler.min.js"></script>
+  <style>
+    /* Piilotetaan debug-elementit mobiilissa */
+    @media (max-width: 768px) {
+      .debug-panel {
+        display: none !important;
+      }
+    }
+  </style>
 </svelte:head>
 
 <!--
@@ -2224,7 +2232,7 @@
 </button>
 
 <!-- RTP Debug näyttö (vasemmassa yläkulmassa) -->
-<div style="
+<div class="debug-panel" style="
   position: absolute;
   top: 20px;
   left: 20px;
@@ -2411,7 +2419,7 @@
 </div>
 
 <!-- Autoplay nappi ja menu (oikeassa alakulmassa) -->
-<div style="
+<div class="debug-panel" style="
   position: absolute;
   bottom: 20px;
   right: 20px;
@@ -2589,7 +2597,7 @@
 </div>
 
 <!-- Mykistysnappi oikeassa yläkulmassa -->
-<button
+<button class="debug-panel"
   on:click={() => { soundEnabled = !soundEnabled; }}
   style="
     position: absolute;
