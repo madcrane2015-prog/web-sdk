@@ -66,7 +66,8 @@
   - Wild on middle reel: 55% probability
   
   VERSION HISTORY:
-  - v1.2.7: Dynaaminen musiikkivaihto - eri satunnainen loop joka kierroksella (20 loopia)
+  - v1.2.8: Korjattu musiikki - poistettu dynaamiset loop-vaihdot, yksi satunnainen loop koko session ajan
+  - v1.2.7: Dynaaminen musiikkivaihto - eri satunnainen loop joka kierroksella (20 loopia) [PERUTTU]
   - v1.2.6: Fixed PixiJS scaling - use stage.scale instead of renderer resize
   - v1.2.5: Fixed canvas container size to match renderer size (background zoom fix)
   - v1.2.4: Fixed Control Panel position scaling - multiply positions by gameScale
@@ -189,7 +190,7 @@
 </style>
 <script lang="ts">
   // Game version
-  const GAME_VERSION = "1.2.7";
+  const GAME_VERSION = "1.2.8";
   
   // Svelte lifecycle ja routing
   import { onMount } from "svelte";
@@ -341,8 +342,8 @@
   // HUOM: Tämä EI muuta kiekkojen pyörimisnopeutta, vaan pysähtymisväliä!
   // Kiekkojen pyörimisnopeus on aina sama (medium = 35 px/frame)
   const SPIN_SPEED_CONFIG = {
-    fast: 1,    // Fast: ~3 sec (15 frames/kiekko * 13 kiekkoa = 195 frames = ~3.25s @ 60fps)
-    medium: 10,  // Medium: ~5 sec (23 frames/kiekko * 13 kiekkoa = 299 frames = ~5s @ 60fps)
+    fast: 3,    // Fast: ~3 sec (15 frames/kiekko * 13 kiekkoa = 195 frames = ~3.25s @ 60fps)
+    medium: 7,  // Medium: ~5 sec (23 frames/kiekko * 13 kiekkoa = 299 frames = ~5s @ 60fps)
     slow: 18     // Slow: ~7 sec (32 frames/kiekko * 13 kiekkoa = 416 frames = ~6.9s @ 60fps)
   };
   
@@ -1785,11 +1786,6 @@
   // SPIN NAPPI - Käynnistää uuden pyöräytyksen
   // ===================================================================
   function spin() {
-    // Vaihda uusi satunnainen loop peruspelissä
-    if (!isFreeSpinMode) {
-      changeBackgroundLoop();
-    }
-    
     // Käynnistä taustamusiikki ensimmäisellä kierroksella (EI vapaapeleissä)
     if (!isFreeSpinMode && backgroundMusic && musicEnabled && !backgroundMusic.playing()) {
       backgroundMusic.play();
