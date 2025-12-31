@@ -66,8 +66,9 @@
   - Wild on middle reel: 55% probability
   
   VERSION HISTORY:
+  - v1.3.1: Poistettu "HELLO MAD CRANE" teksti, palautettu pieni bounce effect (8px, 0.85 damping), tehty wrapper läpinäkyväksi
   - v1.3.0: Poistettu reelien taustalla olevat värilliset debug-neliöt ja numerot
-  - v1.2.9: Poistettu kiekon pomppuefekti pysähdyksestä - nyt kiekot pysähtyvät suoraan
+  - v1.2.9: Poistettu kiekon pomppuefekti [PALAUTETTU v1.3.1 pienempänä]
   - v1.2.8: Korjattu musiikki - poistettu dynaamiset loop-vaihdot, yksi satunnainen loop koko session ajan
   - v1.2.7: Dynaaminen musiikkivaihto - eri satunnainen loop joka kierroksella (20 loopia) [PERUTTU]
   - v1.2.6: Fixed PixiJS scaling - use stage.scale instead of renderer resize
@@ -192,7 +193,7 @@
 </style>
 <script lang="ts">
   // Game version
-  const GAME_VERSION = "1.3.0";
+  const GAME_VERSION = "1.3.1";
   
   // Svelte lifecycle ja routing
   import { onMount } from "svelte";
@@ -1293,19 +1294,32 @@
         const slowDownFactor = spinSpeed === 'slow' ? 0.88 : spinSpeed === 'medium' ? 0.92 : 0.95;
         this.speed *= slowDownFactor; // Eksponentiaalinen hidastus
 
-        // Pysähdytään suoraan kun nopeus on riittävän pieni (EI POMPPUA)
+        // Pysähdytään pienellä bouncella kun nopeus on riittävän pieni
         if (this.speed < 2.5) {
-          this.state = "stopped";   // Siirry suoraan stopped-tilaan
+          this.state = "bouncing";  // Siirry bouncing-tilaan (palautettu pieni bounce)
           this.speed = 0;           // Pysäytä normaali liike
           this.offset = 0;          // Nollaa scroll-offset
-          this.bounceOffset = 0;    // Varmista että bounce on nollassa
-          this.bounceSpeed = 0;     // Nollaa bounce-nopeus
+          this.bounceOffset = 0;    // Aloita bounce nollasta
+          this.bounceSpeed = 8;     // Pieni alkubounce 8px (aiemmin 0)
           
           // Soita "chunk" pysähtymisääni
           playSound('stop');
           
           // Soita rumpuisku (v1.0.9 music integration)
           playDrumHit();
+        }
+      }
+
+      // BOUNCE-VAIHE: pieni pomppuefekti pysähdyksen jälkeen (palautettu v1.3.1)
+      if (this.state === "bouncing") {
+        this.bounceSpeed *= 0.85;  // Vaimennus (nopeampi kuin aiemmin 0.75)
+        this.bounceOffset += this.bounceSpeed;
+        
+        // Jos bounce on riittävän pieni, siirrytään stopped-tilaan
+        if (Math.abs(this.bounceSpeed) < 0.3) {
+          this.state = "stopped";
+          this.bounceOffset = 0;
+          this.bounceSpeed = 0;
         }
       }
 
