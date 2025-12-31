@@ -1378,7 +1378,7 @@
     await app.init({
       width: CANVAS_WIDTH,     // Canvas leveys
       height: CANVAS_HEIGHT,   // Canvas korkeus
-      background: "#001a33"     // Tummansininen tausta (näkyy ennen taustakuvaa)
+      backgroundAlpha: 0       // Läpinäkyvä tausta
     });
 
     // Liitä canvas HTML-elementtiin
