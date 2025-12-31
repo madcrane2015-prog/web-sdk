@@ -2269,30 +2269,6 @@
         💰 PAYTABLE
       </button>
 
-      <!-- Debug-nappi paytable-napin alapuolella -->
-      <button
-        on:click={() => { showDebugPanel = !showDebugPanel; }}
-        style="
-          position: absolute;
-          top: {190 * gameScale}px;
-          right: {20 * gameScale}px;
-          padding: {10 * gameScale}px {15 * gameScale}px;
-          background-color: rgba(0, 255, 0, 0.3);
-          border: {2 * gameScale}px solid rgba(0, 255, 0, 0.7);
-          border-radius: {8 * gameScale}px;
-          cursor: pointer;
-          font-weight: bold;
-          font-size: {16 * gameScale}px;
-          color: white;
-          text-shadow: 0 0 {5 * gameScale}px rgba(0,0,0,0.8);
-          z-index: 10000;
-          min-width: {180 * gameScale}px;
-          pointer-events: auto;
-        "
-      >
-        🛠️ DEBUG v{GAME_VERSION}
-      </button>
-
       <!-- Control Panel sijoitetaan canvas-kontin sisään -->
       <div class="control-panel-mobile" style="
         position: absolute;
@@ -2673,6 +2649,30 @@
   />
 </div>
     </div> <!-- Suljetaan sisempi canvas-kontti -->
+
+<!-- Debug-nappi (ulomman wrapper-divin sisällä, canvas-kontin ulkopuolella) -->
+<button
+  on:click={() => { showDebugPanel = !showDebugPanel; }}
+  style="
+    position: absolute;
+    top: {190 * gameScale}px;
+    right: {20 * gameScale}px;
+    padding: {10 * gameScale}px {15 * gameScale}px;
+    background-color: rgba(0, 255, 0, 0.3);
+    border: {2 * gameScale}px solid rgba(0, 255, 0, 0.7);
+    border-radius: {8 * gameScale}px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: {16 * gameScale}px;
+    color: white;
+    text-shadow: 0 0 {5 * gameScale}px rgba(0,0,0,0.8);
+    z-index: 10000;
+    min-width: {180 * gameScale}px;
+    pointer-events: auto;
+  "
+>
+  🛠️ DEBUG v{GAME_VERSION}
+</button>
 
 <!-- Paytable-nappi oikeassa reunassa credit-näytön alla -->
 <button
