@@ -5,5 +5,5 @@
 	const context = getContext();
 </script>
 
-<!-- Oma-peli background - deep purple -->
-<Rectangle {...context.stateLayoutDerived.canvasSizes()} backgroundColor={0x2e1a4a} zIndex={-3} />
+<!-- Oma-peli background - transparent to show HTML background -->
+<Rectangle {...context.stateLayoutDerived.canvasSizes()} backgroundColor={0x000000} backgroundAlpha={0} zIndex={-3} />

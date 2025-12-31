@@ -1155,6 +1155,8 @@
   let currentWins = $state<WinResult[]>([]);
   let isShowingWin = $state(false);
   let showPaytable = $state(false); // Paytable-näkyvyys
+  let showFreeSpinsEndPopup = $state(false); // Free spins end popup
+  let freeSpinsEndAmount = $state(0); // Total won in free spins
   
   // Symbolin nimen muunnos näyttöä varten
   const SYMBOL_NAMES: Record<SymbolKey, string> = {
@@ -1762,14 +1764,11 @@
       // Check if free spins ended (ALWAYS, regardless of win/no-win)
       if (isFreeSpinMode && freeSpinsRemaining === 0) {
         console.log(`🎰 FREE SPINS ENDED! Total won: ${freeSpinsTotalWon}`);
-        // Show free spins end message
+        // Show free spins end popup
         setTimeout(() => {
-          alert(`Free Spins Ended!\nTotal Won: ${freeSpinsTotalWon.toFixed(2)}`);
-          isFreeSpinMode = false;
-          freeSpinsTotalWon = 0;
-          
-          // Palauta peruspelin musiikki
-          switchMusic();
+          freeSpinsEndAmount = freeSpinsTotalWon;
+          showFreeSpinsEndPopup = true;
+          // DON'T reset state here - wait for user to click continue
         }, 2000);
       }
     }
@@ -2124,6 +2123,96 @@
   </div>
 {/if}
 
+<!-- Free Spins End Popup -->
+{#if showFreeSpinsEndPopup}
+  <div style="
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 5000;
+  ">
+    <div style="
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      color: white;
+      padding: 40px;
+      border-radius: 20px;
+      text-align: center;
+      border: 3px solid #ffd700;
+      box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+      max-width: 500px;
+      font-family: Arial, sans-serif;
+    ">
+      <h1 style="
+        margin: 0 0 20px 0;
+        font-size: 2.5em;
+        color: #ffd700;
+        text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+      ">
+        🎰 VAPAAPELIT PÄÄTTYIVÄT! 🎰
+      </h1>
+      
+      <div style="
+        font-size: 1.2em;
+        margin: 20px 0;
+        color: #aaa;
+      ">
+        Voitit yhteensä:
+      </div>
+      
+      <div style="
+        font-size: 3em;
+        font-weight: bold;
+        color: #00ff00;
+        text-shadow: 0 0 15px rgba(0, 255, 0, 0.8);
+        margin: 20px 0;
+      ">
+        {freeSpinsEndAmount.toFixed(2)}
+      </div>
+      
+      <button 
+        on:click={() => { 
+          showFreeSpinsEndPopup = false;
+          isFreeSpinMode = false;
+          freeSpinsTotalWon = 0;
+          freeSpinsEndAmount = 0;
+          
+          // Palauta peruspelin musiikki
+          switchMusic();
+        }}
+        on:mouseenter={(e) => {
+          e.currentTarget.style.transform = 'scale(1.05)';
+          e.currentTarget.style.boxShadow = '0 6px 20px rgba(255, 215, 0, 0.6)';
+        }}
+        on:mouseleave={(e) => {
+          e.currentTarget.style.transform = 'scale(1)';
+          e.currentTarget.style.boxShadow = '0 4px 15px rgba(255, 215, 0, 0.4)';
+        }}
+        style="
+          margin-top: 30px;
+          padding: 15px 40px;
+          background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+          color: #000;
+          border: none;
+          border-radius: 10px;
+          cursor: pointer;
+          font-size: 1.3em;
+          font-weight: bold;
+          box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+          transition: transform 0.2s, box-shadow 0.2s;
+        "
+      >
+        JATKA PERUSPELIIN
+      </button>
+    </div>
+  </div>
+{/if}
+
 <!-- PixiJS canvas ja kaikki UI-elementit skaalautuvassa konteissa -->
 <div style="
   width: 100vw;
@@ -2284,22 +2373,6 @@
           "
           title="Increase Bet"
         ></button>
-        <button
-          on:click={maxBet}
-          style="
-            padding: {6 * gameScale}px {10 * gameScale}px;
-            background: #ffd700;
-            color: #000;
-            border: {2 * gameScale}px solid #000;
-            border-radius: {5 * gameScale}px;
-            cursor: pointer;
-            font-size: {12 * gameScale}px;
-            font-weight: bold;
-            font-family: 'Courier New', monospace;
-            transition: background 0.2s;
-          "
-          title="Max Bet"
-        >MAX</button>
       </div>
     </div>
     
@@ -2334,8 +2407,12 @@
     <div style="position: relative; display: flex; align-items: center; justify-content: center; flex-grow: 0.5;">
       <div class="play-button-wrapper {playButtonGlareActive ? 'glare-animate' : ''}">
         <button
-          on:click={spin}
-          disabled={isAutoPlaying}
+          on:click={() => {
+            if (isAutoPlaying) {
+              stopAutoPlay();
+            }
+            spin();
+          }}
           style="
             width: {130 * gameScale}px;
             height: {130 * gameScale}px;
@@ -2344,9 +2421,9 @@
             background-position: center;
             background-repeat: no-repeat;
             border: none;
-            cursor: {isAutoPlaying ? 'not-allowed' : 'pointer'};
+            cursor: pointer;
             background-color: transparent;
-            opacity: {isAutoPlaying ? 0.5 : 1};
+            opacity: 1;
             position: relative;
             z-index: 10;
             border-radius: 50%;
@@ -2366,7 +2443,13 @@
     <!-- Autoplay nappi -->
     <div style="display: flex; flex-direction: column; align-items: center; gap: {5 * gameScale}px;">
       <button
-        on:click={() => { showAutoPlayMenu = !showAutoPlayMenu; }}
+        on:click={() => { 
+          if (isAutoPlaying) {
+            stopAutoPlay();
+          } else {
+            showAutoPlayMenu = !showAutoPlayMenu;
+          }
+        }}
         style="
           width: {50 * gameScale}px;
           height: {50 * gameScale}px;
@@ -2377,7 +2460,7 @@
           cursor: pointer;
           background-color: transparent;
         "
-        title="Autoplay"
+        title="{isAutoPlaying ? 'Stop Autoplay' : 'Autoplay'}"
       ></button>
       <img 
         src="{controlsPath}/{isAutoPlaying ? 'Control_bar_select.png' : 'Control_bar_deselect.png'}" 
