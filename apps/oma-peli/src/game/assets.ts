@@ -1,5 +1,5 @@
-// HelloPixi-peli ei tarvitse erillisiä assetteja
-// Kaikki kuvat ladataan suoraan HelloPixi.svelte komponentissa
+// Oma-pelin assettien määritykset
+// Taustakuva bg_large.jpg ladataan HTML-tasolla
 export default {
-	// Tyhjä assets-objekti HelloPixi-pelille
+	// Tyhjä toistaiseksi
 } as const;

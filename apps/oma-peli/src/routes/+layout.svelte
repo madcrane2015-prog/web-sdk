@@ -10,6 +10,39 @@
 	const props: Props = $props();
 </script>
 
+<svelte:head>
+	<style>
+		body {
+			background-image: url('/symbols/bg_large.jpg');
+			background-size: cover;
+			background-position: center;
+			background-repeat: no-repeat;
+			background-attachment: fixed;
+			margin: 0;
+			padding: 0;
+			width: 100vw;
+			height: 100vh;
+			overflow: hidden;
+		}
+		
+		/* Desktop landscape: täytä leveys, leikkaa alhaalta */
+		@media (orientation: landscape) {
+			body {
+				background-size: 100% auto;
+				background-position: top center;
+			}
+		}
+		
+		/* Mobile portrait: täytä korkeus, leikkaa oikealta */
+		@media (orientation: portrait) {
+			body {
+				background-size: auto 100%;
+				background-position: top left;
+			}
+		}
+	</style>
+</svelte:head>
+
 <AndroidLayoutFix />
 
 <GlobalStyle>

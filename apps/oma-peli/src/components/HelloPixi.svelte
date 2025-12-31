@@ -559,10 +559,14 @@
   
   // Credit järjestelmä
   let balance = $state(1000); // Aloitussaldo
-  let betAmount = $state(10);  // Panoksen määrä per spin
+  
+  // Bet levels - ennalta määritellyt panostasot
+  const BET_LEVELS = [0.4, 0.8, 1, 1.6, 2, 3, 5, 8, 10, 15, 20, 25, 30, 40, 50, 60, 80, 100];
+  let currentBetIndex = $state(8); // Aloitetaan indeksistä 8 (10)
+  let betAmount = $derived(BET_LEVELS[currentBetIndex]); // Panoksen määrä per spin
   let lastWin = $state(0);  // Viimeisin voittosumma
-  const MIN_BET = 1;
-  const MAX_BET = 100;
+  const MIN_BET = BET_LEVELS[0];
+  const MAX_BET = BET_LEVELS[BET_LEVELS.length - 1];
 
   // Autoplay-toiminnallisuus
   let isAutoPlaying = $state(false);
@@ -1492,7 +1496,9 @@
       audioElements[key] = audio;
     }
     // ===== 4) TAUSTAKUVAN ASETTELU =====
+    // KOMMENTOITU POIS - Taustakuva ei näy
     // Lisätään taustakuva ENSIMMÄISENÄ jotta se jää kaiken taakse
+    /*
     console.log("Taustakuva ladattu, tekstuuri:", backgroundTexture);
 
     if (backgroundTexture) {
@@ -1538,6 +1544,7 @@
     } else {
       console.error("Taustakuva ei ole saatavilla!");
     }
+    */
 
     // ===== 5) KIEKKOJEN MITAT JA SIJAINNIT =====
     // Lasketaan kiekkojen mitat taustakuvan mukaan
@@ -1875,19 +1882,19 @@
   
   // Bet kontrollit
   function increaseBet() {
-    if (betAmount < MAX_BET) {
-      betAmount = Math.min(betAmount + 1, MAX_BET);
+    if (currentBetIndex < BET_LEVELS.length - 1) {
+      currentBetIndex++;
     }
   }
   
   function decreaseBet() {
-    if (betAmount > MIN_BET) {
-      betAmount = Math.max(betAmount - 1, MIN_BET);
+    if (currentBetIndex > 0) {
+      currentBetIndex--;
     }
   }
   
   function maxBet() {
-    betAmount = MAX_BET;
+    currentBetIndex = BET_LEVELS.length - 1;
   }
 
   // Autoplay funktiot
@@ -2278,8 +2285,9 @@
           font-size: {16 * gameScale}px;
           color: white;
           text-shadow: 0 0 {5 * gameScale}px rgba(0,0,0,0.8);
-          z-index: 1000;
+          z-index: 10000;
           min-width: {180 * gameScale}px;
+          pointer-events: auto;
         "
       >
         🛠️ DEBUG v{GAME_VERSION}
