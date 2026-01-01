@@ -2281,9 +2281,131 @@
         z-index: 1000;
       ">
 
-
-
-
+<!-- Autoplay valikko (näkyy kun showAutoPlayMenu = true) -->
+{#if showAutoPlayMenu}
+  <div style="
+    position: absolute;
+    bottom: {(CONTROL_PANEL_HEIGHT + 20) * gameScale}px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.95);
+    padding: {20 * gameScale}px;
+    border-radius: {15 * gameScale}px;
+    border: {3 * gameScale}px solid #0088ff;
+    box-shadow: 0 {8 * gameScale}px {30 * gameScale}px rgba(0, 136, 255, 0.6);
+    z-index: 2000;
+    min-width: {250 * gameScale}px;
+  ">
+    <div style="color: white; font-weight: bold; margin-bottom: {15 * gameScale}px; text-align: center; font-size: {18 * gameScale}px;">
+      🔄 Select Rounds
+    </div>
+    <button
+      on:click={() => { startAutoPlay(10); showAutoPlayMenu = false; }}
+      style="
+        width: 100%;
+        padding: {12 * gameScale}px;
+        margin-bottom: {8 * gameScale}px;
+        background: linear-gradient(135deg, #44aa44 0%, #66cc66 100%);
+        color: white;
+        border: none;
+        border-radius: {8 * gameScale}px;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: {16 * gameScale}px;
+        box-shadow: 0 {4 * gameScale}px {10 * gameScale}px rgba(68, 170, 68, 0.4);
+      "
+    >
+      10 Rounds
+    </button>
+    <button
+      on:click={() => { startAutoPlay(100); showAutoPlayMenu = false; }}
+      style="
+        width: 100%;
+        padding: {12 * gameScale}px;
+        margin-bottom: {8 * gameScale}px;
+        background: linear-gradient(135deg, #4488ff 0%, #66aaff 100%);
+        color: white;
+        border: none;
+        border-radius: {8 * gameScale}px;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: {16 * gameScale}px;
+        box-shadow: 0 {4 * gameScale}px {10 * gameScale}px rgba(68, 136, 255, 0.4);
+      "
+    >
+      100 Rounds
+    </button>
+    <button
+      on:click={() => { startAutoPlay(1000); showAutoPlayMenu = false; }}
+      style="
+        width: 100%;
+        padding: {12 * gameScale}px;
+        margin-bottom: {8 * gameScale}px;
+        background: linear-gradient(135deg, #ff8844 0%, #ffaa66 100%);
+        color: white;
+        border: none;
+        border-radius: {8 * gameScale}px;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: {16 * gameScale}px;
+        box-shadow: 0 {4 * gameScale}px {10 * gameScale}px rgba(255, 136, 68, 0.4);
+      "
+    >
+      1,000 Rounds
+    </button>
+    <button
+      on:click={() => { startAutoPlay(10000); showAutoPlayMenu = false; }}
+      style="
+        width: 100%;
+        padding: {12 * gameScale}px;
+        margin-bottom: {8 * gameScale}px;
+        background: linear-gradient(135deg, #ff4444 0%, #ff6666 100%);
+        color: white;
+        border: none;
+        border-radius: {8 * gameScale}px;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: {16 * gameScale}px;
+        box-shadow: 0 {4 * gameScale}px {10 * gameScale}px rgba(255, 68, 68, 0.4);
+      "
+    >
+      10,000 Rounds
+    </button>
+    <button
+      on:click={() => { startAutoPlay(100000); showAutoPlayMenu = false; }}
+      style="
+        width: 100%;
+        padding: {12 * gameScale}px;
+        margin-bottom: {15 * gameScale}px;
+        background: linear-gradient(135deg, #aa00ff 0%, #cc44ff 100%);
+        color: white;
+        border: none;
+        border-radius: {8 * gameScale}px;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: {16 * gameScale}px;
+        box-shadow: 0 {4 * gameScale}px {10 * gameScale}px rgba(170, 0, 255, 0.4);
+      "
+    >
+      100,000 Rounds
+    </button>
+    <button
+      on:click={() => { showAutoPlayMenu = false; }}
+      style="
+        width: 100%;
+        padding: {10 * gameScale}px;
+        background: rgba(255, 255, 255, 0.1);
+        color: #aaa;
+        border: {1 * gameScale}px solid #555;
+        border-radius: {8 * gameScale}px;
+        cursor: pointer;
+        font-size: {14 * gameScale}px;
+      "
+    >
+      Cancel
+    </button>
+  </div>
+{/if}
 
 <!-- ===== CONTROL PANEL (v1.1.0) ===== -->
 <!-- 
