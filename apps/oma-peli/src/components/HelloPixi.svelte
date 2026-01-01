@@ -562,7 +562,7 @@
   
   // Bet levels - ennalta määritellyt panostasot
   const BET_LEVELS = [0.4, 0.8, 1, 1.6, 2, 3, 5, 8, 10, 15, 20, 25, 30, 40, 50, 60, 80, 100];
-  let currentBetIndex = $state(8); // Aloitetaan indeksistä 8 (10)
+  let currentBetIndex = $state(5); // Aloitetaan indeksistä 5 (3)
   let betAmount = $derived(BET_LEVELS[currentBetIndex]); // Panoksen määrä per spin
   let lastWin = $state(0);  // Viimeisin voittosumma
   const MIN_BET = BET_LEVELS[0];
@@ -2460,10 +2460,19 @@
       style="height: {CONTROL_PANEL_HEIGHT * 0.8 * gameScale}px; flex-shrink: 0;"
     />
     
-    <!-- Spin Speed nappi -->
-    <div style="position: relative; display: flex; flex-direction: column; align-items: center; gap: {5 * gameScale}px;">
+    <!-- Spin Speed nappi (3 tilaa: slow/medium/fast) -->
+    <div style="display: flex; flex-direction: column; align-items: center; gap: {5 * gameScale}px;">
       <button
-        on:click={() => { showSpinSpeedMenu = !showSpinSpeedMenu; }}
+        on:click={() => { 
+          // Sykli: slow -> medium -> fast -> slow...
+          if (spinSpeed === 'slow') {
+            spinSpeed = 'medium';
+          } else if (spinSpeed === 'medium') {
+            spinSpeed = 'fast';
+          } else {
+            spinSpeed = 'slow';
+          }
+        }}
         style="
           width: {50 * gameScale}px;
           height: {50 * gameScale}px;
@@ -2476,135 +2485,13 @@
         "
         title="Spin Speed: {spinSpeed === 'slow' ? 'Slow' : spinSpeed === 'medium' ? 'Medium' : 'Fast'}"
       ></button>
-      <div style="
-        color: #ffffff;
-        font-size: {10 * gameScale}px;
-        font-weight: bold;
-        text-transform: uppercase;
-      ">
-        {spinSpeed === 'slow' ? 'Slow' : spinSpeed === 'medium' ? 'Med' : 'Fast'}
-      </div>
-      
-      <!-- Spin Speed Valikko -->
-      {#if showSpinSpeedMenu}
-        <div style="
-          position: absolute;
-          bottom: {80 * gameScale}px;
-          left: 50%;
-          transform: translateX(-50%);
-          background: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%);
-          border: {2 * gameScale}px solid #ffd700;
-          border-radius: {10 * gameScale}px;
-          padding: {10 * gameScale}px;
-          display: flex;
-          flex-direction: column;
-          gap: {8 * gameScale}px;
-          z-index: 1000;
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
-        ">
-          <div style="
-            color: #ffd700;
-            font-size: {14 * gameScale}px;
-            font-weight: bold;
-            text-align: center;
-            border-bottom: {1 * gameScale}px solid #444;
-            padding-bottom: {5 * gameScale}px;
-          ">
-            SPIN SPEED
-          </div>
-          
-          <button
-            on:click={() => { spinSpeed = 'slow'; showSpinSpeedMenu = false; }}
-            style="
-              background: {spinSpeed === 'slow' ? 'linear-gradient(180deg, #4a4a4a 0%, #2a2a2a 100%)' : 'linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 100%)'};
-              border: {2 * gameScale}px solid {spinSpeed === 'slow' ? '#ffd700' : '#666'};
-              color: {spinSpeed === 'slow' ? '#ffd700' : '#ffffff'};
-              padding: {8 * gameScale}px {20 * gameScale}px;
-              border-radius: {5 * gameScale}px;
-              cursor: pointer;
-              font-weight: bold;
-              font-size: {12 * gameScale}px;
-              transition: all 0.2s;
-            "
-          >
-            🐌 SLOW
-          </button>
-          
-          <button
-            on:click={() => { spinSpeed = 'medium'; showSpinSpeedMenu = false; }}
-            style="
-              background: {spinSpeed === 'medium' ? 'linear-gradient(180deg, #4a4a4a 0%, #2a2a2a 100%)' : 'linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 100%)'};
-              border: {2 * gameScale}px solid {spinSpeed === 'medium' ? '#ffd700' : '#666'};
-              color: {spinSpeed === 'medium' ? '#ffd700' : '#ffffff'};
-              padding: {8 * gameScale}px {20 * gameScale}px;
-              border-radius: {5 * gameScale}px;
-              cursor: pointer;
-              font-weight: bold;
-              font-size: {12 * gameScale}px;
-              transition: all 0.2s;
-            "
-          >
-            ⚡ MEDIUM
-          </button>
-          
-          <button
-            on:click={() => { spinSpeed = 'fast'; showSpinSpeedMenu = false; }}
-            style="
-              background: {spinSpeed === 'fast' ? 'linear-gradient(180deg, #4a4a4a 0%, #2a2a2a 100%)' : 'linear-gradient(180deg, #3a3a3a 0%, #1a1a1a 100%)'};
-              border: {2 * gameScale}px solid {spinSpeed === 'fast' ? '#ffd700' : '#666'};
-              color: {spinSpeed === 'fast' ? '#ffd700' : '#ffffff'};
-              padding: {8 * gameScale}px {20 * gameScale}px;
-              border-radius: {5 * gameScale}px;
-              cursor: pointer;
-              font-weight: bold;
-              font-size: {12 * gameScale}px;
-              transition: all 0.2s;
-            "
-          >
-            🚀 FAST
-          </button>
-        </div>
-      {/if}
-    </div>
-    
-    <!-- Divider -->
-    <img 
-      src="{controlsPath}/Control_divider.png" 
-      alt="Divider"
-      style="height: {CONTROL_PANEL_HEIGHT * 0.8 * gameScale}px; flex-shrink: 0;"
-    />
-    
-    <!-- Fast Play nappi -->
-    <div style="display: flex; flex-direction: column; align-items: center; gap: {5 * gameScale}px;">
-      <button
-        on:click={() => { isFastPlayEnabled = !isFastPlayEnabled; }}
-        style="
-          width: {50 * gameScale}px;
-          height: {50 * gameScale}px;
-          background-image: url('{controlsPath}/{isFastPlayEnabled ? 'Control_fastplay_select.png' : 'Control_fastplay_deselect.png'}');
-          background-size: contain;
-          background-repeat: no-repeat;
-          border: none;
-          cursor: pointer;
-          background-color: transparent;
-        "
-        title="Fast Play"
-      ></button>
+      <!-- Viiva: harmaa = slow, puolikas vihreä = medium, koko vihreä = fast -->
       <img 
-        src="{controlsPath}/{isFastPlayEnabled ? 'Control_bar_select.png' : 'Control_bar_deselect.png'}" 
-        alt="Status bar"
+        src="{controlsPath}/{spinSpeed === 'slow' ? 'Control_bar_deselect.png' : spinSpeed === 'medium' ? 'Control_half_bar_select.png' : 'Control_bar_select.png'}" 
+        alt="Speed bar"
         style="width: {50 * gameScale}px; height: auto;"
       />
     </div>
-    
-    <!-- Divider -->
-    <img 
-      src="{controlsPath}/Control_divider.png" 
-      alt="Divider"
-      style="height: {CONTROL_PANEL_HEIGHT * 0.8 * gameScale}px; flex-shrink: 0;"
-    />
-    
-    <!-- WIN näyttö -->
     <div style="display: flex; flex-direction: column; align-items: center; gap: {5 * gameScale}px;">
       <div style="color: #00ff00; font-size: {12 * gameScale}px; font-weight: bold;">WIN</div>
       <div style="
@@ -2869,185 +2756,6 @@
       🎰 Test Free Spins
     </button>
   </div>
-</div>
-
-<!-- Autoplay nappi ja menu (oikeassa alakulmassa) -->
-<div class="debug-panel" style="
-  position: absolute;
-  bottom: 20px;
-  right: 20px;
-  z-index: 1500;
-  display: {showDebugPanel ? 'block' : 'none'};
-">
-  {#if isAutoPlaying}
-    <!-- Autoplay aktiivinen - näytä Stop ja kierrosten määrä -->
-    <div style="
-      background: rgba(255, 100, 100, 0.9);
-      color: white;
-      padding: 15px 20px;
-      border-radius: 10px;
-      border: 2px solid #ff0000;
-      box-shadow: 0 4px 15px rgba(255, 0, 0, 0.5);
-      text-align: center;
-      animation: winPulse 1s infinite;
-    ">
-      <div style="font-weight: bold; font-size: 16px; margin-bottom: 8px;">
-        🔄 AUTOPLAY
-      </div>
-      <div style="font-size: 20px; font-family: 'Courier New', monospace; margin-bottom: 10px;">
-        {autoPlayRoundsLeft} left
-      </div>
-      <button
-        on:click={stopAutoPlay}
-        style="
-          width: 100%;
-          padding: 8px;
-          background: #ffffff;
-          color: #ff0000;
-          border: none;
-          border-radius: 5px;
-          cursor: pointer;
-          font-weight: bold;
-          font-size: 14px;
-        "
-      >
-        ⏹ STOP
-      </button>
-    </div>
-  {:else}
-    <!-- Autoplay ei aktiivinen - näytä nappi -->
-    <button
-      on:click={() => { showAutoPlayMenu = !showAutoPlayMenu; }}
-      style="
-        padding: 12px 20px;
-        background: rgba(100, 200, 255, 0.9);
-        color: white;
-        border: 2px solid #0088ff;
-        border-radius: 10px;
-        cursor: pointer;
-        font-weight: bold;
-        font-size: 14px;
-        box-shadow: 0 4px 15px rgba(0, 136, 255, 0.5);
-        min-width: 140px;
-      "
-    >
-      🔄 AUTOPLAY
-    </button>
-    
-    <!-- Autoplay valikko -->
-    {#if showAutoPlayMenu}
-      <div style="
-        position: absolute;
-        bottom: 60px;
-        right: 0;
-        background: rgba(0, 0, 0, 0.95);
-        padding: 15px;
-        border-radius: 10px;
-        border: 2px solid #0088ff;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
-        min-width: 180px;
-      ">
-        <div style="color: white; font-weight: bold; margin-bottom: 10px; text-align: center;">
-          Select Rounds:
-        </div>
-        <button
-          on:click={() => startAutoPlay(10)}
-          style="
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 5px;
-            background: #44aa44;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-          "
-        >
-          10 Rounds
-        </button>
-        <button
-          on:click={() => startAutoPlay(100)}
-          style="
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 5px;
-            background: #4488ff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-          "
-        >
-          100 Rounds
-        </button>
-        <button
-          on:click={() => startAutoPlay(1000)}
-          style="
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 5px;
-            background: #ff8844;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-          "
-        >
-          1,000 Rounds
-        </button>
-        <button
-          on:click={() => startAutoPlay(10000)}
-          style="
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 5px;
-            background: #ff4444;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-          "
-        >
-          10,000 Rounds
-        </button>
-        <button
-          on:click={() => startAutoPlay(100000)}
-          style="
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 10px;
-            background: #aa00ff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-          "
-        >
-          100,000 Rounds
-        </button>
-        <button
-          on:click={() => { showAutoPlayMenu = false; }}
-          style="
-            width: 100%;
-            padding: 6px;
-            background: rgba(255, 255, 255, 0.1);
-            color: #aaa;
-            border: 1px solid #555;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 12px;
-          "
-        >
-          Cancel
-        </button>
-      </div>
-    {/if}
-  {/if}
 </div>
 
 <!-- Mykistysnappi oikeassa yläkulmassa -->
