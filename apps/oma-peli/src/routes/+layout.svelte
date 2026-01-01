@@ -2,6 +2,7 @@
 	import { type Snippet } from 'svelte';
 	import { GlobalStyle } from 'components-ui-html';
 	import { Authenticate, LoadI18n, AndroidLayoutFix } from 'components-shared';
+	import { base } from '$app/paths';
 
 	import messagesMap from '../i18n/messagesMap';
 
@@ -13,7 +14,7 @@
 <svelte:head>
 	<style>
 		body {
-			background-image: url('/symbols/bg_large.jpg');
+			background-image: url('{base}/symbols/bg_large.jpg');
 			background-size: cover;
 			background-position: center;
 			background-repeat: no-repeat;
