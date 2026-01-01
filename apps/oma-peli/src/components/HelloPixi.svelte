@@ -193,7 +193,7 @@
 </style>
 <script lang="ts">
   // Game version
-  const GAME_VERSION = "1.3.1";
+  const GAME_VERSION = "1.2.0";
   
   // Svelte lifecycle ja routing
   import { onMount } from "svelte";
@@ -202,22 +202,26 @@
   // Win animation component
   import VinylWinAnimation from './VinylWinAnimation.svelte';
   
-  // PixiJS kirjaston komponentit pelimoottoria varten
+  // ===== PIXIJS KIRJASTON KOMPONENTIT =====
+  // PixiJS on 2D-grafiikkakirjasto joka käyttää WebGL:ää
   import {
-    Application,    // Pelin pääsovellus
-    Graphics,      // Geometristen muotojen piirtäminen
-    Container,     // Elementtien ryhmittely
-    Sprite,        // Kuvien näyttäminen
-    Texture,       // Kuvatekstuurit
-    Assets,        // Modernit Asset lataukset
-    Text,          // Tekstin näyttäminen
-    TextStyle      // Tekstin tyylit
+    Application,    // Pelin pääsovellus - hallitsee rendereriä ja stage-objektia
+    Graphics,      // Geometristen muotojen piirtäminen (ympyrät, neliöt, viivat)
+    Container,     // Elementtien ryhmittely - toimii kuten HTML div
+    Sprite,        // Kuvien (tekstuurien) näyttäminen ruudulla
+    Texture,       // Kuvatekstuurit - lataa ja tallentaa kuvia muistiin
+    Assets,        // Modernit Asset lataukset (PixiJS v8)
+    Text,          // Tekstin näyttäminen pelissä
+    TextStyle      // Tekstin tyyliasetukset (fontti, koko, väri jne.)
   } from "pixi.js";
 
   // ===== PELIN PERUSKONFIGURAATIO =====
-  const COLS = 5; // Sarakkeiden määrä vaakasuunnassa  
-  const ROWS = 3; // Rivien määrä per sarake
-  const TOTAL_REELS = 13; // Yhteensä 13 erillistä kiekkoa (joka ruutu oma kiekko)
+  // Tämä on WAYS-peli, ei perinteinen paylines-peli!
+  const COLS = 5; // Sarakkeiden määrä vaakasuunnassa (5 pystyriviä symboleja)
+  const ROWS = 3; // Rivien määrä per sarake (3 vaakarivi symboleja per sarake)
+  const TOTAL_REELS = 13; // Yhteensä 13 erillistä kiekkoa:
+  // Layout: 3×3×1×3×3 (vasen 3 riviä, keskellä 1 rivi, oikea 3 riviä)
+  // Jokaisella ruudulla on oma kiekko joka pyörii itsenäisesti!
 
   // ===== SÄÄDETTÄVÄT PARAMETRIT =====
   // Näitä arvoja voi muuttaa pelin ulkonäön säätämiseksi
@@ -263,13 +267,14 @@
   const BACKGROUND_FIT_MODE: "width" | "height" | "min" = "height"; // Skaalaustyyppi: "width", "height", "min"
   // =====================================
 
-  // Symbol dimensions to fit background reels properly
-  const baseSymbolWidth = 100;
-  const symbolWidth = Math.round(baseSymbolWidth * SCALE_MULTIPLIER);
-  const symbolHeight = Math.round(symbolWidth * (700 / 760));
-  const cellSize = symbolWidth; // Keep for compatibility
-  const gap = 10;
-  const ROW_HEIGHT = symbolHeight + gap;
+  // ===== SYMBOLIN MITAT =====
+  // Nämä määrittävät kuinka isoja symbolit näyttävät pelissä
+  const baseSymbolWidth = 100;  // Perusleveys pikseleinä (ennen skaalaus-kerrointa)
+  const symbolWidth = Math.round(baseSymbolWidth * SCALE_MULTIPLIER);  // Lopullinen leveys (skaalattu)
+  const symbolHeight = Math.round(symbolWidth * (700 / 760));  // Korkeus (sama suhde kuin alkuperäiset kuvat)
+  const cellSize = symbolWidth; // Ruudun koko (käytetään vanhoissa laskuissa, säilytetty yhteensopivuuden takia)
+  const gap = 10;  // Väli symbolien välillä pikseleinä
+  const ROW_HEIGHT = symbolHeight + gap;  // Yhden rivin kokonaiskorkeus (symboli + väli)
 
   // Avaimet symboleille - kaikki uudet rockabilly-teemalliset symbolit
   const SYMBOL_KEYS = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "emptyslot"] as const;
@@ -422,6 +427,9 @@
     }
   }
   
+  // ===== MUSIIKKIHALLINTAFUNKTIOT =====
+  // Nämä funktiot hallitsevat pelin taustamusiikkia Howler.js:n avulla
+  
   // Käynnistä taustamusiikki (valitaan peruspeli tai free spins musiikki)
   function startBackgroundMusic() {
     const currentMusic = isFreeSpinMode ? freeSpinsMusic : backgroundMusic;
@@ -432,14 +440,16 @@
   }
   
   // Vaihda uusi satunnainen loop peruspelille
+  // Tätä kutsutaan kun pelaaja aloittaa uuden kierroksen
+  // (v1.2.8: Poistettu käytöstä - yksi loop session ajan)
   function changeBackgroundLoop() {
     if (isFreeSpinMode) return; // Ei vaihdeta free spins -tilassa
     
-    // Valitse uusi satunnainen loop
+    // Valitse uusi satunnainen loop (1-20)
     const newLoopNumber = Math.floor(Math.random() * 20) + 1;
     randomLoopNumber = newLoopNumber;
     
-    // Pysäytä vanha musiikki
+    // Pysäytä vanha musiikki (fade out 300ms)
     if (backgroundMusic) {
       if (backgroundMusic.playing()) {
         backgroundMusic.fade(backgroundMusic.volume(), 0, 300);
@@ -448,7 +458,7 @@
       backgroundMusic.unload();
     }
     
-    // Lataa uusi loop
+    // Lataa uusi loop Howler.js:llä
     const Howl = (window as any).Howl;
     if (Howl) {
       backgroundMusic = new Howl({
@@ -546,27 +556,32 @@
   }
 
   // ===== PELIN TILA JA MUUTTUJAT =====
-  // Ladatut tekstuurit (kuvat muutettuna PixiJS muotoon)
-  let symbolTextures: Record<SymbolKey, Texture> | null = null;
-  let backgroundTexture: Texture | null = null;
-  let reelFramesTexture: Texture | null = null;
-  let logoTexture: Texture | null = null;
+  // Nämä muuttujat hallitsevat pelin globaalia tilaa ja resursseja
   
-  // Debug tila - näyttää lataustilanteen
-  let loadingStatus = $state("Initializing...");
-  let errorMessage = $state("");
-  let debugInfo: string[] = [];
+  // Ladatut tekstuurit (kuvat muutettuna PixiJS Texture-muotoon)
+  // Tekstuurit ladataan Assets.load():lla ja säilytetään muistissa
+  let symbolTextures: Record<SymbolKey, Texture> | null = null;  // Kaikki 13 symbolia
+  let backgroundTexture: Texture | null = null;  // Taustakuva (bg_base.jpg)
+  let reelFramesTexture: Texture | null = null;  // Kiekkojen kehykset (ReelFrames.png)
+  let logoTexture: Texture | null = null;  // Pelin logo (RockABillyReels_logo.png)
   
-  // Credit järjestelmä
-  let balance = $state(1000); // Aloitussaldo
+  // Debug tila - näyttää lataustilanteen ja mahdolliset virheet
+  let loadingStatus = $state("Initializing...");  // Nykyinen latausvaihe
+  let errorMessage = $state("");  // Virheviesti jos lataus epäonnistuu
+  let debugInfo: string[] = [];  // Kootut debug-tiedot
+  
+  // ===== CREDIT JÄRJESTELMÄ =====
+  // Pelaajan saldo ja panostus
+  let balance = $state(1000); // Aloitussaldo (voi muuttaa)
   
   // Bet levels - ennalta määritellyt panostasot
+  // Pelaaja voi valita näistä + ja - napeilla
   const BET_LEVELS = [0.4, 0.8, 1, 1.6, 2, 3, 5, 8, 10, 15, 20, 25, 30, 40, 50, 60, 80, 100];
-  let currentBetIndex = $state(5); // Aloitetaan indeksistä 5 (3)
-  let betAmount = $derived(BET_LEVELS[currentBetIndex]); // Panoksen määrä per spin
-  let lastWin = $state(0);  // Viimeisin voittosumma
-  const MIN_BET = BET_LEVELS[0];
-  const MAX_BET = BET_LEVELS[BET_LEVELS.length - 1];
+  let currentBetIndex = $state(5); // Aloitetaan indeksistä 5 = 3.0 (default bet)
+  let betAmount = $derived(BET_LEVELS[currentBetIndex]); // Panoksen määrä per spin (automaattisesti laskettu)
+  let lastWin = $state(0);  // Viimeisin voittosumma (näytetään UI:ssa)
+  const MIN_BET = BET_LEVELS[0];  // Pienin mahdollinen panos (0.4)
+  const MAX_BET = BET_LEVELS[BET_LEVELS.length - 1];  // Suurin mahdollinen panos (100)
 
   // Autoplay-toiminnallisuus
   let isAutoPlaying = $state(false);
@@ -658,24 +673,24 @@
   }
 
   // ============================================================================
-  // SYMBOL DISTRIBUTION - Weighted Randomization
+  // SYMBOLIEN JAKAUMA - Painotettu satunnaistaminen
   // ============================================================================
-  // Current configuration: 81 WAYS + TRUE WAYS LOGIC + MULTIPLIERS
-  // From YAML config v1.0, Math v1.7
+  // Tämä on 81 WAYS -peli + TRUE WAYS LOGIC + MULTIPLIERS
+  // YAML config v1.0, Math v1.7 mukaan
   //
-  // DISTRIBUTION STRATEGY (BASE GAME):
-  // - Empty slots (25%) balance hit frequency
-  // - Low tier (k,j,i) provides frequent small wins (8%+7%+7% = 22%)
-  // - Mid tier (c,d,b,a) creates medium-sized wins (28% total)
-  // - Premium tier (f,e,g) rare high-value wins (15% total)
-  // - Scatter at 10% triggers free spins
-  // - Wild only on middle reel (55%) for substitution
-  // - Multipliers: base game (1x/2x/3x at 70/22/8), free spins (3x/5x/10x at 70/22/8)
+  // JAKAUMASTRATEGIA (PERUSPELI):
+  // - Tyhjät ruudut (25%) tasapainottavat osumatiheystä
+  // - Matala taso (k,j,i) tuottaa usein pieniä voittoja (8%+7%+7% = 22%)
+  // - Keskitaso (c,d,b,a) luo keskikokoisia voittoja (28% yhteensä)
+  // - Premium-taso (f,e,g) harvinaiset korkean arvon voitot (15% yhteensä)
+  // - Scatter 10% käynnistää vapaapelit
+  // - Wild VAIN keskikiekolla (55%) korvausmerkinä
+  // - Kertoimet: peruspeli (1x/2x/3x jakaumalla 70/22/8), vapaapelit (3x/5x/10x jakaumalla 70/22/8)
   //
-  // FREE SPINS DISTRIBUTION:
-  // - Low tier (k,j,i) REMOVED (0% each)
-  // - Premium tier BOOSTED: f=14%, e=12%, g=11% (inherits low tier weights)
-  // - Result: More frequent premium symbols for higher free spin value
+  // VAPAAIPELIEN JAKAUMA:
+  // - Matala taso (k,j,i) POISTETTU (0% kukin)
+  // - Premium-taso KOROTETTU: f=14%, e=12%, g=11% (peritty matalalta tasolta)
+  // - Tulos: Enemmän premium-symboleja vapaan pelin aikana suurempaan voittoon
   // ============================================================================
   const SYMBOL_WEIGHTS_BASE: Record<SymbolKey, number> = {
     // LOW TIER - Low value, moderate frequency
@@ -727,27 +742,31 @@
     'emptyslot': 0.25 // Empty slots (25%)
   };
 
-  // Palauttaa satunnaisen symbolin tietylle kiekolle (weighted distribution)
+  // ===== SATUNNAINEN SYMBOLI =====
+  // Palauttaa satunnaisen symbolin tietylle kiekolle (painotettu jakauma)
+  // @param reelIndex - Kiekon indeksi (0-12)
+  // @returns SymbolKey - Valittu symboli
   function randomSymbol(reelIndex: number): SymbolKey {
-    // Reel 6 (keskikiekko) - Wild (55%) tai emptyslot (45%)
+    // Kiekko 6 (keskikiekko) - Wild (55%) tai tyhjä ruutu (45%)
+    // Tämä on ainoa kiekko jossa Wild voi esiintyä!
     if (reelIndex === 6) {
       return Math.random() < 0.55 ? 'h' : 'emptyslot';
     }
     
-    // Select appropriate weight table
+    // Valitse oikea painotustaulukko (peruspeli tai vapaapelit)
     const SYMBOL_WEIGHTS = isFreeSpinMode ? SYMBOL_WEIGHTS_FS : SYMBOL_WEIGHTS_BASE;
     
-    // Reels 1,2,4,5 (outer reels) - Include Empty slots
-    const rand = Math.random();
-    let cumulative = 0;
+    // Kiekot 1,2,4,5 (ulkokiekot) - Sisältää tyhjät ruudut
+    const rand = Math.random();  // Satunnaisluku 0-1
+    let cumulative = 0;  // Kumulatiivinen paino
     
-    // All symbols INCLUDING emptyslot, but NO Wild
+    // Kaikki symbolit PAITSI Wild (h)
     const availableSymbols = SYMBOL_KEYS.filter(s => s !== 'h');
     
-    // Calculate total weight
+    // Laske kokonaispaino
     const totalWeight = availableSymbols.reduce((sum, sym) => sum + SYMBOL_WEIGHTS[sym], 0);
     
-    // Weighted selection
+    // Painotettu valinta (roulette wheel selection)
     for (const symbol of availableSymbols) {
       cumulative += SYMBOL_WEIGHTS[symbol] / totalWeight;
       if (rand < cumulative) {
@@ -755,21 +774,23 @@
       }
     }
     
-    // Fallback
+    // Varavaihtoeht (ei pitäisi koskaan toteutua)
     return 'f';
   }
 
+  // ===== KIEKKOJEN LUOMINEN =====
   // Luo 13 erillistä kiekkoa (jokaiselle ruudulle oma kiekko)
+  // Grid-layout: 3×3×1×3×3 (vasen, vasenpuoli, keski, oikea, oikein)
   function createReelData(): SymbolKey[] {
     const reelData: SymbolKey[] = [];
     for (let i = 0; i < TOTAL_REELS; i++) {
-      // randomSymbol() now uses correct weights based on isFreeSpinMode
-      // In free spins: k/j/i have 0 weight, f/e/g have increased weights
+      // randomSymbol() käyttää oikeita painoja isFreeSpinMode-tilan mukaan
+      // Vapaan pelissä: k/j/i painot ovat 0, f/e/g painot ovat kasvaneet
       const symbol = randomSymbol(i);
       
       reelData.push(symbol);
       
-      // Track visible symbols and emptyslots
+      // Seuraa näkyviä symboleja ja tyhjiä ruutuja tilastojen takia
       totalVisibleSymbols++;
       if (symbol === 'emptyslot') {
         totalEmptySlots++;
@@ -778,23 +799,30 @@
     return reelData;
   }
 
+  // ===== KOORDINAATTIMUUNNOKSET =====
+  // Nämä funktiot muuntavat kiekko-indeksin (0-12) grid-koordinaateiksi (col, row)
+  // ja päinvastoin
+  
   // Muuntaa reel-indeksin (0-12) koordinaateiksi (col, row)
+  // Layout: [0,1,2] [3,4,5] [6] [7,8,9] [10,11,12]
+  //         Col 0    Col 1   Col 2  Col 3   Col 4
   function getReelPosition(reelIndex: number): {col: number, row: number} {
     if (reelIndex < 3) return {col: 0, row: reelIndex}; // Sarake 0: ruudut 0,1,2
     if (reelIndex < 6) return {col: 1, row: reelIndex - 3}; // Sarake 1: ruudut 3,4,5
-    if (reelIndex === 6) return {col: 2, row: 0}; // Keskikiekko: ruutu 6
+    if (reelIndex === 6) return {col: 2, row: 0}; // Keskikiekko: ruutu 6 (vain 1 rivi!)
     if (reelIndex < 10) return {col: 3, row: reelIndex - 7}; // Sarake 3: ruudut 7,8,9
     return {col: 4, row: reelIndex - 10}; // Sarake 4: ruudut 10,11,12
   }
 
   // Muuntaa koordinaatit (col, row) reel-indeksiksi (0-12)
+  // Käänteistoiminto getReelPosition():lle
   function getReelIndex(col: number, row: number): number {
     if (col === 0) return row;
     if (col === 1) return 3 + row;
     if (col === 2) return 6; // Keskikiekko on aina indeksi 6
     if (col === 3) return 7 + row;
     if (col === 4) return 10 + row;
-    return -1; // Virhe
+    return -1; // Virhe - virheellinen koordinaatti
   }
 
   // ===== VOITTOLOGIIKKA =====
@@ -1054,23 +1082,25 @@
     }
     
     // ============================================================================
-    // TRUE WAYS LOGIC: Count unique positions from winning paths
+    // TRUE WAYS LOGIC: Laske yksilölliset positiot voittopoluilta
     // ============================================================================
-    // IMPORTANT (v1.0.4): Only pay the LONGEST combination for each symbol
-    // Example: If symbol 'a' has both 3-symbol and 4-symbol wins, only pay 4-symbol wins
-    // But count ALL paths/ways that produce the longest combination
+    // TÄRKEÄÄ (v1.0.4): Maksetaan VAIN PISIN yhdistelmä jokaiselle symbolille
+    // Esimerkki: Jos symboli 'a' on voittanut sekä 3-symbolilla ETTÄ 4-symbolilla,
+    //            maksetaan VAIN 4-symboli voitot
+    // Mutta lasketaan KAIKKI polut/tavat joilla pisin yhdistelmä saavutetaan
     //
-    // WAYS CALCULATION:
-    // - Count how many times longest combination appears across all paths
-    // - Each unique path = 1 way
-    // - Multiple symbols on same columns = multiple ways
-    // - Example: 2 symbols on col0 × 1 on col1 × 1 on col2 = 2 ways of 3-symbol win
+    // WAYS-LASKENTA (81 WAYS):
+    // - Laske montako kertaa pisin yhdistelmä esiintyy kaikilla poluilla
+    // - Jokainen uniikki polku = 1 tapa (way)
+    // - Useita symboleja samoissa sarakkeissa = useita tapoja
+    // - Esimerkki: 2 symbolia sarake0 × 1 sarake1 × 1 sarake2 = 2 tapaa 3-symbolin voittoon
     //
-    // This "longest only" rule significantly reduces RTP (~80% vs ~96% without it)
+    // Tämä "vain pisin" sääntö vähentää merkittävästi RTP:tä (~80% vs ~96% ilman sitä)
     // ============================================================================
     const foundWinCombos: WinResult[] = [];
     
-    // Group by symbol to find the longest combination for each
+    // ===== VAIHE 1: Ryhmittele voitot symboleittain =====
+    // Tämä varmistaa että jokaiselle symbolille käsitellään vain pisin mahdollinen voitto
     const winsBySymbol = new Map<SymbolKey, WinPath[]>();
     
     for (const win of filteredWins) {
@@ -1080,15 +1110,16 @@
       winsBySymbol.get(win.symbol)!.push(win);
     }
     
-    // For each symbol, keep ONLY the longest wins
+    // ===== VAIHE 2: Pidä vain PISIMMÄT voitot jokaiselle symbolille =====
+    // Jos symboli 'a' voitti sekä 3- ETTÄ 4-symbolilla, pidetään vain 4-symbolin voitot
     const finalFilteredWins: WinPath[] = [];
     for (const [symbol, wins] of winsBySymbol.entries()) {
-      const maxLength = Math.max(...wins.map(w => w.length));
-      const longestWins = wins.filter(w => w.length === maxLength);
+      const maxLength = Math.max(...wins.map(w => w.length)); // Etsi pisin
+      const longestWins = wins.filter(w => w.length === maxLength); // Suodata
       finalFilteredWins.push(...longestWins);
     }
     
-    // Now group by symbol+length for payout calculation
+    // ===== VAIHE 3: Ryhmittele symboli+pituus -yhdistelmillä maksujen laskentaa varten =====
     const winsBySymbolAndLength = new Map<string, WinPath[]>();
     
     for (const win of finalFilteredWins) {
@@ -1099,16 +1130,24 @@
       winsBySymbolAndLength.get(key)!.push(win);
     }
     
-    // Get one multiplier for the entire spin
+    // ===== VAIHE 4: Hae kerroin koko spinille =====
+    // Yksi kerroin koko kierrokselle (ei jokaiselle voitolle erikseen)
+    // Peruspeli: 1x (70%), 2x (22%), 3x (8%)
+    // Vapaapelit: 3x (70%), 5x (22%), 10x (8%)
     const winMultiplier = finalFilteredWins.length > 0 ? getWinMultiplier() : 1;
     
-    // Process each symbol+length combination
+    // ===== VAIHE 5: Käsittele jokainen symboli+pituus -yhdistelmä =====
     for (const [key, winsInGroup] of winsBySymbolAndLength.entries()) {
       const firstWin = winsInGroup[0];
+      
+      // Hae paytable-kerroin tälle symbolille ja pituudelle (3, 4 tai 5)
       const payoutMultiplier = SYMBOL_PAYTABLE[firstWin.symbol]?.[firstWin.length as 3 | 4 | 5];
       
       if (payoutMultiplier !== undefined && payoutMultiplier > 0) {
-        // Count unique positions per reel from all winning paths in this group
+        // ===== LASKE WAYS (TAVAT) =====
+        // Laske yksilölliset positiot per kiekko kaikista voittopoluista tässä ryhmässä
+        // Esimerkki: Jos on 2 symbolia sarakkeessa 0, 1 sarakkeessa 1, 1 sarakkeessa 2:
+        //            ways = 2 × 1 × 1 = 2 tapaa voittaa
         const positionsPerReel = new Map<number, Set<number>>();
         
         for (const win of winsInGroup) {
@@ -1264,149 +1303,176 @@
       this.container = container; // Tallenna PixiJS kontti
     }
 
-    // Aloita kiekon pyöriminen määritellyllä viiveellä
+    // ===== ALOITA KIEKON PYÖRIMINEN =====
+    // Käynnistää kiekon pyörimisen määritellyllä viiveellä
+    // @param delay - Montako framea odotetaan ennen pysähtymistä (määrittää milloin kiekko pysähtyy)
     start(delay: number) {
       this.state = "spinning";    // Aseta pyörivä tila
-      this.speed = 0;            // Aloita nopeudesta 0
+      this.speed = 0;            // Aloita nopeudesta 0 (kiihdytetään vähitellen)
       
       // Pyörimisnopeus on AINA sama (medium), vain pysähtymisviive muuttuu
-      this.targetSpeed = 35;     // Vakio pyörimisnopeus kaikille spinSpeed-asetuksille
+      // Tämä luo tasaisen visuaalisen pyörimisnopeuden riippumatta spinSpeed-asetuksesta
+      this.targetSpeed = 35;     // Vakio pyörimisnopeus (pikseleitä per frame)
       
       this.stopDelay = delay;    // Aseta pysäytysviive (kiekot pysähtyvät eri aikoina)
     }
     
-    // BPM-synkronoitu start-metodi (v1.0.9)
-    // Pysäyttää kiekot peräkkäin spinSpeed-asetuksen mukaan
+    // ===== BPM-SYNKRONOITU ALOITUS (v1.0.9) =====
+    // Pysäyttää kiekot peräkkäin rytmisesti musiikin tahtiin (130 BPM)
+    // Jokainen kiekko pysähtyy yksi kerrallaan vasemmalta oikealle
+    // @param beatIndex - Kiekon järjestysnumero (0-12)
     startSynchronized(beatIndex: number) {
-      const framesPerReel = SPIN_SPEED_CONFIG[spinSpeed]; // Käytä konfiguraation arvoa
-      const delay = 60 + (beatIndex * framesPerReel); // 60 base + viive per kiekko
+      const framesPerReel = SPIN_SPEED_CONFIG[spinSpeed]; // Käytä konfiguraation arvoa (slow/medium/fast)
+      const delay = 60 + (beatIndex * framesPerReel); // 60 base-framea + viive per kiekko
       this.start(delay);
     }
 
-    // Päivitä kiekon tila joka frame
+    // ===== PÄIVITÄ KIEKON TILA JOKA FRAME =====
+    // Kutsutaan joka frame (60 FPS) pelisilmukasta
+    // Käsittelee kiekon tilan mukaan: spinning → slowing → bouncing → stopped
     update() {
       if (this.state === "idle") return; // Ei tee mitään jos kiekko ei pyöri
 
-      // KIIHTYMIS-VAIHE: nopeutetaan kunnes saavutetaan tavoitenopeus
+      // ===== VAIHE 1: KIIHTYMIS-VAIHE =====
+      // Nopeutetaan kiekkoa kunnes saavutetaan tavoitenopeus
       if (this.state === "spinning") {
-        if (this.speed < this.targetSpeed) this.speed += 2; // Kiihdytä hitaasti
-        if (this.stopDelay > 0) this.stopDelay--;           // Vähennä viivettä
-        else this.state = "slowing";                        // Aloita hidastus kun viive on nolla
+        if (this.speed < this.targetSpeed) this.speed += 2; // Kiihdytä +2 pikseliä/frame
+        if (this.stopDelay > 0) this.stopDelay--;           // Vähennä viivettä joka frame
+        else this.state = "slowing";                        // Aloita hidastus kun viive = 0
       }
 
-      // HIDASTUS-VAIHE: vähennetään nopeutta kunnes pysähdytään
+      // ===== VAIHE 2: HIDASTUS-VAIHE =====
+      // Vähennetään nopeutta eksponentiaalisesti kunnes pysähdytään
       if (this.state === "slowing") {
-        // Hidastuskerroin riippuu nopeusasetuksesta
+        // Hidastuskerroin määrää kuinka nopeasti kiekko pysähtyy
+        // Pienempi arvo = nopeampi pysähtyminen (0.88 < 0.92 < 0.95)
         const slowDownFactor = spinSpeed === 'slow' ? 0.88 : spinSpeed === 'medium' ? 0.92 : 0.95;
-        this.speed *= slowDownFactor; // Eksponentiaalinen hidastus
+        this.speed *= slowDownFactor; // Kerro nopeus kertoimella (eksponentiaalinen hidastus)
 
-        // Pysähdytään pienellä bouncella kun nopeus on riittävän pieni
+        // Kun nopeus on riittävän pieni, siirrytään bounce-vaiheeseen
         if (this.speed < 2.5) {
-          this.state = "bouncing";  // Siirry bouncing-tilaan (palautettu pieni bounce)
-          this.speed = 0;           // Pysäytä normaali liike
+          this.state = "bouncing";  // Siirry bouncing-tilaan (pieni pomppuefekti)
+          this.speed = 0;           // Pysäytä normaali scrollaus
           this.offset = 0;          // Nollaa scroll-offset
-          this.bounceOffset = 0;    // Aloita bounce nollasta
-          this.bounceSpeed = 8;     // Pieni alkubounce 8px (aiemmin 0)
+          this.bounceOffset = 0;    // Aloita bounce-offset nollasta
+          this.bounceSpeed = 8;     // Pieni alkubounce 8px alaspäin (aiemmin 0 = ei bounceta)
           
           // Soita "chunk" pysähtymisääni
           playSound('stop');
           
-          // Soita rumpuisku (v1.0.9 music integration)
+          // Soita rumpuisku musiikin tahtiin (v1.0.9 music integration)
           playDrumHit();
         }
       }
 
-      // BOUNCE-VAIHE: pieni pomppuefekti pysähdyksen jälkeen (palautettu v1.3.1)
+      // ===== VAIHE 3: BOUNCE-VAIHE =====
+      // Pieni pomppuefekti pysähdyksen jälkeen (palautettu v1.3.1)
+      // Luo visuaalisen "painon tunteen" kun kiekko pysähtyy
       if (this.state === "bouncing") {
-        this.bounceSpeed *= 0.85;  // Vaimennus (nopeampi kuin aiemmin 0.75)
-        this.bounceOffset += this.bounceSpeed;
+        this.bounceSpeed *= 0.85;  // Vaimennus 85% per frame (nopeampi kuin aiemmin 0.75)
+        this.bounceOffset += this.bounceSpeed; // Lisää bounce-offset (liikkuu alaspäin)
         
-        // Jos bounce on riittävän pieni, siirrytään stopped-tilaan
+        // Kun bounce on riittävän pieni, kiekko on lopullisesti pysähtynyt
         if (Math.abs(this.bounceSpeed) < 0.3) {
-          this.state = "stopped";
-          this.bounceOffset = 0;
-          this.bounceSpeed = 0;
+          this.state = "stopped";  // Lopullinen pysähtynyt tila
+          this.bounceOffset = 0;   // Nollaa bounce-offset
+          this.bounceSpeed = 0;    // Nollaa bounce-nopeus
         }
       }
 
-      // LIIKE-LASKENTA: siirrytään jos nopeus > 0 (vain spinning/slowing aikana)
+      // ===== VAIHE 4: LIIKE-LASKENTA =====
+      // Siirrytään alaspäin jos nopeus > 0 (vain spinning/slowing-tiloissa)
       if (this.speed > 0) {
-        this.offset += this.speed; // Lisätään offsettia
+        this.offset += this.speed; // Lisätään offsettia (scrollaus alaspäin)
 
-        // Jos offset ylittää yhden symbolin korkeuden, vaihda uusi symboli
+        // Jos offset ylittää yhden symbolin korkeuden, symboli on "scrollannut ulos"
+        // ja tarvitsemme uuden symbolin scrollaamaan sisään ylhäältä
         if (this.offset >= ROW_HEIGHT) {
-          this.offset = 0;                    // Nollaa offset
-          reelData[this.index] = randomSymbol(this.index); // Aseta uusi satunnainen symboli tälle kiekolle (välitä kiekon indeksi!)
+          this.offset = 0;                    // Nollaa offset (aloitetaan uuden symbolin scrollaus)
+          reelData[this.index] = randomSymbol(this.index); // Aseta uusi satunnainen symboli tälle kiekolle
+          // HUOM: Välitetään kiekon indeksi randomSymbol():lle koska keskikiekko (6) käyttää eri painotuksia (Wild 55%)
         }
       }
-    }
+    } // update() loppu
 
-    // Piirrä kiekon symboli näytölle
+    // ===== PIIRRÄ KIEKON SYMBOLI NÄYTÖLLE =====
+    // Kutsutaan joka frame päivitetyn tilan jälkeen
+    // Luo uuden Sprite-objektin ja lisää sen PixiJS näyttöön
     draw() {
-      const stage = this.container;
-      stage.removeChildren(); // Poista vanhat spritet
+      const stage = this.container; // Kiekon PixiJS Container
+      stage.removeChildren(); // Poista vanhat spritet (estää päällekkäisyydet)
 
-      // Hae tämän kiekon symboli
+      // Hae tämän kiekon symboli reelData-taulukosta
       const symbol = reelData[this.index];
-      if (!symbol || !symbolTextures || !symbolTextures[symbol]) return;
+      if (!symbol || !symbolTextures || !symbolTextures[symbol]) return; // Tarkista että symboli on olemassa
 
-      // Hae symbolin tekstuuri
+      // Hae symbolin tekstuuri (ladattu onMount-vaiheessa)
       const texture = symbolTextures[symbol];
-      if (!texture) return;
+      if (!texture) return; // Tarkista että tekstuuri on olemassa
 
-      // Laske Y-koordinaatti (scroll offset + bounce offset)
+      // Laske lopullinen Y-koordinaatti:
+      // - offset: Scrollaus-siirtymä (0-ROW_HEIGHT kun pyörii)
+      // - bounceOffset: Pieni pomppuefekti pysähdyksen jälkeen
       const y = this.offset + this.bounceOffset;
 
-      // Luo sprite ja aseta koko/sijainti
+      // Luo uusi Sprite-objekti tälle symbolille
       const sprite = new Sprite(texture);
-      sprite.width = symbolWidth;   // Aseta leveys
-      sprite.height = symbolHeight; // Aseta korkeus
-      sprite.x = 0;                // X-koordinaatti (suhteessa konttiin)
-      sprite.y = y;                // Y-koordinaatti (sisältää offsetit)
+      sprite.width = symbolWidth;   // Aseta leveys (skaalattu oikeaan kokoon)
+      sprite.height = symbolHeight; // Aseta korkeus (skaalattu oikeaan kokoon)
+      sprite.x = 0;                // X-koordinaatti (suhteessa konttiin, aina 0)
+      sprite.y = y;                // Y-koordinaatti (sisältää scrollaus + bounce offsetit)
 
-      stage.addChild(sprite); // Lisää sprite näytölle
-    }
+      stage.addChild(sprite); // Lisää sprite Container:iin (näkyy ruudulla)
+    } // draw() loppu
   } // Reel luokan loppu
 
   // ===================================================================
   // PIXIJS ALUSTUS - Suoritetaan kun komponentti on ladattu
   // ===================================================================
-  // Tämä funktio käynnistyy kun Svelte komponentti on valmis
-  // Lisää reactive skaalausmuuttuja
+  // Tämä funktio käynnistyy kun Svelte komponentti on valmis (onMount)
+  // Vastaa koko pelin alustuksesta:
+  // 1) PixiJS Application luonti ja canvas kiinnittäminen
+  // 2) Responsiivinen skaalaus ikkunan koon mukaan
+  // 3) Symbolien, taustakuvien ja äänien lataus
+  // 4) Kiekkojen luonti ja maskien asetus
+  // 5) Pelisilmukan käynnistys
+  
+  // Reactive skaalausmuuttuja - päivittyy automaattisesti kun ikkunan kokoa muutetaan
   let gameScale = $state(1);
   
   onMount(async () => {
     // ===== 1) PIXIJS SOVELLUKSEN LUONTI =====
-    // Luo PixiJS Application joka hallinnoi koko peliä
+    // Luo PixiJS Application joka hallinnoi koko peliä (stage, renderer, ticker)
     app = new Application();
     await app.init({
-      width: CANVAS_WIDTH,     // Canvas leveys
-      height: CANVAS_HEIGHT,   // Canvas korkeus
-      backgroundAlpha: 0       // Läpinäkyvä tausta
+      width: CANVAS_WIDTH,     // Canvas leveys pikseleinä (1445px)
+      height: CANVAS_HEIGHT,   // Canvas korkeus pikseleinä (1000px)
+      backgroundAlpha: 0       // Läpinäkyvä tausta (taustakuva asetetaan CSS:llä)
     });
 
-    // Liitä canvas HTML-elementtiin
+    // Liitä PixiJS canvas HTML-elementtiin (container-diviin)
     container.appendChild(app.canvas);
     
-    // Lisää responsiivinen skaalaus
+    // ===== 2) RESPONSIIVINEN SKAALAUS =====
+    // Skaalataan peliä ikkunan koon mukaan mutta ei koskaan suuremmaksi kuin 100%
     const resizeGame = () => {
-      const windowWidth = window.innerWidth;
-      const windowHeight = window.innerHeight;
-      const scaleX = windowWidth / CANVAS_WIDTH;
-      const scaleY = windowHeight / CANVAS_HEIGHT;
-      const newScale = Math.min(scaleX, scaleY, 1); // Ei skaalata suuremmaksi kuin 1
+      const windowWidth = window.innerWidth;   // Selaimen ikkunan leveys
+      const windowHeight = window.innerHeight; // Selaimen ikkunan korkeus
+      const scaleX = windowWidth / CANVAS_WIDTH;   // Leveys-skaalauskertoin
+      const scaleY = windowHeight / CANVAS_HEIGHT; // Korkeus-skaalauskertoin
+      const newScale = Math.min(scaleX, scaleY, 1); // Valitse pienempi kerroin, max 1.0
       
-      // Päivitä reactive skaalaus
+      // Päivitä reactive skaalaus (käytetään UI-elementeissä)
       gameScale = newScale;
       
-      // Skaalaa PixiJS stage vastaamaan uutta kokoa
+      // Skaalaa PixiJS stage vastaamaan uutta kokoa (kaikki näkyy)
       app.stage.scale.set(newScale);
       
-      // Renderer pysyy kiinteässä koossa
+      // Renderer pysyy kiinteässä koossa (1445x1000)
       app.renderer.resize(CANVAS_WIDTH, CANVAS_HEIGHT);
     };
     
-    // Kutsu heti alussa
+    // Kutsu heti alussa (aseta oikea skaalaus)
     resizeGame();
     
     // Päivitä kun ikkunan kokoa muutetaan
@@ -1693,30 +1759,39 @@
   }); // onMount loppu
 
   // ===================================================================
-  // PELISILMUKKA - Kutsutaan joka frame
+  // PELISILMUKKA - Kutsutaan joka frame (60 FPS)
   // ===================================================================
+  // Tämä on pelin "sydän" joka pyörii jatkuvasti
+  // PixiJS ticker kutsuu tätä funktiota ~60 kertaa sekunnissa
   function update() {
     // Päivitä jokainen kiekko (liike, animaatiot)
     for (const r of reels) {
-      r.update(); // Päivitä kiekon tila
-      r.draw();   // Piirrä kiekko uudelleen
+      r.update(); // Päivitä kiekon tila (spinning → slowing → bouncing → stopped)
+      r.draw();   // Piirrä kiekko uudelleen (luo uuden Sprite-objektin)
     }
     
-    // Tarkista voitot kun kaikki kiekot ovat pysähtyneet JA voittoja ei ole vielä tarkistettu
+    // ===== VOITTOJEN TARKISTUS =====
+    // Tarkistetaan voitot VAIN kerran per spin, kun kaikki kiekot ovat pysähtyneet
+    // Ehdot:
+    // 1) Voittoja ei ole vielä tarkistettu tälle spinille (winsCheckedForCurrentSpin === false)
+    // 2) Voitto-popuppia ei näytetä (isShowingWin === false)
+    // 3) Kaikki kiekot ovat tilassa "stopped"
     if (!isShowingWin && !winsCheckedForCurrentSpin && reels.every(r => r.state === "stopped")) {
-      winsCheckedForCurrentSpin = true; // Merkitse että voitot on tarkistettu
+      winsCheckedForCurrentSpin = true; // Merkitse että voitot on tarkistettu (estetaan duplikaattitarkistukset)
       
-      // Feidaa musiikki alas kun kierros on ohi
+      // Feidaa musiikki alas kun kierros on ohi (v1.0.9)
       fadeOutMusicAfterSpin();
       
+      // Kutsu checkWins() joka laskee 81 ways -voitot
       const wins = checkWins();
       console.log(`Checking wins, found ${wins.length} wins`);
       
+      // ===== JOS VOITTOJA LÖYTYI =====
       if (wins.length > 0) {
-        currentWins = wins;
-        totalWin = wins.reduce((sum, win) => sum + win.payout, 0);
+        currentWins = wins; // Tallenna voitot (näytetään popupissa)
+        totalWin = wins.reduce((sum, win) => sum + win.payout, 0); // Laske kokonaisvoitto
         
-        // Log the win to file
+        // Kirjoita voitto lokitiedostoon (tilastoja varten)
         logWin(totalRounds, wins, totalWin);
         
         // Lisää voitto saldoon VAIN KERRAN
@@ -1733,214 +1808,261 @@
           console.log(`${win.count}x ${win.symbol} = ${win.payout} pistettä${multiplierText}`);
         });
         
-        // Korostaa voittavat symbolit
+        // Korostaa voittavat symbolit (kultainen kehys + pulssi-animaatio)
         highlightWinningSymbols(wins);
         
         // Soita voittoääni
         playSound('win');
         
+        // ===== AUTOPLAY-KÄSITTELY (VOITOT) =====
         // Jos autoplay on päällä, odota 1.5s ja sulje popup automaattisesti
         if (isAutoPlaying && !isProcessingAutoPlay) {
-          isProcessingAutoPlay = true; // Lukitse
+          isProcessingAutoPlay = true; // Lukitse (estää duplikaattispinit)
           autoPlayTimeoutId = window.setTimeout(() => {
             if (isShowingWin && isAutoPlaying) {
               console.log('Autoplay: Auto-closing win popup after 1.5s');
               isShowingWin = false;
               clearWinHighlights();
             }
-            // Jatka seuraavaan kierrokseen
+            // Jatka seuraavaan kierrokseen 200ms kuluttua
             autoPlayTimeoutId = window.setTimeout(() => {
               isProcessingAutoPlay = false; // Vapauta lukko
-              executeAutoPlay();
+              executeAutoPlay(); // Jatka seuraavaan spiniin
             }, 200);
           }, 1500);
         }
       } else {
+        // ===== EI VOITTOJA =====
         console.log('No wins found this spin');
         // Jos autoplay on päällä ja ei voittoja, jatka seuraavaan kierrokseen
-        // MUTTA odota 1 sekunti että pelaaja näkee tulokset
+        // Lyhyempi odotus (500ms) kun ei ole voittoja
         if (isAutoPlaying && !isProcessingAutoPlay) {
           isProcessingAutoPlay = true; // Lukitse
           autoPlayTimeoutId = window.setTimeout(() => {
             isProcessingAutoPlay = false; // Vapauta lukko
-            executeAutoPlay();
-          }, 1000);
+            executeAutoPlay(); // Jatka seuraavaan spiniin
+          }, 500);
         }
       }
       
-      // Check if free spins ended (ALWAYS, regardless of win/no-win)
+      // ===== VAPAAEREIDEN LOPETUS =====
+      // Tarkista onko vapaaerien tila päättynyt (riippumatta voitoista)
       if (isFreeSpinMode && freeSpinsRemaining === 0) {
         console.log(`🎰 FREE SPINS ENDED! Total won: ${freeSpinsTotalWon}`);
-        // Show free spins end popup
+        // Näytä vapaaereiden lopetus-popup 2 sekunnin kuluttua
         setTimeout(() => {
           freeSpinsEndAmount = freeSpinsTotalWon;
           showFreeSpinsEndPopup = true;
-          // DON'T reset state here - wait for user to click continue
+          // ÄLÄ nollaa tilaa tässä - odotetaan että käyttäjä painaa "Jatka"
         }, 2000);
       }
     }
-  }
+  } // update() loppu
 
   // ===================================================================
   // SPIN NAPPI - Käynnistää uuden pyöräytyksen
   // ===================================================================
+  // Pelin päätoiminto joka käsittelee:
+  // 1) Musiikin käynnistyksen
+  // 2) Panoksen vähentämisen (peruspeli) TAI vapaaerän laskurin vähentämisen
+  // 3) Kiekkojen pyörittämisen (BPM-synkronoitu)
+  // 4) Tilastojen päivittämisen
   function spin() {
+    // ===== MUSIIKIN KÄYNNISTYS =====
     // Käynnistä taustamusiikki ensimmäisellä kierroksella (EI vapaapeleissä)
     if (!isFreeSpinMode && backgroundMusic && musicEnabled && !backgroundMusic.playing()) {
       backgroundMusic.play();
       console.log('🎵 Background music started on first spin');
     }
     
-    // Trigger glare effect on play button
+    // Laukaise "kiilto"-efekti Play-napissa (visuaalinen palaute)
     triggerPlayButtonGlare();
     
-    // Free spins mode - no bet deduction
+    // ===== VAPAAERÄT VS PERUSPELI =====
     if (isFreeSpinMode && freeSpinsRemaining > 0) {
-      freeSpinsRemaining--;
-      freeSpinsPlayedCount++; // Laske vapaaerä
+      // VAPAAERÄT - Ei vähennetä saldoa, vain lasketaan vapaaeriä jäljellä
+      freeSpinsRemaining--; // Vähennä jäljellä olevia vapaaeriä
+      freeSpinsPlayedCount++; // Laske pelattu vapaaerä (tilastoihin)
       console.log(`🎰 FREE SPIN! Remaining: ${freeSpinsRemaining}`);
       
-      // Check if free spins end after this spin (will be checked after win evaluation)
-      // Note: freeSpinsRemaining is decremented before the spin
+      // Huom: freeSpinsRemaining tarkistetaan update()-funktiossa spinin jälkeen
     } else if (!isFreeSpinMode) {
-      // Normal mode - check balance and deduct bet
+      // PERUSPELI - Tarkista saldo ja vähennä panos
       if (balance < betAmount) {
         alert(`Not enough credits! Balance: ${balance}, Bet: ${betAmount}`);
-        stopAutoPlay();
-        return;
+        stopAutoPlay(); // Pysäytä autoplay jos ei riitä krediittejä
+        return; // Lopeta funktio (ei pyöritä)
       }
       
       // Vähennä panos saldosta
       balance -= betAmount;
       
-      // Päivitä RTP-tilastot (only for paid spins)
-      totalRounds++;
-      totalWagered += betAmount;
+      // Päivitä RTP-tilastot (vain maksetuille kierroksille, ei vapaaerille)
+      totalRounds++; // Kasvata kierrosten määrää
+      totalWagered += betAmount; // Kasvata panostettu määrää
     }
     
-    // Tyhjennä mahdollinen autoplay timeout
+    // ===== TYHJENNETÄÄN AUTOPLAY TIMEOUT =====
+    // Jos autoplay-ajastin on päällä, tyhjennä se (estetään duplikaattispinit)
     if (autoPlayTimeoutId !== null) {
       clearTimeout(autoPlayTimeoutId);
       autoPlayTimeoutId = null;
     }
     
-    // Nollaa voittotiedot JA sulje popup
-    currentWins = [];
-    totalWin = 0;
-    isShowingWin = false;
+    // ===== NOLLAA VOITTOTIEDOT =====
+    // Poista edellisen kierroksen tiedot
+    currentWins = [];  // Tyhjennä voittolista
+    totalWin = 0;      // Nollaa kokonaisvoitto
+    isShowingWin = false; // Sulje voitto-popup
     winsCheckedForCurrentSpin = false; // Salli voittojen tarkistus uudelle spinille
-    clearWinHighlights(); // Poista voittokorostukset
+    clearWinHighlights(); // Poista kultaiset kehykset voittosymboleista
     
-    reelData = createReelData();                     // Luo uudet symbolit 13 kiekolle
+    // ===== LUO UUDET SYMBOLIT =====
+    reelData = createReelData(); // Luo 13 uutta satunnaista symbolia (käyttää painotettua jakaumaa)
     
+    // ===== KÄYNNISTÄ KIEKKOJEN PYÖRIMINEN =====
     // v1.0.9: BPM-synkronoitu pysähtyminen (130 BPM)
     // Kiekot pysähtyvät rytmisesti musiikin tahtiin
     // Jokainen ruutu pysähtyy yksi kerrallaan järjestyksessä: 0-1-2-3-4-5-6-7-8-9-10-11-12
     reels.forEach((r, i) => {
-      r.startSynchronized(i);        // Jokainen kiekko pysähtyy eri aikaan
+      r.startSynchronized(i); // Jokainen kiekko pysähtyy eri aikaan (i = beatIndex)
     });
     
     // Soita "whirr" SPIN-ääni
     playSound('spin');
-  }
+  } // spin() loppu
   
-  // Lisää voitto saldoon
+  // ===================================================================
+  // LISÄÄ VOITTO SALDOON
+  // ===================================================================
+  // Käsittelee voiton lisäämisen saldoon ja tilastoihin
+  // @param winAmount - Voiton määrä pistettä
   function addWinToBalance(winAmount: number) {
-    balance += winAmount;
-    totalWon += winAmount;
-    lastWin = winAmount; // Track last win for display
+    balance += winAmount;      // Lisää voitto pelaajan saldoon
+    totalWon += winAmount;     // Päivitä kokonaisvoitot (RTP-tilastot)
+    lastWin = winAmount;       // Tallenna viimeisin voitto (näytetään UI:ssa)
     
-    // Track free spins total wins separately
+    // Vapaaerille: Seuraa erikseen vapaaeriden yhteisvoittoa
     if (isFreeSpinMode) {
-      freeSpinsTotalWon += winAmount;
+      freeSpinsTotalWon += winAmount; // Kumulatiivinen voitto koko vapaaeriäkaudelta
     }
     
     if (winAmount > 0) {
-      totalWins++;
+      totalWins++; // Kasvata voittojen määrää (tilastoihin)
       
+      // ===== VOITTOTEEMAN SOITTO ISOILLE VOITOILLE =====
       // v1.0.9: Soita voittoteema isoille voitoille (yli 10x panos)
-      const winMultiplier = winAmount / betAmount;
+      const winMultiplier = winAmount / betAmount; // Laske voittokerroin
       if (winMultiplier >= 10) {
-        playWinTheme();
+        playWinTheme(); // Soita dramaattinen voittoteema (Win Music)
       }
       
-      // v1.1.6: Show vinyl win animation based on win size
+      // ===== VINYL-ANIMAATIO VOITON KOON MUKAAN =====
+      // v1.1.6: Näytä vinyl-voittoanimaatio voiton koon mukaan
       if (vinylWinAnimationRef) {
         if (winMultiplier >= 50) {
-          // JACKPOT win (50x+)
+          // JACKPOT-voitto (50x+) - Heti ilman viivettä
           vinylWinAnimationRef.show();
         } else if (winMultiplier >= 20) {
-          // MEDIUM win (20x-49x)
+          // KESKISUURI voitto (20x-49x) - 200ms viive
           setTimeout(() => vinylWinAnimationRef.show(), 200);
         } else if (winMultiplier >= 10) {
-          // SMALL win (10x-19x)
+          // PIENI voitto (10x-19x) - 400ms viive
           setTimeout(() => vinylWinAnimationRef.show(), 400);
         }
       }
     }
   }
   
-  // Bet kontrollit
+  // ===================================================================
+  // BET KONTROLLIT - Panoksen säätö
+  // ===================================================================
+  // Nämä funktiot muuttavat currentBetIndex-muuttujaa,
+  // joka määrittää mikä BET_LEVELS-taulukon arvo on käytössä
+  
+  // Kasvata panosta seuraavaan tasoon (jos mahdollista)
   function increaseBet() {
     if (currentBetIndex < BET_LEVELS.length - 1) {
-      currentBetIndex++;
+      currentBetIndex++; // Siirry seuraavaan panokseen (esim. 0.10 → 0.20)
     }
   }
   
+  // Vähennä panosta edelliseen tasoon (jos mahdollista)
   function decreaseBet() {
     if (currentBetIndex > 0) {
-      currentBetIndex--;
+      currentBetIndex--; // Siirry edelliseen panokseen (esim. 0.20 → 0.10)
     }
   }
   
+  // Aseta panos maksimiin (viimeinen BET_LEVELS-arvo)
   function maxBet() {
-    currentBetIndex = BET_LEVELS.length - 1;
+    currentBetIndex = BET_LEVELS.length - 1; // Hyppää suoraan suurimpaan panokseen
   }
 
-  // Autoplay funktiot
+  // ===================================================================
+  // AUTOPLAY FUNKTIOT - Automaattinen pelaus
+  // ===================================================================
+  // Autoplay-järjestelmä käyttää lukkomekanismia (isProcessingAutoPlay) estääkseen
+  // duplikaattispinit. Jokainen spin-kutsu lukitsee tilan ja vapauttaa sen vasta
+  // kun voitot on käsitelty.
+  
+  // Käynnistä autoplay tietyllä kierrosmäärällä
+  // @param rounds - Kierrosten määrä (esim. 10, 25, 50, 100)
   function startAutoPlay(rounds: number) {
-    isAutoPlaying = true;
-    autoPlayRoundsLeft = rounds;
-    showAutoPlayMenu = false;
-    executeAutoPlay();
+    isAutoPlaying = true;           // Aktivoi autoplay-tila
+    autoPlayRoundsLeft = rounds;    // Aseta kierrosmäärä
+    showAutoPlayMenu = false;       // Sulje autoplay-valikko
+    executeAutoPlay();              // Aloita ensimmäinen kierros
   }
 
+  // Pysäytä autoplay kesken kaiken
   function stopAutoPlay() {
-    isAutoPlaying = false;
-    autoPlayRoundsLeft = 0;
-    isProcessingAutoPlay = false; // Vapauta lukko
+    isAutoPlaying = false;          // Deaktivoi autoplay-tila
+    autoPlayRoundsLeft = 0;         // Nollaa jäljellä olevat kierrokset
+    isProcessingAutoPlay = false;   // Vapauta lukko (estää jumit)
+    
+    // Tyhjennä mahdolliset odottavat ajastimet
     if (autoPlayTimeoutId !== null) {
       clearTimeout(autoPlayTimeoutId);
       autoPlayTimeoutId = null;
     }
   }
 
+  // Suorita yksi autoplay-kierros
+  // Tämä funktio kutsuu itseään rekursiivisesti kunnes kierrokset loppuvat
   function executeAutoPlay() {
+    // Lopeta jos autoplay on pysäytetty TAI kierrokset ovat loppuneet
     if (!isAutoPlaying || autoPlayRoundsLeft <= 0) {
-      stopAutoPlay();
+      stopAutoPlay(); // Varmista että kaikki on nollattu
       return;
     }
 
-    // Pyöräytä (update() jatkaa automaattisesti kun voitot on käsitelty)
+    // Pyöräytä (update()-funktio jatkaa automaattisesti kun voitot on käsitelty)
     console.log(`Autoplay: Starting spin ${autoPlayRoundsLeft} rounds left`);
-    spin();
-    autoPlayRoundsLeft--;
+    spin(); // Käynnistä kiekkojen pyöriminen
+    autoPlayRoundsLeft--; // Vähennä jäljellä olevia kierroksia
     
-    // ÄLÄ kutsu executeAutoPlay() täällä!
-    // update() funktio kutsuu sitä automaattisesti kun voitot on käsitelty
+    // HUOM: ÄLÄ kutsu executeAutoPlay() täällä!
+    // update()-funktio kutsuu sitä automaattisesti kun kaikki kiekot ovat pysähtyneet
+    // ja voitot on käsitelty. Tämä estää liian nopeat spinit.
   }
 
+  // ===================================================================
+  // TILASTOFUNKTIOT
+  // ===================================================================
+  
   // Nollaa RTP-tilastot
+  // Pyytää käyttäjältä vahvistuksen ennen kuin tyhjentää kaikki pelitilastot
   function resetStats() {
     if (confirm('Reset all statistics?')) {
-      totalRounds = 0;
-      totalWagered = 0;
-      totalWon = 0;
-      totalWins = 0;
-      freeSpinsTriggerCount = 0;
-      freeSpinsPlayedCount = 0;
-      totalVisibleSymbols = 0;
-      totalEmptySlots = 0;
+      totalRounds = 0;           // Nollaa pelatut kierrokset
+      totalWagered = 0;          // Nollaa panostettu määrä
+      totalWon = 0;              // Nollaa voitettu määrä
+      totalWins = 0;             // Nollaa voittojen määrä
+      freeSpinsTriggerCount = 0; // Nollaa vapaaerätriggerit
+      freeSpinsPlayedCount = 0;  // Nollaa pelatut vapaapelit
+      totalVisibleSymbols = 0;   // Nollaa näkyvät symbolit
+      totalEmptySlots = 0;       // Nollaa tyhjät ruudut
     }
   }
 </script>
@@ -1948,8 +2070,20 @@
 <!-- ================================================================ -->
 <!-- HTML TEMPLATE - Pelin visuaalinen rakenne                        -->
 <!-- ================================================================ -->
+<!-- Tämä osio sisältää kaikki HTML-elementit joita peli käyttää:      -->
+<!-- 1) Debug-paneeli (lataus/virhetilanteissa)                        -->
+<!-- 2) Voitto-popup (näyttää voitot ja kertoimet)                     -->
+<!-- 3) Paytable-popup (näyttää symbolien maksuarvot)                  -->
+<!-- 4) Vapaaerä-lopetus-popup (vapaaerän yhteisvoitto)                -->
+<!-- 5) Pääkontti (PixiJS canvas + UI-kontrollit)                      -->
+<!-- 6) Control Panel (panos, autoplay, spin-nappi)                    -->
+<!-- 7) Tilastopaneeli (RTP, voitot, kierrokset)                       -->
+<!-- 8) Musiikkikontrollit (play/pause/volume)                         -->
+<!-- ================================================================ -->
 
-<!-- Debug-tiedot (näytetään vain jos ladataan tai virhe) -->
+<!-- ===== 1) DEBUG-PANEELI ===== -->
+<!-- Näytetään vain jos ladataan assetteja tai tapahtuu virhe -->
+<!-- Näyttää latausstatuksen, virheilmoitukset ja debug-lokin -->
 {#if loadingStatus !== "Assets loaded successfully!" || errorMessage}
   <div style="
     position: fixed;
@@ -1985,7 +2119,10 @@
   </div>
 {/if}
 
-<!-- Voittonäyttö -->
+<!-- ===== 2) VOITTO-POPUP ===== -->
+<!-- Näytetään kun totalWin > 0 JA isShowingWin === true -->
+<!-- Näyttää voiton määrän, voittoyhdistelmät ja mahdollisen kertoimet -->
+<!-- Sulkeutuu automaattisesti autoplayn aikana (1.5s) tai manuaalisesti -->
 {#if totalWin > 0 && isShowingWin}
   <div style="
     position: fixed;
@@ -2045,7 +2182,10 @@
   </div>
 {/if}
 
-<!-- Paytable-näyttö -->
+<!-- ===== 3) PAYTABLE-POPUP ===== -->
+<!-- Näyttää kaikkien symbolien maksuarvot ja erikoissymboleiden selitykset -->
+<!-- Avataan "💰 PAYTABLE" -napista, suljetaan "Sulje"-napista -->
+<!-- Skaalautuu automaattisesti gameScale-muuttujan mukaan -->
 {#if showPaytable}
   <div style="
     position: absolute;
@@ -2130,7 +2270,10 @@
   </div>
 {/if}
 
-<!-- Free Spins End Popup -->
+<!-- ===== 4) VAPAAERÄ-LOPETUS-POPUP ===== -->
+<!-- Näytetään kun vapaaeräjakso päättyy (freeSpinsRemaining === 0) -->
+<!-- Näyttää vapaaerän aikana voitetun kokonaissumman -->
+<!-- "JATKA PERUSPELIIN" -nappi palauttaa peruspelitilaan ja vaihtaa musiikin -->
 {#if showFreeSpinsEndPopup}
   <div style="
     position: fixed;
@@ -2220,7 +2363,9 @@
   </div>
 {/if}
 
-<!-- PixiJS canvas ja kaikki UI-elementit skaalautuvassa konteissa -->
+<!-- ===== 5) PÄÄKONTTI ===== -->
+<!-- Keskittää pelin näytöllä ja käsittelee responsiivisen skaalauksen -->
+<!-- Sisältää PixiJS canvasin ja kaikki HTML-kontrollit -->
 <div style="
   width: 100vw;
   height: 100vh;
@@ -2235,7 +2380,7 @@
     width: {CANVAS_WIDTH * gameScale}px;
     height: {CANVAS_HEIGHT * gameScale}px;
   ">
-    <!-- PixiJS canvas sijoitetaan tähän -->
+    <!-- PixiJS canvas sijoitetaan tähän (container-div) -->
     <div 
       bind:this={container}
       style="
@@ -2269,7 +2414,9 @@
         💰 PAYTABLE
       </button>
 
-      <!-- Control Panel sijoitetaan canvas-kontin sisään -->
+      <!-- ===== 6) CONTROL PANEL ===== -->
+      <!-- Pelin pääkontrollit näytön alareunassa -->
+      <!-- Sisältää: Panos-kontrollit, Balance, Play-nappi, Autoplay, Spin Speed, Win-näyttö, Menu -->
       <div class="control-panel-mobile" style="
         position: absolute;
         left: {((reelFramesSpriteRef ? reelFramesSpriteRef.x : REEL_FRAMES_X) + CONTROL_PANEL_OFFSET_X) * gameScale}px;
@@ -2318,6 +2465,42 @@
       10 Rounds
     </button>
     <button
+      on:click={() => { startAutoPlay(25); showAutoPlayMenu = false; }}
+      style="
+        width: 100%;
+        padding: {12 * gameScale}px;
+        margin-bottom: {8 * gameScale}px;
+        background: linear-gradient(135deg, #44aa44 0%, #66cc66 100%);
+        color: white;
+        border: none;
+        border-radius: {8 * gameScale}px;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: {16 * gameScale}px;
+        box-shadow: 0 {4 * gameScale}px {10 * gameScale}px rgba(68, 170, 68, 0.4);
+      "
+    >
+      25 Rounds
+    </button>
+    <button
+      on:click={() => { startAutoPlay(50); showAutoPlayMenu = false; }}
+      style="
+        width: 100%;
+        padding: {12 * gameScale}px;
+        margin-bottom: {8 * gameScale}px;
+        background: linear-gradient(135deg, #44aa44 0%, #66cc66 100%);
+        color: white;
+        border: none;
+        border-radius: {8 * gameScale}px;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: {16 * gameScale}px;
+        box-shadow: 0 {4 * gameScale}px {10 * gameScale}px rgba(68, 170, 68, 0.4);
+      "
+    >
+      50 Rounds
+    </button>
+    <button
       on:click={() => { startAutoPlay(100); showAutoPlayMenu = false; }}
       style="
         width: 100%;
@@ -2334,6 +2517,42 @@
       "
     >
       100 Rounds
+    </button>
+    <button
+      on:click={() => { startAutoPlay(200); showAutoPlayMenu = false; }}
+      style="
+        width: 100%;
+        padding: {12 * gameScale}px;
+        margin-bottom: {8 * gameScale}px;
+        background: linear-gradient(135deg, #4488ff 0%, #66aaff 100%);
+        color: white;
+        border: none;
+        border-radius: {8 * gameScale}px;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: {16 * gameScale}px;
+        box-shadow: 0 {4 * gameScale}px {10 * gameScale}px rgba(68, 136, 255, 0.4);
+      "
+    >
+      200 Rounds
+    </button>
+    <button
+      on:click={() => { startAutoPlay(500); showAutoPlayMenu = false; }}
+      style="
+        width: 100%;
+        padding: {12 * gameScale}px;
+        margin-bottom: {8 * gameScale}px;
+        background: linear-gradient(135deg, #ff8844 0%, #ffaa66 100%);
+        color: white;
+        border: none;
+        border-radius: {8 * gameScale}px;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: {16 * gameScale}px;
+        box-shadow: 0 {4 * gameScale}px {10 * gameScale}px rgba(255, 136, 68, 0.4);
+      "
+    >
+      500 Rounds
     </button>
     <button
       on:click={() => { startAutoPlay(1000); showAutoPlayMenu = false; }}
@@ -2354,11 +2573,11 @@
       1,000 Rounds
     </button>
     <button
-      on:click={() => { startAutoPlay(10000); showAutoPlayMenu = false; }}
+      on:click={() => { startAutoPlay(5000); showAutoPlayMenu = false; }}
       style="
         width: 100%;
         padding: {12 * gameScale}px;
-        margin-bottom: {8 * gameScale}px;
+        margin-bottom: {15 * gameScale}px;
         background: linear-gradient(135deg, #ff4444 0%, #ff6666 100%);
         color: white;
         border: none;
@@ -2369,25 +2588,7 @@
         box-shadow: 0 {4 * gameScale}px {10 * gameScale}px rgba(255, 68, 68, 0.4);
       "
     >
-      10,000 Rounds
-    </button>
-    <button
-      on:click={() => { startAutoPlay(100000); showAutoPlayMenu = false; }}
-      style="
-        width: 100%;
-        padding: {12 * gameScale}px;
-        margin-bottom: {15 * gameScale}px;
-        background: linear-gradient(135deg, #aa00ff 0%, #cc44ff 100%);
-        color: white;
-        border: none;
-        border-radius: {8 * gameScale}px;
-        cursor: pointer;
-        font-weight: bold;
-        font-size: {16 * gameScale}px;
-        box-shadow: 0 {4 * gameScale}px {10 * gameScale}px rgba(170, 0, 255, 0.4);
-      "
-    >
-      100,000 Rounds
+      5,000 Rounds
     </button>
     <button
       on:click={() => { showAutoPlayMenu = false; }}
@@ -2691,8 +2892,11 @@
   winAmount={totalWin}
 />
 
-<!-- DEBUG PANEELIT (pelialueen sisällä) -->
-<!-- RTP Debug näyttö (vasemmassa yläkulmassa) -->
+<!-- ===== 7) DEBUG & TILASTOPANEELI ===== -->
+<!-- RTP-seuranta, tilastot, testaustyökalut -->
+<!-- Näkyy kun showDebugPanel === true (toglataan "🛠️ DEBUG" -napista) -->
+<!-- Näyttää: RTP%, hit frequency, vapaaperät, empty slot %, voittoloki -->
+<!-- RTP MONITOR (vasemmassa yläkulmassa) -->
 <div class="debug-panel" style="
   position: absolute;
   top: 20px;
