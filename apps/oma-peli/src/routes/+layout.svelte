@@ -9,12 +9,14 @@
 	type Props = { children: Snippet };
 
 	const props: Props = $props();
+	
+	// Taustakuvan polku joka toimii sekä localhostissa että GitHub Pagesissa
+	const backgroundImageUrl = `${base}/symbols/bg_large.jpg`;
 </script>
 
 <svelte:head>
 	<style>
 		body {
-			background-image: url('{base}/symbols/bg_large.jpg');
 			background-size: cover;
 			background-position: center;
 			background-repeat: no-repeat;
@@ -43,6 +45,13 @@
 		}
 	</style>
 </svelte:head>
+
+<!-- Globaali tyyli taustakuvalle dynaamisella polulla -->
+<style>
+	:global(body) {
+		background-image: url('{backgroundImageUrl}');
+	}
+</style>
 
 <AndroidLayoutFix />
 
