@@ -112,6 +112,105 @@
       box-shadow: 0 0 40px rgba(255, 215, 0, 1.0);
     }
   }
+
+  /* === RETRO 50s DINER WIN TEXT === */
+  .win3d {
+    --face: #ffd36a;
+    --stroke: rgba(30,12,0,.95);
+    --depth: #7a3b00;
+    --glowA: rgba(255, 92, 168, .55);
+    --glowB: rgba( 90, 210, 255, .55);
+
+    position: relative;
+    display: inline-block;
+    font-family: "Cooper Black", "Luckiest Guy", "Bungee", system-ui, sans-serif;
+    font-weight: 900;
+    letter-spacing: .03em;
+    text-transform: uppercase;
+    font-size: clamp(0.8rem, 3vw, 1.4rem);
+    line-height: 1.05;
+  }
+
+  .win3d .depth {
+    position: absolute;
+    inset: 0;
+    transform: translate(3px, 3px);
+    color: var(--depth);
+    filter: saturate(1.1) contrast(1.05);
+    text-shadow:
+      0 1px 0 rgba(0,0,0,.25),
+      0 2px 0 rgba(0,0,0,.25),
+      0 3px 0 rgba(0,0,0,.25),
+      0 10px 18px rgba(0,0,0,.35);
+    user-select: none;
+    pointer-events: none;
+  }
+
+  .win3d .face {
+    position: relative;
+    color: var(--face);
+    -webkit-text-stroke: 2px var(--stroke);
+    paint-order: stroke fill;
+    text-shadow:
+      0 -2px 0 rgba(255,255,255,.18),
+      0 2px 0 rgba(120,55,0,.25),
+      0 18px 22px rgba(0,0,0,.40),
+      0 0 14px var(--glowA),
+      0 0 18px var(--glowB);
+  }
+
+  .winShine::after {
+    content: "";
+    position: absolute;
+    inset: -12%;
+    background: linear-gradient(110deg,
+      transparent 0%,
+      rgba(255,255,255,0.00) 35%,
+      rgba(255,255,255,0.75) 48%,
+      rgba(255,255,255,0.00) 60%,
+      transparent 100%
+    );
+    transform: translateX(-160%) rotate(0.001deg);
+    mix-blend-mode: screen;
+    pointer-events: none;
+    -webkit-mask: linear-gradient(#000 0 0);
+    mask: linear-gradient(#000 0 0);
+    animation: shine 1.25s ease-in-out infinite;
+    opacity: .9;
+  }
+
+  @keyframes shine {
+    0%   { transform: translateX(-160%); opacity: 0; }
+    15%  { opacity: .85; }
+    55%  { transform: translateX(160%); opacity: .85; }
+    56%  { opacity: 0; }
+    100% { transform: translateX(160%); opacity: 0; }
+  }
+
+  .winHit {
+    animation: pop 420ms cubic-bezier(.2,.9,.2,1);
+  }
+
+  @keyframes pop {
+    0%   { transform: scale(.92); }
+    55%  { transform: scale(1.08); }
+    100% { transform: scale(1.00); }
+  }
+
+  .rolling .face {
+    animation: glowPulse 900ms ease-in-out infinite;
+  }
+
+  @keyframes glowPulse {
+    0%, 100% {
+      filter: drop-shadow(0 0 0 rgba(255,92,168,0))
+              drop-shadow(0 0 0 rgba(90,210,255,0));
+    }
+    50% {
+      filter: drop-shadow(0 0 14px rgba(255,92,168,.65))
+              drop-shadow(0 0 18px rgba(90,210,255,.65));
+    }
+  }
   
   /* Glare effect for PLAY button */
   .play-button-wrapper {
@@ -193,7 +292,7 @@
 </style>
 <script lang="ts">
   // Game version
-  const GAME_VERSION = "1.3.2";
+  const GAME_VERSION = "1.3.4";
   
   // Svelte lifecycle ja routing
   import { onMount } from "svelte";
@@ -530,6 +629,13 @@
   
   // Vinyl win animation reference
   let vinylWinAnimationRef: any = null;
+  
+  // Vinyl win animation configuration
+  const vinylAnimationConfig = {
+    vinylStartScale: 0.01,  // Aloituskoko (0.01 = hyvin pieni keskipiste)
+    vinylEndScale: 0.15,     // Lopetuskoko (0.15 = pienempi loppukoko)
+    sparkleScale: 0.6        // Tähtien koko (0.6 = pienempi)
+  };
   
   // Toggle musiikin on/off
   function toggleMusic() {
@@ -1933,6 +2039,47 @@
   } // spin() loppu
   
   // ===================================================================
+  // WIN ROLLUP ANIMATION (Retro 50s Diner Style)
+  // ===================================================================
+  // Animoi WIN-arvon nousun 0:sta lopulliseen arvoon
+  // @param from - Alkuarvo
+  // @param to - Loppuarvo
+  // @param ms - Animaation kesto millisekunteina
+  function rollupWinAmount(from: number, to: number, ms: number = 1400) {
+    if (typeof window === 'undefined') return;
+    
+    const winLabel = document.getElementById("winLabel");
+    if (!winLabel) return;
+    
+    const face = winLabel.querySelector(".face");
+    const depth = winLabel.querySelector(".depth");
+    if (!face || !depth) return;
+    
+    winLabel.classList.add("rolling");
+    const start = performance.now();
+    const span = to - from;
+    
+    const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+    
+    function tick(now: number) {
+      const t = Math.min(1, (now - start) / ms);
+      const v = Math.round(from + span * easeOutCubic(t));
+      const txt = "WIN " + v.toLocaleString("en-US");
+      face.textContent = txt;
+      depth.textContent = txt;
+      
+      if (t < 1) {
+        requestAnimationFrame(tick);
+      } else {
+        winLabel.classList.remove("rolling");
+        winLabel.classList.add("winHit");
+        setTimeout(() => winLabel.classList.remove("winHit"), 450);
+      }
+    }
+    requestAnimationFrame(tick);
+  }
+
+  // ===================================================================
   // LISÄÄ VOITTO SALDOON
   // ===================================================================
   // Käsittelee voiton lisäämisen saldoon ja tilastoihin
@@ -1940,7 +2087,14 @@
   function addWinToBalance(winAmount: number) {
     balance += winAmount;      // Lisää voitto pelaajan saldoon
     totalWon += winAmount;     // Päivitä kokonaisvoitot (RTP-tilastot)
+    
+    // Animoi WIN-arvon nouseminen edellisestä arvosta uuteen
+    const previousWin = lastWin;
     lastWin = winAmount;       // Tallenna viimeisin voitto (näytetään UI:ssa)
+    
+    // Käynnistä rollup-animaatio (erilainen kesto riippuen voiton koosta)
+    const rollupDuration = winAmount > betAmount * 50 ? 2000 : 1400;
+    rollupWinAmount(previousWin, winAmount, rollupDuration);
     
     // Vapaaerille: Seuraa erikseen vapaaeriden yhteisvoittoa
     if (isFreeSpinMode) {
@@ -2817,13 +2971,9 @@
     </div>
     <div style="display: flex; flex-direction: column; align-items: center; gap: {5 * gameScale}px;">
       <div style="color: #00ff00; font-size: {12 * gameScale}px; font-weight: bold;">WIN</div>
-      <div style="
-        color: #ffd700;
-        font-size: {20 * gameScale}px;
-        font-weight: bold;
-        font-family: 'Courier New', monospace;
-      ">
-        {lastWin.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+      <div class="win3d winShine" id="winLabel" style="font-size: {20 * gameScale}px;">
+        <span class="depth" aria-hidden="true">WIN {lastWin.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0})}</span>
+        <span class="face">WIN {lastWin.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0})}</span>
       </div>
     </div>
     
@@ -2884,12 +3034,14 @@
   🛠️ DEBUG v{GAME_VERSION}
 </button>
 
-<!-- Paytable-nappi oikeassa reunassa credit-näytön alla -->
-<button
+<!-- VinylWinAnimation - Näyttää äänilevyt ja tähdet isojen voittojen yhteydessä -->
 <VinylWinAnimation 
   bind:this={vinylWinAnimationRef}
   winLevel={totalWin / betAmount >= 50 ? 'jackpot' : totalWin / betAmount >= 20 ? 'medium' : 'small'}
   winAmount={totalWin}
+  vinylStartScale={vinylAnimationConfig.vinylStartScale}
+  vinylEndScale={vinylAnimationConfig.vinylEndScale}
+  sparkleScale={vinylAnimationConfig.sparkleScale}
 />
 
 <!-- ===== 7) DEBUG & TILASTOPANEELI ===== -->

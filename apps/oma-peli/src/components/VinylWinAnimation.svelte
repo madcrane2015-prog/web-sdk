@@ -5,18 +5,28 @@
 		winLevel: 'small' | 'medium' | 'jackpot';
 		winAmount?: number;
 		onComplete?: () => void;
+		vinylStartScale?: number;
+		vinylEndScale?: number;
+		sparkleScale?: number;
 	}
 
-	let { winLevel = 'small', winAmount = 0, onComplete }: Props = $props();
+	let { 
+		winLevel = 'small', 
+		winAmount = 0, 
+		onComplete,
+		vinylStartScale = 0.01,
+		vinylEndScale = 0.15,
+		sparkleScale = 0.6
+	}: Props = $props();
 
 	let visible = $state(false);
 	let animating = $state(false);
 
 	// Win level configurations (tighter spread to keep vinyls on screen)
 	const config = {
-		small: { vinyls: 5, sparkles: 8, maxRadius: 100 },
-		medium: { vinyls: 12, sparkles: 16, maxRadius: 140 },
-		jackpot: { vinyls: 24, sparkles: 30, maxRadius: 180 }
+		small: { vinyls: 5, sparkles: 8, maxRadius: 70 },
+		medium: { vinyls: 12, sparkles: 16, maxRadius: 100 },
+		jackpot: { vinyls: 24, sparkles: 30, maxRadius: 130 }
 	};
 
 	const currentConfig = $derived(config[winLevel]);
@@ -39,7 +49,7 @@
 				x: centerX + Math.cos(angle) * radius,
 				y: centerY + Math.sin(angle) * radius,
 				rotation: Math.random() * 30 - 15,
-				scale: 0.3 + Math.random() * 0.25, // Even smaller vinyls (0.3-0.55)
+				scale: vinylEndScale * (0.8 + Math.random() * 0.4), // Use configured end scale with variation
 				delay: i * 0.05,
 				color: labelColors[i % labelColors.length]
 			});
@@ -99,7 +109,7 @@
 		width: 100%;
 		height: 100%;
 		pointer-events: none;
-		z-index: 1000;
+		z-index: 9999;
 		opacity: 0;
 		transition: opacity 0.5s ease-out;
 	}
@@ -120,7 +130,7 @@
 	/* Vinyl zoom-in animation - starts from tiny center point */
 	@keyframes vinylZoomIn {
 		0% {
-			transform: translate(512px, 400px) scale(0.01) rotate(0deg);
+			transform: translate(512px, 400px) scale(var(--start-scale, 0.01)) rotate(0deg);
 			opacity: 0;
 		}
 		50% {
@@ -154,7 +164,7 @@
 		}
 		50% {
 			opacity: 1;
-			transform: translate(var(--sx), var(--sy)) scale(1) rotate(180deg);
+			transform: translate(var(--sx), var(--sy)) scale(var(--sparkle-scale, 1)) rotate(180deg);
 		}
 	}
 
@@ -303,6 +313,7 @@
             --sy: {sparkle.y}px;
             --duration: {sparkle.duration}s;
             --sparkle-delay: {sparkle.delay}s;
+            --sparkle-scale: {sparkleScale};
           "
 				/>
 			{/each}
@@ -320,6 +331,7 @@
             --rotation: {vinyl.rotation}deg;
             --delay: {vinyl.delay}s;
             --label-color: {vinyl.color};
+            --start-scale: {vinylStartScale};
           "
 				/>
 			{/each}
