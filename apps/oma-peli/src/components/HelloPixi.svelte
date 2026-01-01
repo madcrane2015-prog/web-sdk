@@ -2006,7 +2006,7 @@
   ">
     <h2 style="margin: 0 0 10px 0; font-size: 2em;">🎉 VOITTO! 🎉</h2>
     <div style="font-size: 1.5em; font-weight: bold; margin: 10px 0;">
-      {totalWin} pistettä
+      {totalWin.toFixed(2)} pistettä
     </div>
     
     {#each currentWins as win}

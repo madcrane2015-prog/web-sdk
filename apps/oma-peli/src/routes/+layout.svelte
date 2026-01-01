@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { type Snippet } from 'svelte';
+	import { onMount } from 'svelte';
 	import { GlobalStyle } from 'components-ui-html';
 	import { Authenticate, LoadI18n, AndroidLayoutFix } from 'components-shared';
 	import { base } from '$app/paths';
@@ -10,8 +11,10 @@
 
 	const props: Props = $props();
 	
-	// Taustakuvan polku joka toimii sekä localhostissa että GitHub Pagesissa
-	const backgroundImageUrl = `${base}/symbols/bg_large.jpg`;
+	// Aseta taustakuva JavaScriptillä, jotta polku toimii sekä localhostissa että GitHub Pagesissa
+	onMount(() => {
+		document.body.style.backgroundImage = `url('${base}/symbols/bg_large.jpg')`;
+	});
 </script>
 
 <svelte:head>
@@ -45,13 +48,6 @@
 		}
 	</style>
 </svelte:head>
-
-<!-- Globaali tyyli taustakuvalle dynaamisella polulla -->
-<style>
-	:global(body) {
-		background-image: url('{backgroundImageUrl}');
-	}
-</style>
 
 <AndroidLayoutFix />
 
