@@ -16,7 +16,7 @@ This is a **TurboRepo monorepo** for building casino games using **Svelte 5**, *
 - `ContextLayout`: Responsive canvas sizing and layout types
 - `ContextApp`: PIXI application and asset management
 
-**Entry Point**: Each game app uses SvelteKit with `src/routes/+layout.svelte` as the main entry that calls `setContext()` and renders `<Game />`. The context MUST be set before any component can access it via `getContext()`.
+**Entry Point**: Each game app uses SvelteKit with `src/routes/+layout.svelte` as the main entry that calls `setContext()` and renders `<Game />`. The context MUST be set before any component can access it via `getContext()`. See [lines/src/routes/+layout.svelte](apps/lines/src/routes/+layout.svelte) for the standard pattern.
 
 ## Key Development Patterns
 
@@ -44,9 +44,10 @@ Each EmitterEvent should follow Single Responsibility Principle.
 ## Monorepo Structure
 
 **Apps** (`/apps`): Individual games (`lines`, `cluster`, `scatter`, etc.)
-- Entry: `src/routes/+page.svelte` (sets context, renders `<Game />`)
+- Entry: `src/routes/+layout.svelte` (sets context, renders `<Game />`)
 - Game logic: `src/game/` (bookEventHandlerMap, state, types)
 - Components: `src/components/` (UI components with EmitterEvent handlers)
+- Stories: `src/stories/` (Storybook testing - primary development/testing method)
 
 **Packages** (`/packages`): Shared utilities by category
 - `config-*`: Build configurations (TypeScript, Svelte, Storybook, etc.)
@@ -88,6 +89,7 @@ pnpm run build --filter=pixi-svelte  # Required after pixi-svelte changes
 7. **Task breakdown**: Split complex BookEvents into atomic EmitterEvents following Single Responsibility Principle
 8. **BookEvent sequence matters**: Order determines game behavior (e.g., `spin` before `win`)
 9. **Add new types to unions**: When creating new BookEvent/EmitterEvent types, add them to the union types in `typesBookEvent.ts` and `typesEmitterEvent.ts` for proper TypeScript intellisense
+10. **Context pattern**: Always use `getContext()` in components to access shared state - never import state directly
 
 ## Working with State
 
