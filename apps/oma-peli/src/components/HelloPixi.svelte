@@ -292,7 +292,7 @@
 </style>
 <script lang="ts">
   // Game version
-  const GAME_VERSION = "1.3.4";
+  const GAME_VERSION = "1.4.0";
   
   // Svelte lifecycle ja routing
   import { onMount } from "svelte";
@@ -300,6 +300,9 @@
   
   // Win animation component
   import VinylWinAnimation from './VinylWinAnimation.svelte';
+  
+  // Loading screen component
+  import LoadingScreen from './LoadingScreen.svelte';
   
   // ===== PIXIJS KIRJASTON KOMPONENTIT =====
   // PixiJS on 2D-grafiikkakirjasto joka käyttää WebGL:ää
@@ -540,21 +543,32 @@
   
   // Vaihda uusi satunnainen loop peruspelille
   // Tätä kutsutaan kun pelaaja aloittaa uuden kierroksen
-  // (v1.2.8: Poistettu käytöstä - yksi loop session ajan)
   function changeBackgroundLoop() {
     if (isFreeSpinMode) return; // Ei vaihdeta free spins -tilassa
     
     // Valitse uusi satunnainen loop (1-20)
     const newLoopNumber = Math.floor(Math.random() * 20) + 1;
-    randomLoopNumber = newLoopNumber;
     
-    // Pysäytä vanha musiikki (fade out 300ms)
+    // Jos sama kuin edellinen, arvo uusi (vältetään samaa kappaletta peräkkäin)
+    if (newLoopNumber === randomLoopNumber) {
+      randomLoopNumber = (newLoopNumber % 20) + 1;
+    } else {
+      randomLoopNumber = newLoopNumber;
+    }
+    
+    console.log('🎵 Changing to loop #' + randomLoopNumber);
+    
+    // Pysäytä vanha musiikki (fade out 200ms)
     if (backgroundMusic) {
       if (backgroundMusic.playing()) {
-        backgroundMusic.fade(backgroundMusic.volume(), 0, 300);
-        setTimeout(() => backgroundMusic.stop(), 300);
+        backgroundMusic.fade(backgroundMusic.volume(), 0, 200);
+        setTimeout(() => {
+          backgroundMusic.stop();
+          backgroundMusic.unload();
+        }, 200);
+      } else {
+        backgroundMusic.unload();
       }
-      backgroundMusic.unload();
     }
     
     // Lataa uusi loop Howler.js:llä
@@ -565,10 +579,18 @@
         loop: true,
         volume: 0.3,
         onload: () => {
-          console.log('🎵 New background music loop #' + randomLoopNumber + ' loaded');
+          console.log('✅ New background music loop #' + randomLoopNumber + ' loaded');
           if (musicEnabled && !isFreeSpinMode) {
-            setTimeout(() => backgroundMusic.play(), 400);
+            // Käynnistä musiikki heti (300ms viive että fade out ehtii)
+            setTimeout(() => {
+              if (backgroundMusic && !backgroundMusic.playing()) {
+                backgroundMusic.play();
+              }
+            }, 300);
           }
+        },
+        onloaderror: (id: any, error: any) => {
+          console.warn('⚠️ Failed to load loop #' + randomLoopNumber + ':', error);
         }
       });
     }
@@ -675,6 +697,7 @@
   let loadingStatus = $state("Initializing...");  // Nykyinen latausvaihe
   let errorMessage = $state("");  // Virheviesti jos lataus epäonnistuu
   let debugInfo: string[] = [];  // Kootut debug-tiedot
+  let gameReady = $state(false);  // Onko peli valmis aloitettavaksi (loading screen valmis)
   
   // ===== CREDIT JÄRJESTELMÄ =====
   // Pelaajan saldo ja panostus
@@ -1461,7 +1484,7 @@
           this.speed = 0;           // Pysäytä normaali scrollaus
           this.offset = 0;          // Nollaa scroll-offset
           this.bounceOffset = 0;    // Aloita bounce-offset nollasta
-          this.bounceSpeed = 8;     // Pieni alkubounce 8px alaspäin (aiemmin 0 = ei bounceta)
+          this.bounceSpeed = 4;     // Pienempi alkuvoima = pehmeämpi bounce (aiemmin 8)
           
           // Soita "chunk" pysähtymisääni
           playSound('stop');
@@ -1475,11 +1498,11 @@
       // Pieni pomppuefekti pysähdyksen jälkeen (palautettu v1.3.1)
       // Luo visuaalisen "painon tunteen" kun kiekko pysähtyy
       if (this.state === "bouncing") {
-        this.bounceSpeed *= 0.85;  // Vaimennus 85% per frame (nopeampi kuin aiemmin 0.75)
+        this.bounceSpeed *= 0.80;  // Hitaampi vaimennus = pehmeämpi bounce (aiemmin 0.85)
         this.bounceOffset += this.bounceSpeed; // Lisää bounce-offset (liikkuu alaspäin)
         
         // Kun bounce on riittävän pieni, kiekko on lopullisesti pysähtynyt
-        if (Math.abs(this.bounceSpeed) < 0.3) {
+        if (Math.abs(this.bounceSpeed) < 0.2) {
           this.state = "stopped";  // Lopullinen pysähtynyt tila
           this.bounceOffset = 0;   // Nollaa bounce-offset
           this.bounceSpeed = 0;    // Nollaa bounce-nopeus
@@ -1503,7 +1526,7 @@
 
     // ===== PIIRRÄ KIEKON SYMBOLI NÄYTÖLLE =====
     // Kutsutaan joka frame päivitetyn tilan jälkeen
-    // Luo uuden Sprite-objektin ja lisää sen PixiJS näyttöön
+    // Piirtää 3 symbolia (edellinen, nykyinen, seuraava) jotta näyttää jatkuvalta nauhalta
     draw() {
       const stage = this.container; // Kiekon PixiJS Container
       stage.removeChildren(); // Poista vanhat spritet (estää päällekkäisyydet)
@@ -1512,23 +1535,33 @@
       const symbol = reelData[this.index];
       if (!symbol || !symbolTextures || !symbolTextures[symbol]) return; // Tarkista että symboli on olemassa
 
-      // Hae symbolin tekstuuri (ladattu onMount-vaiheessa)
-      const texture = symbolTextures[symbol];
-      if (!texture) return; // Tarkista että tekstuuri on olemassa
-
       // Laske lopullinen Y-koordinaatti:
       // - offset: Scrollaus-siirtymä (0-ROW_HEIGHT kun pyörii)
       // - bounceOffset: Pieni pomppuefekti pysähdyksen jälkeen
       const y = this.offset + this.bounceOffset;
 
-      // Luo uusi Sprite-objekti tälle symbolille
-      const sprite = new Sprite(texture);
-      sprite.width = symbolWidth;   // Aseta leveys (skaalattu oikeaan kokoon)
-      sprite.height = symbolHeight; // Aseta korkeus (skaalattu oikeaan kokoon)
-      sprite.x = 0;                // X-koordinaatti (suhteessa konttiin, aina 0)
-      sprite.y = y;                // Y-koordinaatti (sisältää scrollaus + bounce offsetit)
-
-      stage.addChild(sprite); // Lisää sprite Container:iin (näkyy ruudulla)
+      // PIIRRETÄÄN 3 SYMBOLIA JATKUVALLE NAUHALLE:
+      // 1) Edellinen symboli (yllä, y - ROW_HEIGHT)
+      // 2) Nykyinen symboli (keskellä, y)
+      // 3) Seuraava symboli (alla, y + ROW_HEIGHT)
+      
+      const drawSymbol = (symbolKey: SymbolKey, yPos: number) => {
+        const texture = symbolTextures[symbolKey];
+        if (!texture) return;
+        
+        const sprite = new Sprite(texture);
+        sprite.width = symbolWidth;
+        sprite.height = symbolHeight;
+        sprite.x = 0;
+        sprite.y = yPos;
+        stage.addChild(sprite);
+      };
+      
+      // Piirrä 3 symbolia (edellinen, nykyinen, seuraava)
+      // Käytä samaa symbolia kaikille (yksinkertainen ratkaisu)
+      drawSymbol(symbol, y - ROW_HEIGHT); // Edellinen (yllä)
+      drawSymbol(symbol, y);              // Nykyinen (keskellä)
+      drawSymbol(symbol, y + ROW_HEIGHT); // Seuraava (alla)
     } // draw() loppu
   } // Reel luokan loppu
 
@@ -1583,6 +1616,38 @@
     
     // Päivitä kun ikkunan kokoa muutetaan
     window.addEventListener('resize', resizeGame);
+
+    // ===== VÄLILYÖNTI-NÄPPÄIN: SKIP SPIN =====
+    // Jos kiekot pyörivät → pysäytä ne välittömästi
+    // Jos kiekot ovat pysähtyneet → aloita uusi spin
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.code === 'Space' || e.key === ' ') {
+        e.preventDefault(); // Estä sivun scrollaus
+        
+        // Tarkista ovatko kiekot pyörimässä
+        const isAnyReelSpinning = reels.some(r => r.state === 'spinning' || r.state === 'slowing');
+        
+        if (isAnyReelSpinning) {
+          // Pysäytä kaikki kiekot välittömästi asettamalla stopDelay = 0
+          // Tämä käynnistää hidastuksen välittömästi jokaiselle kiekolle
+          reels.forEach(r => {
+            if (r.state === 'spinning') {
+              r.stopDelay = 0; // Aloita hidastus heti
+              r.state = 'slowing';
+              r.speed = r.targetSpeed * 0.5; // Puolita nopeus nopeaa pysähtymistä varten
+            } else if (r.state === 'slowing') {
+              r.speed = r.speed * 0.3; // Kiihdytä hidastusta
+            }
+          });
+          console.log('⚡ Skip spin - kiekot pysähtyvät nopeasti');
+        } else {
+          // Aloita uusi spin jos kiekot eivät pyöri
+          spin();
+        }
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyPress);
 
     // ===== 2) KUVIEN LATAUS JA TEKSTUURIEN LUONTI =====
     // Käytetään PIXI.Assets.load modernin latauksen takaamiseksi
@@ -1974,11 +2039,10 @@
   // 3) Kiekkojen pyörittämisen (BPM-synkronoitu)
   // 4) Tilastojen päivittämisen
   function spin() {
-    // ===== MUSIIKIN KÄYNNISTYS =====
-    // Käynnistä taustamusiikki ensimmäisellä kierroksella (EI vapaapeleissä)
-    if (!isFreeSpinMode && backgroundMusic && musicEnabled && !backgroundMusic.playing()) {
-      backgroundMusic.play();
-      console.log('🎵 Background music started on first spin');
+    // ===== MUSIIKIN KÄYNNISTYS JA VAIHTO =====
+    // Vaihda uusi satunnainen rockabilly loop joka spinissä (1-20)
+    if (!isFreeSpinMode) {
+      changeBackgroundLoop();
     }
     
     // Laukaise "kiilto"-efekti Play-napissa (visuaalinen palaute)
@@ -2019,6 +2083,8 @@
     // Poista edellisen kierroksen tiedot
     currentWins = [];  // Tyhjennä voittolista
     totalWin = 0;      // Nollaa kokonaisvoitto
+    lastWin = 0;       // Nollaa WIN-näyttö control panelissa
+    console.log('🔄 lastWin nollattu: ' + lastWin);
     isShowingWin = false; // Sulje voitto-popup
     winsCheckedForCurrentSpin = false; // Salli voittojen tarkistus uudelle spinille
     clearWinHighlights(); // Poista kultaiset kehykset voittosymboleista
@@ -2051,10 +2117,6 @@
     const winLabel = document.getElementById("winLabel");
     if (!winLabel) return;
     
-    const face = winLabel.querySelector(".face");
-    const depth = winLabel.querySelector(".depth");
-    if (!face || !depth) return;
-    
     winLabel.classList.add("rolling");
     const start = performance.now();
     const span = to - from;
@@ -2063,14 +2125,13 @@
     
     function tick(now: number) {
       const t = Math.min(1, (now - start) / ms);
-      const v = Math.round(from + span * easeOutCubic(t));
-      const txt = "WIN " + v.toLocaleString("en-US");
-      face.textContent = txt;
-      depth.textContent = txt;
+      const v = from + span * easeOutCubic(t);
+      lastWin = v; // Päivitä lastWin joka framella (Svelte päivittää UI automaattisesti)
       
       if (t < 1) {
         requestAnimationFrame(tick);
       } else {
+        lastWin = to; // Varmista että lopullinen arvo on tarkka
         winLabel.classList.remove("rolling");
         winLabel.classList.add("winHit");
         setTimeout(() => winLabel.classList.remove("winHit"), 450);
@@ -2225,6 +2286,7 @@
 <!-- HTML TEMPLATE - Pelin visuaalinen rakenne                        -->
 <!-- ================================================================ -->
 <!-- Tämä osio sisältää kaikki HTML-elementit joita peli käyttää:      -->
+<!-- 0) LoadingScreen (overlay joka peittää pelin kunnes valmis)       -->
 <!-- 1) Debug-paneeli (lataus/virhetilanteissa)                        -->
 <!-- 2) Voitto-popup (näyttää voitot ja kertoimet)                     -->
 <!-- 3) Paytable-popup (näyttää symbolien maksuarvot)                  -->
@@ -2234,6 +2296,12 @@
 <!-- 7) Tilastopaneeli (RTP, voitot, kierrokset)                       -->
 <!-- 8) Musiikkikontrollit (play/pause/volume)                         -->
 <!-- ================================================================ -->
+
+<!-- ===== 0) LOADING SCREEN ===== -->
+<!-- Overlay joka piilottaa pelin kunnes gameReady === true -->
+{#if !gameReady}
+  <LoadingScreen onloaded={() => gameReady = true} />
+{/if}
 
 <!-- ===== 1) DEBUG-PANEELI ===== -->
 <!-- Näytetään vain jos ladataan assetteja tai tapahtuu virhe -->
@@ -2875,18 +2943,36 @@
     
     <!-- PLAY nappi (keskellä, iso - tulee paneelin yli) -->
     <div style="position: absolute; left: 50%; transform: translateX(-50%); display: flex; align-items: center; justify-content: center; z-index: 10;">
-      <div class="play-button-wrapper {playButtonGlareActive ? 'glare-animate' : ''}">>>>>>
+      <div class="play-button-wrapper {playButtonGlareActive ? 'glare-animate' : ''}">
         <button
           on:click={() => {
             if (isAutoPlaying) {
               stopAutoPlay();
+            } else {
+              // Tarkista ovatko kiekot pyörimässä
+              const isAnyReelSpinning = reels.some(r => r.state === 'spinning' || r.state === 'slowing');
+              
+              if (isAnyReelSpinning) {
+                // Pysäytä kiekot nopeasti (skip spin)
+                reels.forEach(r => {
+                  if (r.state === 'spinning') {
+                    r.stopDelay = 0;
+                    r.state = 'slowing';
+                    r.speed = r.targetSpeed * 0.5;
+                  } else if (r.state === 'slowing') {
+                    r.speed = r.speed * 0.3;
+                  }
+                });
+              } else {
+                // Aloita uusi spin jos kiekot eivät pyöri
+                spin();
+              }
             }
-            spin();
           }}
           style="
             width: {110 * gameScale}px;
             height: {110 * gameScale}px;
-            background-image: url('{controlsPath}/Control_playbutton.png');
+            background-image: url('{controlsPath}/{isAutoPlaying ? 'Control_playbutton_stop.png' : 'Control_playbutton.png'}');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -2898,7 +2984,7 @@
             z-index: 10;
             border-radius: 50%;
           "
-          title="SPIN"
+          title="{isAutoPlaying ? 'STOP AUTOPLAY' : 'SPIN'}"
         ></button>
       </div>
     </div>
@@ -2986,8 +3072,8 @@
         <div style="color: #00ff00; font-size: {12 * gameScale}px; font-weight: bold; line-height: 1; height: {16 * gameScale}px; display: flex; align-items: flex-end; padding-bottom: {2 * gameScale}px;">WIN</div>
         <div style="height: {44 * gameScale}px; display: flex; align-items: center;">
           <div class="win3d winShine" id="winLabel" style="font-size: {20 * gameScale}px;">
-            <span class="depth" aria-hidden="true">WIN {lastWin.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0})}</span>
-            <span class="face">WIN {lastWin.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 0})}</span>
+            <span class="depth" aria-hidden="true">{lastWin.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+            <span class="face">{lastWin.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
           </div>
         </div>
       </div>
