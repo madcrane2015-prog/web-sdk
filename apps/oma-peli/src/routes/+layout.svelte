@@ -29,21 +29,22 @@
 			width: 100vw;
 			height: 100vh;
 			overflow: hidden;
+			min-height: 100vh;
 		}
 		
-		/* Desktop landscape: täytä leveys, leikkaa alhaalta */
+		/* Desktop landscape: peittää aina koko ruudun */
 		@media (orientation: landscape) {
 			body {
-				background-size: 100% auto;
-				background-position: top center;
+				background-size: cover;
+				background-position: center;
 			}
 		}
 		
-		/* Mobile portrait: täytä korkeus, leikkaa oikealta */
+		/* Mobile portrait: peittää aina koko ruudun */
 		@media (orientation: portrait) {
 			body {
-				background-size: auto 100%;
-				background-position: top left;
+				background-size: cover;
+				background-position: center;
 			}
 		}
 	</style>

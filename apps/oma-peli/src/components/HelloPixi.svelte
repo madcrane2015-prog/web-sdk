@@ -3071,9 +3071,13 @@
       <div style="display: flex; flex-direction: column; align-items: center;">
         <div style="color: #00ff00; font-size: {12 * gameScale}px; font-weight: bold; line-height: 1; height: {16 * gameScale}px; display: flex; align-items: flex-end; padding-bottom: {2 * gameScale}px;">WIN</div>
         <div style="height: {44 * gameScale}px; display: flex; align-items: center;">
-          <div class="win3d winShine" id="winLabel" style="font-size: {20 * gameScale}px;">
-            <span class="depth" aria-hidden="true">{lastWin.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
-            <span class="face">{lastWin.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+          <div style="
+            color: #fff;
+            font-size: {20 * gameScale}px;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+          ">
+            {lastWin.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
           </div>
         </div>
       </div>

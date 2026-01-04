@@ -10,13 +10,13 @@ This is a **TurboRepo monorepo** for building casino games using **Svelte 5**, *
 
 **EmitterEvents**: Internal events broadcast by BookEvent handlers to coordinate UI components. Use `eventEmitter.broadcast()` for sync and `eventEmitter.broadcastAsync()` for async operations. When awaiting animations, always use `broadcastAsync()`.
 
-**Context System**: Four main contexts are set at app entry (`src/routes/+layout.svelte`):
+**Context System**: Four main contexts are set at app entry (`src/routes/+layout.svelte` or `src/game/context.ts`):
 - `ContextEventEmitter`: Event communication system
 - `ContextXstate`: Finite state machine for betting logic (`rendering`, `idle`, `betting`, `autobet`)
 - `ContextLayout`: Responsive canvas sizing and layout types
 - `ContextApp`: PIXI application and asset management
 
-**Entry Point**: Each game app uses SvelteKit with `src/routes/+layout.svelte` as the main entry that calls `setContext()` and renders `<Game />`. The context MUST be set before any component can access it via `getContext()`. See [lines/src/routes/+layout.svelte](apps/lines/src/routes/+layout.svelte) for the standard pattern.
+**Entry Point**: Standard pattern uses SvelteKit with `src/routes/+layout.svelte` that calls `setContext()` and renders `<Game />`. The context MUST be set before any component can access it via `getContext()`. See [lines/src/routes/+layout.svelte](apps/lines/src/routes/+layout.svelte) for reference. Alternative pattern: `+page.svelte` renders custom components directly (see oma-peli app).
 
 ## Key Development Patterns
 
@@ -60,12 +60,12 @@ Each EmitterEvent should follow Single Responsibility Principle.
 **Development**: Use TurboRepo filtering for all operations
 ```bash
 # Development
-pnpm run dev --filter=lines
-pnpm run storybook --filter=lines
+pnpm run dev --filter=<app-name>        # e.g., lines, cluster, oma-peli
+pnpm run storybook --filter=<app-name>
 
 # Building (note dependencies)
-pnpm run build --filter=lines
-pnpm run build --filter=pixi-svelte  # Required after pixi-svelte changes
+pnpm run build --filter=<app-name>
+pnpm run build --filter=pixi-svelte     # Required after pixi-svelte changes
 
 # Testing in Storybook (primary testing method)
 # - COMPONENTS/<Component>/component: Test individual components
@@ -77,6 +77,8 @@ pnpm run build --filter=pixi-svelte  # Required after pixi-svelte changes
 **Critical Build Dependencies**: Always rebuild `pixi-svelte` after changes (uses built version per package.json main field). Build cascade: `pixi-svelte` → `components-*` → `apps/*`.
 
 **Windows Specific**: Storybook initial load can take 15+ minutes on Windows—be patient. Once loaded, hot reload works quickly. For storybook scripts, may need to add `cross-env`: `"storybook": "cross-env PUBLIC_CHROMATIC=true storybook dev -p 6001 public"`
+
+**Preview Built Apps**: After building, use `pnpm run preview --filter=<app-name>` to test the static output locally.
 
 ## Critical Development Guidelines
 

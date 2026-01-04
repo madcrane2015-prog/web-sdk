@@ -63,36 +63,20 @@
 						x={context.stateGameDerived.boardLayout().x}
 						y={context.stateGameDerived.boardLayout().y}
 					>
-						{#if winLevelData?.animation}
-							<WinAnimation animationMap={winLevelData.animation}>
-								<ResponsiveBitmapText
-									anchor={0.5}
-									maxWidth={2130}
-									text={bookEventAmountToCurrencyString(countUpAmount)}
-									style={{
-										fontFamily: 'gold',
-										fontSize: SYMBOL_SIZE * 3.6,
-										align: 'center',
-										fontWeight: 'bold',
-										letterSpacing: 0,
-									}}
-								/>
-							</WinAnimation>
-						{:else}
-							<ResponsiveBitmapText
-								anchor={0.5}
-								maxWidth={context.stateLayoutDerived.canvasSizes().width /
-									context.stateLayoutDerived.mainLayout().scale}
-								text={bookEventAmountToCurrencyString(countUpAmount)}
-								style={{
-									fontFamily: 'gold',
-									fontSize: SYMBOL_SIZE,
-									align: 'center',
-									fontWeight: 'bold',
-									letterSpacing: 0,
-								}}
-							/>
-						{/if}
+						<ResponsiveBitmapText
+							anchor={0.5}
+							maxWidth={context.stateLayoutDerived.canvasSizes().width /
+								context.stateLayoutDerived.mainLayout().scale}
+							text={bookEventAmountToCurrencyString(countUpAmount)}
+							style={{
+								fontFamily: 'Courier New',
+								fontSize: SYMBOL_SIZE * 3.6,
+								align: 'center',
+								fontWeight: 'bold',
+								letterSpacing: 0,
+								fill: 0xffffff,
+							}}
+						/>
 					</Container>
 				</MainContainer>
 
