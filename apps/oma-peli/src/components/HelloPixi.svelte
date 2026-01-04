@@ -292,7 +292,7 @@
 </style>
 <script lang="ts">
   // Game version
-  const GAME_VERSION = "1.4.0";
+  const GAME_VERSION = "1.4.1";
   
   // Svelte lifecycle ja routing
   import { onMount } from "svelte";
@@ -667,6 +667,11 @@
     } else {
       stopBackgroundMusic();
     }
+  }
+  
+  // Toggle äänitehosteien on/off
+  function toggleSound() {
+    soundEnabled = !soundEnabled;
   }
   
   // Soita rumpuisku
@@ -3106,6 +3111,8 @@
           title="Menu"
         ></button>
       </div>
+      
+
     </div>
   </div>
   
@@ -3306,24 +3313,6 @@
       Clear Win Log
     </button>
     
-    <!-- Music Toggle Button (v1.0.9) -->
-    <button
-      on:click={toggleMusic}
-      style="
-        width: 100%;
-        padding: 5px;
-        background: {musicEnabled ? 'rgba(255, 215, 0, 0.3)' : 'rgba(100, 100, 100, 0.3)'};
-        color: #fff;
-        border: 1px solid {musicEnabled ? '#ffd700' : '#666'};
-        border-radius: 5px;
-        cursor: pointer;
-        font-size: 11px;
-        margin-bottom: 5px;
-      "
-    >
-      🎵 Music: {musicEnabled ? 'ON' : 'OFF'}
-    </button>
-    
     <button
       on:click={triggerTestFreeSpins}
       disabled={isFreeSpinMode}
@@ -3344,31 +3333,47 @@
   </div>
 </div>
 
-<!-- Mykistysnappi oikeassa yläkulmassa -->
-<button class="debug-panel"
-  on:click={() => { soundEnabled = !soundEnabled; }}
-  style="
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    display: none;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background-color: {soundEnabled ? 'rgba(0,255,0,0.2)' : 'rgba(255,0,0,0.2)'};
-    border: 2px solid {soundEnabled ? 'rgba(0,255,0,0.5)' : 'rgba(255,0,0,0.5)'};
-    cursor: pointer;
-    z-index: 1001;
-    font-size: 20px;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  "
-  title={soundEnabled ? "Mykistä äänet" : "Laita äänet päälle"}
->
-  {soundEnabled ? "🔊" : "🔇"}
-</button>
+<!-- Music and Sound buttons in top-right corner -->
+<div style="
+  position: absolute;
+  top: {10 * gameScale}px;
+  right: {10 * gameScale}px;
+  display: flex;
+  gap: {10 * gameScale}px;
+  z-index: 1001;
+">
+  <!-- Music toggle button -->
+  <button
+    on:click={toggleMusic}
+    style="
+      width: {50 * gameScale}px;
+      height: {50 * gameScale}px;
+      background-image: url('{controlsPath}/{musicEnabled ? 'music_on.png' : 'music_off.png'}');
+      background-size: contain;
+      background-repeat: no-repeat;
+      border: none;
+      cursor: pointer;
+      background-color: transparent;
+    "
+    title="{musicEnabled ? 'Music: ON' : 'Music: OFF'}"
+  ></button>
+  
+  <!-- Sound effects toggle button -->
+  <button
+    on:click={toggleSound}
+    style="
+      width: {50 * gameScale}px;
+      height: {50 * gameScale}px;
+      background-image: url('{controlsPath}/{soundEnabled ? 'sounds_on.png' : 'sounds_off.png'}');
+      background-size: contain;
+      background-repeat: no-repeat;
+      border: none;
+      cursor: pointer;
+      background-color: transparent;
+    "
+    title="{soundEnabled ? 'Sound: ON' : 'Sound: OFF'}"
+  ></button>
+</div>
 
   </div> <!-- Päätä skaalautuva wrapper -->
 </div> <!-- Päätä ulompi wrapper -->
