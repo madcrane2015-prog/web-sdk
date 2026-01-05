@@ -13,7 +13,12 @@
 	
 	// Aseta taustakuva JavaScriptillä, jotta polku toimii sekä localhostissa että GitHub Pagesissa
 	onMount(() => {
-		document.body.style.backgroundImage = `url('${base}/symbols/bg_large.jpg')`;
+		// iPhone cache-busting ja !important flagit
+		const timestamp = new Date().getTime();
+		document.body.style.setProperty('background-image', `url('${base}/symbols/bg_large.jpg?v=${timestamp}')`, 'important');
+		document.body.style.setProperty('background-size', 'cover', 'important');
+		document.body.style.setProperty('background-position', 'center', 'important');
+		document.body.style.setProperty('background-repeat', 'no-repeat', 'important');
 	});
 </script>
 

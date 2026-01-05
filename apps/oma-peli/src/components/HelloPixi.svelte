@@ -270,29 +270,33 @@
     background: #ffed4e !important;
   }
   
-  /* Piilotetaan debug-elementit mobiilissa ja skaalataan control panel */
+  /* Skaalataan debug ja control panel mobiilissa */
   @media (max-width: 768px) {
-    .debug-panel {
-      display: none !important;
-    }
-    
     .control-panel-mobile {
       transform: scale(0.7) !important;
       transform-origin: bottom center !important;
     }
   }
   
-  /* Mobiili portrait-tila - vielä pienempi skaalaus */
+  /* Mobiili portrait-tila - kontrollit ja debug-nappi yläreunaan ja pienempi skaalaus */
   @media (max-width: 768px) and (orientation: portrait) {
     .control-panel-mobile {
-      transform: scale(0.5) !important;
-      transform-origin: bottom center !important;
+      transform: scale(0.6) !important;
+      transform-origin: top center !important;
+      top: 20px !important;
+      bottom: auto !important;
+    }
+    
+    /* Debug-nappi myös yläreunaan portrait-tilassa */
+    button[style*="position: absolute"][style*="z-index: 10000"] {
+      top: 20px !important;
+      right: 20px !important;
     }
   }
 </style>
 <script lang="ts">
   // Game version
-  const GAME_VERSION = "1.4.2";
+  const GAME_VERSION = "1.4.3";
   
   // Svelte lifecycle ja routing
   import { onMount } from "svelte";
@@ -439,7 +443,7 @@
   
   // ===== CONTROL PANEL TILA (v1.1.0) =====
   let isFastPlayEnabled = $state(false);     // Nopea pelitila
-  let controlPanelWidth = $state(945);       // Paneelin leveys (päivittyy dynaamisesti)
+  let controlPanelWidth = $state(1100);      // Paneelin leveys (päivittyy dynaamisesti)
   let reelFramesSpriteRef: any = null;       // Viittaus reel frames spriteen
   
   // ===================================================================
@@ -1913,6 +1917,12 @@
     
     // ===== 7) PELIN LOGO (PÄÄLLIMMÄINEN LAYER) =====
     if (logoTexture) {
+      // Parannetaan logon laatua LINEAR interpolaatiolla
+      if (logoTexture.source) {
+        logoTexture.source.scaleMode = 'linear';
+        logoTexture.source.antialias = true;
+      }
+      
       const logoSprite = new Sprite(logoTexture);
       
       // Käytä määriteltyjä logo-asetuksia
