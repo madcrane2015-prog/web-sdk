@@ -19,17 +19,30 @@
 
 <svelte:head>
 	<style>
-		body {
+		html, body {
 			background-size: cover;
 			background-position: center;
 			background-repeat: no-repeat;
 			background-attachment: fixed;
 			margin: 0;
 			padding: 0;
-			width: 100vw;
-			height: 100vh;
+			width: 100%;
+			height: 100%;
 			overflow: hidden;
 			min-height: 100vh;
+			min-height: -webkit-fill-available;
+		}
+		
+		html {
+			height: -webkit-fill-available;
+		}
+		
+		/* iOS Safari -webkit-fill-available tuki */
+		@supports (-webkit-touch-callout: none) {
+			body {
+				min-height: -webkit-fill-available;
+				background-attachment: scroll;
+			}
 		}
 		
 		/* Desktop landscape: peittää aina koko ruudun */

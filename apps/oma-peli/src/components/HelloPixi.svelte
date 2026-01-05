@@ -335,12 +335,12 @@
   
   // Kiekkojen koko ja sijainti - uudelle 1445x1000 taustalle
   const SCALE_MULTIPLIER = 1.75; // Symbolien koko kerroin (1.0 = normaali)
-  const OFFSET_X = -30;       // Kaikkien kiekkojen X-siirtymä (+ = oikealle)
-  const OFFSET_Y = -10;        // Kaikkien kiekkojen Y-siirtymä (+ = alaspäin)
+  const OFFSET_X = -25;       // Kaikkien kiekkojen X-siirtymä (+ = oikealle)
+  const OFFSET_Y = -15;        // Kaikkien kiekkojen Y-siirtymä (+ = alaspäin)
   
   // KESKIKIEKON (indeksi 6) erikoiskohdistus
-  const MIDDLE_REEL_Y_OFFSET = 160; // Keskikiekon Y-siirtymä (+ = alaspäin, - = ylöspäin)
-  const MIDDLE_REEL_X_OFFSET = 0;   // Keskikiekon X-siirtymä (+ = oikealle, - = vasemmalle)
+  const MIDDLE_REEL_Y_OFFSET = 175; // Keskikiekon Y-siirtymä (+ = alaspäin, - = ylöspäin)
+  const MIDDLE_REEL_X_OFFSET = -5;   // Keskikiekon X-siirtymä (+ = oikealle, - = vasemmalle)
   
   // SPIN-napin sijainti (uudelle 1445x1000 taustalle)
   const BUTTON_X = 720;       // Napin X-koordinaatti
@@ -360,7 +360,7 @@
   
   // LOGO-asetukset (helppo säätää)
   const LOGO_SCALE = 0.5;     // Logon koko kerroin (1.0 = alkuperäinen koko)
-  const LOGO_X = 40;          // Logon X-siirtymä keskikohdasta (+ = oikealle, - = vasemmalle)
+  const LOGO_X = 30;          // Logon X-siirtymä keskikohdasta (+ = oikealle, - = vasemmalle)
   const LOGO_Y = -10;          // Logon Y-koordinaatti (+ = alaspäin, - = ylöspäin)
   
   // Taustakuvan (bg.jpg) säädöt
@@ -655,8 +655,8 @@
   // Vinyl win animation configuration
   const vinylAnimationConfig = {
     vinylStartScale: 0.01,  // Aloituskoko (0.01 = hyvin pieni keskipiste)
-    vinylEndScale: 0.15,     // Lopetuskoko (0.15 = pienempi loppukoko)
-    sparkleScale: 0.6        // Tähtien koko (0.6 = pienempi)
+    vinylEndScale: 0.05,     // Lopetuskoko (0.15 = pienempi loppukoko)
+    sparkleScale: 0.1        // Tähtien koko (0.6 = pienempi)
   };
   
   // Toggle musiikin on/off
