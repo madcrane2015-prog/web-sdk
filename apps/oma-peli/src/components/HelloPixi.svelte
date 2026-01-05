@@ -270,10 +270,27 @@
     background: #ffed4e !important;
   }
   
+  /* Oletusarvot - näytä desktop, piilota mobile */
+  .desktop-controls {
+    display: flex !important;
+  }
+  
+  .desktop-play-button {
+    display: flex !important;
+  }
+  
+  .mobile-controls {
+    display: none !important;
+  }
+  
+  .mobile-menu-controls {
+    display: none !important;
+  }
+  
   /* Skaalataan debug ja control panel mobiilissa */
   @media (max-width: 768px) {
     .control-panel-mobile {
-      transform: scale(0.7) !important;
+      transform: scale(0.8) !important;
       transform-origin: bottom center !important;
     }
   }
@@ -282,13 +299,13 @@
   @media (max-width: 768px) and (orientation: portrait) {
     .control-panel-mobile {
       position: fixed !important;
-      bottom: 10px !important;
+      bottom: 5px !important;
       top: auto !important;
       left: 50% !important;
-      transform: translateX(-50%) scale(0.7) !important;
+      transform: translateX(-50%) scale(0.85) !important;
       transform-origin: bottom center !important;
-      width: 95vw !important;
-      max-width: 450px !important;
+      width: 98vw !important;
+      max-width: 500px !important;
       z-index: 2000 !important;
     }
     
@@ -321,6 +338,12 @@
   
   /* Mobiili landscape-tila - myös yksinkertaistettu layout */
   @media (max-width: 768px) and (orientation: landscape) {
+    .control-panel-mobile {
+      transform: scale(0.9) !important;
+      width: 98vw !important;
+      max-width: 650px !important;
+    }
+    
     .desktop-controls {
       display: none !important;
     }
@@ -340,7 +363,7 @@
 </style>
 <script lang="ts">
   // Game version
-  const GAME_VERSION = "1.4.6";
+  const GAME_VERSION = "1.4.7";
   
   // Svelte lifecycle ja routing
   import { onMount } from "svelte";
@@ -1655,13 +1678,20 @@
       
       // Portrait-moodissa (korkea ja kapea näyttö) kasvatetaan pelialuetta
       const isPortrait = windowHeight > windowWidth;
+      const isMobile = windowWidth <= 768;
       let newScale;
       
-      if (isPortrait) {
-        // Portrait: käytä leveämpää skaalaa (max 0.95 näytön leveydestä)
+      if (isMobile && isPortrait) {
+        // Mobile Portrait: käytä maksimaalinen tila
+        newScale = Math.min(scaleX * 1.0, scaleY * 0.95, 1.2);
+      } else if (isMobile) {
+        // Mobile Landscape: myös suurempi
+        newScale = Math.min(scaleX * 0.98, scaleY * 0.95, 1.1);
+      } else if (isPortrait) {
+        // Desktop Portrait: normaali portrait-skaalaus
         newScale = Math.min(scaleX * 0.95, scaleY * 0.85, 1);
       } else {
-        // Landscape: normaali skaalaus
+        // Desktop Landscape: normaali skaalaus
         newScale = Math.min(scaleX, scaleY, 1);
       }
       
@@ -1976,9 +2006,14 @@
       if (logoTexture.source) {
         logoTexture.source.scaleMode = 'nearest';
         logoTexture.source.antialias = false;
+        // Varmista että tekstuuri päivittyy
+        logoTexture.source.update();
       }
       
       const logoSprite = new Sprite(logoTexture);
+      
+      // Aseta myös sprite-tason asetukset terävää renderöintiä varten
+      logoSprite.roundPixels = true;  // Pyöristä pikselit
       
       // Käytä määriteltyjä logo-asetuksia
       logoSprite.scale.set(LOGO_SCALE);
