@@ -300,11 +300,47 @@
       font-size: 10px !important;
       padding: 4px 8px !important;
     }
+    
+    /* Piilota desktop-kontrollit ja näytä mobile-kontrollit */
+    .desktop-controls {
+      display: none !important;
+    }
+    
+    .desktop-play-button {
+      display: none !important;
+    }
+    
+    .mobile-controls {
+      display: flex !important;
+    }
+    
+    .mobile-menu-controls {
+      display: block !important;
+    }
+  }
+  
+  /* Mobiili landscape-tila - myös yksinkertaistettu layout */
+  @media (max-width: 768px) and (orientation: landscape) {
+    .desktop-controls {
+      display: none !important;
+    }
+    
+    .desktop-play-button {
+      display: none !important;
+    }
+    
+    .mobile-controls {
+      display: flex !important;
+    }
+    
+    .mobile-menu-controls {
+      display: block !important;
+    }
   }
 </style>
 <script lang="ts">
   // Game version
-  const GAME_VERSION = "1.4.5";
+  const GAME_VERSION = "1.4.6";
   
   // Svelte lifecycle ja routing
   import { onMount } from "svelte";
@@ -2460,7 +2496,72 @@
     overflow-y: auto;
     font-size: {gameScale}em;
   ">
-    <h2 style="margin: 0 0 20px 0; text-align: center; color: #ffd700;">💰 PAYTABLE (81 WAYS)</h2>
+    <h2 style="margin: 0 0 20px 0; text-align: center; color: #ffd700;">💰 MENU</h2>
+    
+    <!-- GAME CONTROLS (Mobiilissa) -->
+    <div class="mobile-menu-controls" style="display: none; margin-bottom: 20px; padding: 15px; background: rgba(255, 255, 255, 0.05); border-radius: 10px;">
+      <h3 style="margin: 0 0 15px 0; color: #ffd700; font-size: 1.2em;">🎮 GAME CONTROLS</h3>
+      
+      <!-- Autoplay -->
+      <div style="margin-bottom: 15px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <span style="font-size: 1.1em;">🔄 Autoplay:</span>
+          <span style="color: {isAutoPlaying ? '#00ff00' : '#ff6666'}; font-weight: bold;">
+            {isAutoPlaying ? `ON (${autoPlayRounds} left)` : 'OFF'}
+          </span>
+        </div>
+        {#if isAutoPlaying}
+          <button
+            on:click={stopAutoPlay}
+            style="width: 100%; padding: 12px; background: linear-gradient(135deg, #ff4444 0%, #ff6666 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1em;"
+          >
+            🛑 STOP AUTOPLAY
+          </button>
+        {:else}
+          <button
+            on:click={() => { showAutoPlayMenu = true; showPaytable = false; }}
+            style="width: 100%; padding: 12px; background: linear-gradient(135deg, #44aa44 0%, #66cc66 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1em;"
+          >
+            ▶️ START AUTOPLAY
+          </button>
+        {/if}
+      </div>
+      
+      <!-- Spin Speed -->
+      <div style="margin-bottom: 10px;">
+        <div style="margin-bottom: 10px;">
+          <span style="font-size: 1.1em;">⚡ Spin Speed:</span>
+          <span style="color: #ffd700; font-weight: bold; margin-left: 10px;">
+            {spinSpeed === 'slow' ? '🐌 SLOW' : spinSpeed === 'medium' ? '🏃 MEDIUM' : '⚡ FAST'}
+          </span>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button
+            on:click={() => { spinSpeed = 'slow'; }}
+            style="flex: 1; padding: 10px; background: {spinSpeed === 'slow' ? 'linear-gradient(135deg, #4488ff 0%, #66aaff 100%)' : 'rgba(255,255,255,0.1)'}; color: white; border: {spinSpeed === 'slow' ? '2px solid #ffd700' : '1px solid #555'}; border-radius: 8px; cursor: pointer; font-size: 0.9em;"
+          >
+            🐌 Slow
+          </button>
+          <button
+            on:click={() => { spinSpeed = 'medium'; }}
+            style="flex: 1; padding: 10px; background: {spinSpeed === 'medium' ? 'linear-gradient(135deg, #4488ff 0%, #66aaff 100%)' : 'rgba(255,255,255,0.1)'}; color: white; border: {spinSpeed === 'medium' ? '2px solid #ffd700' : '1px solid #555'}; border-radius: 8px; cursor: pointer; font-size: 0.9em;"
+          >
+            🏃 Medium
+          </button>
+          <button
+            on:click={() => { spinSpeed = 'fast'; }}
+            style="flex: 1; padding: 10px; background: {spinSpeed === 'fast' ? 'linear-gradient(135deg, #4488ff 0%, #66aaff 100%)' : 'rgba(255,255,255,0.1)'}; color: white; border: {spinSpeed === 'fast' ? '2px solid #ffd700' : '1px solid #555'}; border-radius: 8px; cursor: pointer; font-size: 0.9em;"
+          >
+            ⚡ Fast
+          </button>
+        </div>
+      </div>
+      
+      <div style="border-top: 1px solid #555; margin: 20px 0;"></div>
+    </div>
+    
+    <!-- PAYTABLE INFO -->
+    <h3 style="margin: 0 0 15px 0; color: #ffd700; font-size: 1.2em;">💰 PAYTABLE (81 WAYS)</h3>
     
     <div style="margin-bottom: 15px; text-align: center; color: #aaa;">
       Voitot muodostuvat 81 ways -järjestelmällä (vasemmalta oikealle)<br/>
