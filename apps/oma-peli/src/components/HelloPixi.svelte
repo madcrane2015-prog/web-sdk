@@ -278,25 +278,30 @@
     }
   }
   
-  /* Mobiili portrait-tila - kontrollit ja debug-nappi yläreunaan ja pienempi skaalaus */
+  /* Mobiili portrait-tila - kontrollit logon alapuolelle keskelle */
   @media (max-width: 768px) and (orientation: portrait) {
     .control-panel-mobile {
-      transform: scale(0.6) !important;
+      position: fixed !important;
+      top: 120px !important;
+      left: 50% !important;
+      transform: translateX(-50%) scale(0.65) !important;
       transform-origin: top center !important;
-      top: 20px !important;
       bottom: auto !important;
+      width: 90vw !important;
+      max-width: 400px !important;
     }
     
-    /* Debug-nappi myös yläreunaan portrait-tilassa */
+    /* Debug-nappi oikeaan yläkulmaan */
     button[style*="position: absolute"][style*="z-index: 10000"] {
-      top: 20px !important;
-      right: 20px !important;
+      position: fixed !important;
+      top: 10px !important;
+      right: 10px !important;
     }
   }
 </style>
 <script lang="ts">
   // Game version
-  const GAME_VERSION = "1.4.3";
+  const GAME_VERSION = "1.4.4";
   
   // Svelte lifecycle ja routing
   import { onMount } from "svelte";
@@ -354,7 +359,7 @@
   const CONTROL_PANEL_Y = 750;         // Paneelin Y-koordinaatti (sama kuin vanha BUTTON_Y)
   const CONTROL_PANEL_HEIGHT = 80;    // Paneelin korkeus
   const REEL_FRAMES_X = 250;           // Kehysten X-sijainti (sama kuin kehyksissä)
-  const REEL_FRAMES_WIDTH = 945;       // Kehysten leveys (arvio, päivitetään dynaamisesti)
+  const REEL_FRAMES_WIDTH = 1100;      // Kehysten leveys (leveämpi mobiilia varten)
   
   // Control Panel Fine-Tuning (säädettävissä)
   const CONTROL_PANEL_OFFSET_X = 0;    // X-siirtymä (+ = oikealle, - = vasemmalle)

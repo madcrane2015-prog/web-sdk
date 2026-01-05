@@ -15,16 +15,19 @@
 	onMount(() => {
 		// iPhone cache-busting ja !important flagit
 		const timestamp = new Date().getTime();
+		document.body.style.setProperty('background-color', '#000000', 'important');
 		document.body.style.setProperty('background-image', `url('${base}/symbols/bg_large.jpg?v=${timestamp}')`, 'important');
 		document.body.style.setProperty('background-size', 'cover', 'important');
 		document.body.style.setProperty('background-position', 'center', 'important');
 		document.body.style.setProperty('background-repeat', 'no-repeat', 'important');
+		document.body.style.setProperty('background-attachment', 'scroll', 'important');
 	});
 </script>
 
 <svelte:head>
 	<style>
 		html, body {
+			background-color: #000000;
 			background-size: cover;
 			background-position: center;
 			background-repeat: no-repeat;
