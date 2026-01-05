@@ -278,30 +278,33 @@
     }
   }
   
-  /* Mobiili portrait-tila - kontrollit logon alapuolelle keskelle */
+  /* Mobiili portrait-tila - pelialue isompi, kontrollit alareunaan */
   @media (max-width: 768px) and (orientation: portrait) {
     .control-panel-mobile {
       position: fixed !important;
-      top: 120px !important;
+      bottom: 10px !important;
+      top: auto !important;
       left: 50% !important;
-      transform: translateX(-50%) scale(0.65) !important;
-      transform-origin: top center !important;
-      bottom: auto !important;
-      width: 90vw !important;
-      max-width: 400px !important;
+      transform: translateX(-50%) scale(0.7) !important;
+      transform-origin: bottom center !important;
+      width: 95vw !important;
+      max-width: 450px !important;
+      z-index: 2000 !important;
     }
     
-    /* Debug-nappi oikeaan yläkulmaan */
+    /* Debug-nappi pienemmmäksi ja yläkulmaan */
     button[style*="position: absolute"][style*="z-index: 10000"] {
       position: fixed !important;
-      top: 10px !important;
-      right: 10px !important;
+      top: 5px !important;
+      right: 5px !important;
+      font-size: 10px !important;
+      padding: 4px 8px !important;
     }
   }
 </style>
 <script lang="ts">
   // Game version
-  const GAME_VERSION = "1.4.4";
+  const GAME_VERSION = "1.4.5";
   
   // Svelte lifecycle ja routing
   import { onMount } from "svelte";
@@ -1613,7 +1616,18 @@
       const windowHeight = window.innerHeight; // Selaimen ikkunan korkeus
       const scaleX = windowWidth / CANVAS_WIDTH;   // Leveys-skaalauskertoin
       const scaleY = windowHeight / CANVAS_HEIGHT; // Korkeus-skaalauskertoin
-      const newScale = Math.min(scaleX, scaleY, 1); // Valitse pienempi kerroin, max 1.0
+      
+      // Portrait-moodissa (korkea ja kapea näyttö) kasvatetaan pelialuetta
+      const isPortrait = windowHeight > windowWidth;
+      let newScale;
+      
+      if (isPortrait) {
+        // Portrait: käytä leveämpää skaalaa (max 0.95 näytön leveydestä)
+        newScale = Math.min(scaleX * 0.95, scaleY * 0.85, 1);
+      } else {
+        // Landscape: normaali skaalaus
+        newScale = Math.min(scaleX, scaleY, 1);
+      }
       
       // Päivitä reactive skaalaus (käytetään UI-elementeissä)
       gameScale = newScale;
@@ -1922,10 +1936,10 @@
     
     // ===== 7) PELIN LOGO (PÄÄLLIMMÄINEN LAYER) =====
     if (logoTexture) {
-      // Parannetaan logon laatua LINEAR interpolaatiolla
+      // Käytetään nearest scaleMode parempaa laatu varten (ei blur-efektiä)
       if (logoTexture.source) {
-        logoTexture.source.scaleMode = 'linear';
-        logoTexture.source.antialias = true;
+        logoTexture.source.scaleMode = 'nearest';
+        logoTexture.source.antialias = false;
       }
       
       const logoSprite = new Sprite(logoTexture);
