@@ -287,6 +287,16 @@
     display: none !important;
   }
   
+  /* Piilota tietyt elementit mobiilissa */
+  .hide-on-mobile {
+    display: flex !important;
+  }
+  
+  /* Piilota tietyt elementit desktopilla */
+  .hide-on-desktop {
+    display: none !important;
+  }
+  
   /* Skaalataan debug ja control panel mobiilissa */
   @media (max-width: 768px) {
     .control-panel-mobile {
@@ -334,14 +344,24 @@
     .mobile-menu-controls {
       display: block !important;
     }
+    
+    /* Piilota BALANCE, Autoplay, Spin Speed, WIN mobiilissa */
+    .hide-on-mobile {
+      display: none !important;
+    }
+    
+    /* Näytä Menu vasemmalla mobiilissa */
+    .hide-on-desktop {
+      display: flex !important;
+    }
   }
   
   /* Mobiili landscape-tila - myös yksinkertaistettu layout */
   @media (max-width: 768px) and (orientation: landscape) {
     .control-panel-mobile {
-      transform: scale(0.9) !important;
-      width: 98vw !important;
-      max-width: 650px !important;
+      transform: scale(0.80) !important;
+      width: 75vw !important;
+      max-width: 500px !important;
     }
     
     .desktop-controls {
@@ -359,11 +379,21 @@
     .mobile-menu-controls {
       display: block !important;
     }
+    
+    /* Piilota BALANCE, Autoplay, Spin Speed, WIN mobiilissa */
+    .hide-on-mobile {
+      display: none !important;
+    }
+    
+    /* Näytä Menu vasemmalla mobiilissa */
+    .hide-on-desktop {
+      display: flex !important;
+    }
   }
 </style>
 <script lang="ts">
   // Game version
-  const GAME_VERSION = "1.4.7";
+  const GAME_VERSION = "1.4.8";
   
   // Svelte lifecycle ja routing
   import { onMount } from "svelte";
@@ -3033,6 +3063,24 @@
   ">
     <!-- Vasen puoli (BET ja BALANCE) -->
     <div style="flex: 1; display: flex; align-items: center; justify-content: space-around; min-width: 0;">
+      <!-- Menu nappi (näkyy vain mobiilissa, vasemmalla) -->
+      <div class="hide-on-desktop" style="display: none; align-items: center; justify-content: center; margin-right: {10 * gameScale}px;">
+        <button
+          on:click={() => { showPaytable = !showPaytable; }}
+          style="
+            width: {50 * gameScale}px;
+            height: {50 * gameScale}px;
+            background-image: url('{controlsPath}/Control_menubar.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            border: none;
+            cursor: pointer;
+            background-color: transparent;
+          "
+          title="Menu"
+        ></button>
+      </div>
+      
       <!-- BET kontrollit -->
       <div style="display: flex; flex-direction: column; align-items: center;">
         <div style="color: #00ff00; font-size: {12 * gameScale}px; font-weight: bold; line-height: 1; height: {16 * gameScale}px; display: flex; align-items: flex-end; padding-bottom: {2 * gameScale}px;">BET</div>
@@ -3080,13 +3128,14 @@
       
       <!-- Divider -->
       <img 
+        class="hide-on-mobile"
         src="{controlsPath}/Control_divider.png" 
         alt="Divider"
         style="height: {CONTROL_PANEL_HEIGHT * 0.8 * gameScale}px; flex-shrink: 0;"
       />
       
       <!-- BALANCE näyttö -->
-      <div style="display: flex; flex-direction: column; align-items: center;">
+      <div class="hide-on-mobile" style="display: flex; flex-direction: column; align-items: center;">
         <div style="color: #00ff00; font-size: {12 * gameScale}px; font-weight: bold; line-height: 1; height: {16 * gameScale}px; display: flex; align-items: flex-end; padding-bottom: {2 * gameScale}px;">BALANCE</div>
         <div style="height: {44 * gameScale}px; display: flex; align-items: center;">
           <div style="
@@ -3102,6 +3151,7 @@
       
       <!-- Divider -->
       <img 
+        class="hide-on-mobile"
         src="{controlsPath}/Control_divider.png" 
         alt="Divider"
         style="height: {CONTROL_PANEL_HEIGHT * 0.8 * gameScale}px; flex-shrink: 0;"
@@ -3162,7 +3212,7 @@
     <!-- Oikea puoli (Autoplay, Spin Speed, WIN, Menu) -->
     <div style="flex: 1; display: flex; align-items: center; justify-content: space-around; min-width: 0;">
       <!-- Autoplay nappi -->
-      <div style="display: flex; flex-direction: column; align-items: center; gap: {5 * gameScale}px;">
+      <div class="hide-on-mobile" style="display: flex; flex-direction: column; align-items: center; gap: {5 * gameScale}px;">
         <button
           on:click={() => { 
             if (isAutoPlaying) {
@@ -3191,14 +3241,15 @@
       </div>
       
       <!-- Divider -->
-      <img 
+      <img
+        class="hide-on-mobile" 
         src="{controlsPath}/Control_divider.png" 
         alt="Divider"
         style="height: {CONTROL_PANEL_HEIGHT * 0.8 * gameScale}px; flex-shrink: 0;"
       />
       
       <!-- Spin Speed nappi (3 tilaa: slow/medium/fast) -->
-      <div style="display: flex; flex-direction: column; align-items: center; gap: {5 * gameScale}px;">
+      <div class="hide-on-mobile" style="display: flex; flex-direction: column; align-items: center; gap: {5 * gameScale}px;">
         <button
           on:click={() => { 
             // Sykli: slow -> medium -> fast -> slow...
@@ -3231,14 +3282,15 @@
       </div>
       
       <!-- Divider -->
-      <img 
+      <img
+        class="hide-on-mobile" 
         src="{controlsPath}/Control_divider.png" 
         alt="Divider"
         style="height: {CONTROL_PANEL_HEIGHT * 0.8 * gameScale}px; flex-shrink: 0;"
       />
       
       <!-- WIN osio -->
-      <div style="display: flex; flex-direction: column; align-items: center;">
+      <div class="hide-on-mobile" style="display: flex; flex-direction: column; align-items: center;">
         <div style="color: #00ff00; font-size: {12 * gameScale}px; font-weight: bold; line-height: 1; height: {16 * gameScale}px; display: flex; align-items: flex-end; padding-bottom: {2 * gameScale}px;">WIN</div>
         <div style="height: {44 * gameScale}px; display: flex; align-items: center;">
           <div style="
@@ -3253,14 +3305,15 @@
       </div>
       
       <!-- Divider -->
-      <img 
+      <img
+        class="hide-on-mobile" 
         src="{controlsPath}/Control_divider.png" 
         alt="Divider"
         style="height: {CONTROL_PANEL_HEIGHT * 0.8 * gameScale}px; flex-shrink: 0;"
       />
       
       <!-- Menu nappi -->
-      <div style="display: flex; align-items: center; justify-content: center;">
+      <div class="hide-on-mobile" style="display: flex; align-items: center; justify-content: center;">
         <button
           on:click={() => { showPaytable = !showPaytable; }}
           style="
