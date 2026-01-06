@@ -302,10 +302,10 @@
       bottom: 5px !important;
       top: auto !important;
       left: 50% !important;
-      transform: translateX(-50%) scale(0.8) !important;
+      transform: translateX(-50%) scale(0.85) !important;
       transform-origin: bottom center !important;
-      width: 90vw !important;
-      max-width: 380px !important;
+      width: 98vw !important;
+      max-width: 500px !important;
       z-index: 2000 !important;
     }
     
@@ -339,9 +339,9 @@
   /* Mobiili landscape-tila - myös yksinkertaistettu layout */
   @media (max-width: 768px) and (orientation: landscape) {
     .control-panel-mobile {
-      transform: scale(0.85) !important;
-      width: 92vw !important;
-      max-width: 450px !important;
+      transform: scale(0.9) !important;
+      width: 98vw !important;
+      max-width: 650px !important;
     }
     
     .desktop-controls {
@@ -3010,10 +3010,7 @@
   
   v1.1.4: Korjattu käyttämään pikselikoordinaatteja zoomin tukemiseksi
   v1.2.3: Siirretty canvas-kontin sisään oikean skaalauksen varmistamiseksi
-  v1.4.8: Jaettu desktop-controls ja mobile-controls -versioihin
 -->
-<!-- DESKTOP CONTROLS (täysi versio) -->
-<div class="desktop-controls" style="display: flex; width: 100%; height: 100%;">
   <!-- Vasen pää -->
   <img 
     src="{controlsPath}/Control_leftend.png" 
@@ -3290,126 +3287,6 @@
     alt="Right End"
     style="height: {CONTROL_PANEL_HEIGHT * gameScale}px; flex-shrink: 0;"
   />
-</div> <!-- End desktop-controls -->
-
-<!-- ===== MOBILE CONTROLS (YKSINKERTAISTETTU) ===== -->
-<!-- Näkyy vain mobiililaitteilla (max-width: 768px) -->
-<!-- Kolme osaa: Menu (vasen), Play (keski), BET (oikea) -->
-<div class="mobile-controls" style="display: none; flex-direction: row; width: 100%; height: 100%; align-items: center; justify-content: space-between; padding: 0 10px; gap: 10px;">
-  
-  <!-- Vasen puoli: MENU nappi -->
-  <div style="flex-shrink: 0; display: flex; align-items: center;">
-    <button
-      on:click={() => { showPaytable = !showPaytable; }}
-      style="
-        width: {50 * gameScale}px;
-        height: {50 * gameScale}px;
-        background-image: url('{controlsPath}/Control_menubar.png');
-        background-size: contain;
-        background-repeat: no-repeat;
-        border: none;
-        cursor: pointer;
-        background-color: transparent;
-      "
-      title="Menu"
-    ></button>
-  </div>
-  
-  <!-- Keskiosa: PLAY nappi (isompi) -->
-  <div style="flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
-    <div class="play-button-wrapper {playButtonGlareActive ? 'glare-animate' : ''}">
-      <button
-        on:click={() => {
-          if (isAutoPlaying) {
-            stopAutoPlay();
-          } else {
-            // Tarkista ovatko kiekot pyörimässä
-            const isAnyReelSpinning = reels.some(r => r.state === 'spinning' || r.state === 'slowing');
-            
-            if (isAnyReelSpinning) {
-              // Pysäytä kiekot nopeasti (skip spin)
-              reels.forEach(r => {
-                if (r.state === 'spinning') {
-                  r.stopDelay = 0;
-                  r.state = 'slowing';
-                  r.speed = r.targetSpeed * 0.5;
-                } else if (r.state === 'slowing') {
-                  r.speed = r.speed * 0.3;
-                }
-              });
-            } else {
-              // Aloita uusi spin jos kiekot eivät pyöri
-              spin();
-            }
-          }
-        }}
-        style="
-          width: {90 * gameScale}px;
-          height: {90 * gameScale}px;
-          background-image: url('{controlsPath}/{isAutoPlaying ? 'Control_playbutton_stop.png' : 'Control_playbutton.png'}');
-          background-size: cover;
-          background-position: center;
-          background-repeat: no-repeat;
-          border: none;
-          cursor: pointer;
-          background-color: transparent;
-          opacity: 1;
-          position: relative;
-          z-index: 10;
-          border-radius: 50%;
-        "
-        title="{isAutoPlaying ? 'STOP AUTOPLAY' : 'SPIN'}"
-      ></button>
-    </div>
-  </div>
-  
-  <!-- Oikea puoli: BET kontrollit (suuremmat) -->
-  <div style="flex-shrink: 0; display: flex; flex-direction: column; align-items: center;">
-    <div style="color: #00ff00; font-size: {10 * gameScale}px; font-weight: bold; margin-bottom: {3 * gameScale}px;">BET</div>
-    <div style="display: flex; gap: {8 * gameScale}px; align-items: center;">
-      <button
-        on:click={decreaseBet}
-        style="
-          width: {45 * gameScale}px;
-          height: {45 * gameScale}px;
-          background-image: url('{controlsPath}/Control_lowerbet_select.png');
-          background-size: contain;
-          background-repeat: no-repeat;
-          border: none;
-          cursor: pointer;
-          background-color: transparent;
-        "
-        title="Decrease Bet"
-      ></button>
-      <div style="
-        color: #fff;
-        font-size: {16 * gameScale}px;
-        font-weight: bold;
-        min-width: {70 * gameScale}px;
-        text-align: center;
-        font-family: 'Courier New', monospace;
-      ">
-        {betAmount.toFixed(2)}
-      </div>
-      <button
-        on:click={increaseBet}
-        style="
-          width: {45 * gameScale}px;
-          height: {45 * gameScale}px;
-          background-image: url('{controlsPath}/Control_upperbet_select.png');
-          background-size: contain;
-          background-repeat: no-repeat;
-          border: none;
-          cursor: pointer;
-          background-color: transparent;
-        "
-        title="Increase Bet"
-      ></button>
-    </div>
-  </div>
-  
-</div> <!-- End mobile-controls -->
-
 </div> <!-- Suljetaan control panel -->
 </div> <!-- Suljetaan canvas-kontti -->
 
