@@ -405,6 +405,10 @@
   // Loading screen component
   import LoadingScreen from './LoadingScreen.svelte';
   
+  // Layout system - NEW!
+  import { getCurrentLayout, getCurrentDeviceType, calculateControlPanelPosition } from '../utils/layoutUtils';
+  import GameBackground from './GameBackground.svelte';
+  
   // ===== PIXIJS KIRJASTON KOMPONENTIT =====
   // PixiJS on 2D-grafiikkakirjasto joka käyttää WebGL:ää
   import {
@@ -426,18 +430,21 @@
   // Layout: 3×3×1×3×3 (vasen 3 riviä, keskellä 1 rivi, oikea 3 riviä)
   // Jokaisella ruudulla on oma kiekko joka pyörii itsenäisesti!
 
-  // ===== SÄÄDETTÄVÄT PARAMETRIT =====
-  // Näitä arvoja voi muuttaa pelin ulkonäön säätämiseksi
-  // Kaikki muutokset päivittyvät automaattisesti dev-palvelimessa
+  // ===== LAYOUT JÄRJESTELMÄ (UUSI!) =====
+  // Layout state - päivittyy ikkunan koon muuttuessa
+  let layoutUpdateTrigger = $state(0);
+  const currentLayout = $derived(() => { layoutUpdateTrigger; return getCurrentLayout(); });
+  const deviceType = $derived(() => { layoutUpdateTrigger; return getCurrentDeviceType(); });
   
-  // Canvas (peliruudun) koko - uusi kuvasuhde 1445x1000
-  const CANVAS_WIDTH = 1445;   // Leveys pikseleinä
-  const CANVAS_HEIGHT = 1000;  // Korkeus pikseleinä
+  // ===== SÄÄDETTÄVÄT PARAMETRIT =====
+  // Canvas-mitat tulevat nyt layout-konfiguraatiosta (layoutConfig.ts)
+  const CANVAS_WIDTH = $derived(currentLayout().gameArea.width);
+  const CANVAS_HEIGHT = $derived(currentLayout().gameArea.height);
   
   // Kiekkojen koko ja sijainti - uudelle 1445x1000 taustalle
   const SCALE_MULTIPLIER = 1.75; // Symbolien koko kerroin (1.0 = normaali)
-  const OFFSET_X = -25;       // Kaikkien kiekkojen X-siirtymä (+ = oikealle)
-  const OFFSET_Y = -15;        // Kaikkien kiekkojen Y-siirtymä (+ = alaspäin)
+  const OFFSET_X = $derived(currentLayout().gameArea.offsetX); // Layout-järjestelmästä
+  const OFFSET_Y = $derived(currentLayout().gameArea.offsetY); // Layout-järjestelmästä
   
   // KESKIKIEKON (indeksi 6) erikoiskohdistus
   const MIDDLE_REEL_Y_OFFSET = 175; // Keskikiekon Y-siirtymä (+ = alaspäin, - = ylöspäin)
@@ -447,27 +454,19 @@
   const BUTTON_X = 720;       // Napin X-koordinaatti
   const BUTTON_Y = 750;       // Napin Y-koordinaatti
   
-  // ===== CONTROL PANEL ASETUKSET (v1.1.0) =====
-  const CONTROL_PANEL_Y = 750;         // Paneelin Y-koordinaatti (sama kuin vanha BUTTON_Y)
-  const CONTROL_PANEL_HEIGHT = 80;    // Paneelin korkeus
+  // ===== CONTROL PANEL ASETUKSET =====
+  // HUOM: Control panel -arvot tulevat nyt layout-järjestelmästä!
+  // Säädä parametreja tiedostossa: src/config/layoutConfig.ts
   const REEL_FRAMES_X = 250;           // Kehysten X-sijainti (sama kuin kehyksissä)
   const REEL_FRAMES_WIDTH = 1100;      // Kehysten leveys (leveämpi mobiilia varten)
-  
-  // Control Panel Fine-Tuning (säädettävissä)
-  const CONTROL_PANEL_OFFSET_X = 0;    // X-siirtymä (+ = oikealle, - = vasemmalle)
-  const CONTROL_PANEL_OFFSET_Y = 50;    // Y-siirtymä (+ = alaspäin, - = ylöspäin)
-  const CONTROL_PANEL_SCALE_X = 1.0;   // X-skaalaus (1.0 = normaali, >1 = leveämpi, <1 = kapeampi)
-  const CONTROL_PANEL_SCALE_Y = 1.1;   // Y-skaalaus (1.0 = normaali, >1 = korkeampi, <1 = matalampi)
   
   // LOGO-asetukset (helppo säätää)
   const LOGO_SCALE = 0.5;     // Logon koko kerroin (1.0 = alkuperäinen koko)
   const LOGO_X = 30;          // Logon X-siirtymä keskikohdasta (+ = oikealle, - = vasemmalle)
   const LOGO_Y = -10;          // Logon Y-koordinaatti (+ = alaspäin, - = ylöspäin)
   
-  // Taustakuvan (bg.jpg) säädöt
-  const BACKGROUND_Y_SHIFT = -40;  // Pystysiirtymä (+ = alaspäin, - = ylöspäin)
-  const BACKGROUND_SCALE = 1.0;    // Koon kerroin (1.0 = normaali)
-  const BACKGROUND_FIT_MODE: "width" | "height" | "min" = "height"; // Skaalaustyyppi: "width", "height", "min"
+  // HUOM: Tausta-asetukset tulevat nyt GameBackground-komponentista!
+  // Säädä parametreja tiedostossa: src/config/layoutConfig.ts
   // =====================================
 
   // ===== SYMBOLIN MITAT =====
@@ -1685,6 +1684,9 @@
   // Reactive skaalausmuuttuja - päivittyy automaattisesti kun ikkunan kokoa muutetaan
   let gameScale = $state(1);
   
+  // Control panel position (lasketaan gameScalen kanssa)
+  const controlPanelPos = $derived(calculateControlPanelPosition(currentLayout(), gameScale));
+  
   onMount(async () => {
     // ===== 1) PIXIJS SOVELLUKSEN LUONTI =====
     // Luo PixiJS Application joka hallinnoi koko peliä (stage, renderer, ticker)
@@ -2802,6 +2804,13 @@
     width: {CANVAS_WIDTH * gameScale}px;
     height: {CANVAS_HEIGHT * gameScale}px;
   ">
+    <!-- TAUSTAKUVA (UUSI LAYOUT-JÄRJESTELMÄ) -->
+    <GameBackground 
+      layout={currentLayout()} 
+      gameScale={gameScale}
+      backgroundPath="{symbolPath}/bg_base.jpg"
+    />
+    
     <!-- PixiJS canvas sijoitetaan tähän (container-div) -->
     <div 
       bind:this={container}
@@ -2836,15 +2845,16 @@
         💰 PAYTABLE
       </button>
 
-      <!-- ===== 6) CONTROL PANEL ===== -->
+      <!-- ===== 6) CONTROL PANEL (LAYOUT SYSTEM) ===== -->
       <!-- Pelin pääkontrollit näytön alareunassa -->
       <!-- Sisältää: Panos-kontrollit, Balance, Play-nappi, Autoplay, Spin Speed, Win-näyttö, Menu -->
+      <!-- HUOM: Sijainti ja koko tulevat nyt layout-järjestelmästä! -->
       <div class="control-panel-mobile" style="
         position: absolute;
-        left: {((reelFramesSpriteRef ? reelFramesSpriteRef.x : REEL_FRAMES_X) + CONTROL_PANEL_OFFSET_X) * gameScale}px;
-        top: {(CONTROL_PANEL_Y + CONTROL_PANEL_OFFSET_Y) * gameScale}px;
-        width: {controlPanelWidth * gameScale}px;
-        height: {CONTROL_PANEL_HEIGHT * gameScale}px;
+        left: {controlPanelPos.x}px;
+        top: {controlPanelPos.y}px;
+        width: {controlPanelPos.width}px;
+        height: {controlPanelPos.height}px;
         display: flex;
         align-items: center;
         z-index: 1000;
@@ -2854,7 +2864,7 @@
 {#if showAutoPlayMenu}
   <div style="
     position: absolute;
-    bottom: {(CONTROL_PANEL_HEIGHT + 20) * gameScale}px;
+    bottom: {(controlPanelPos.height / gameScale + 20) * gameScale}px;
     left: 50%;
     transform: translateX(-50%);
     background: rgba(0, 0, 0, 0.95);
@@ -3045,13 +3055,13 @@
   <img 
     src="{controlsPath}/Control_leftend.png" 
     alt="Left End"
-    style="height: {CONTROL_PANEL_HEIGHT * gameScale}px; flex-shrink: 0;"
+    style="height: {controlPanelPos.height}px; flex-shrink: 0;"
   />
   
   <!-- Keskiosa (skaalautuva tausta) -->
   <div style="
     flex-grow: 1;
-    height: {CONTROL_PANEL_HEIGHT * gameScale}px;
+    height: {controlPanelPos.height}px;
     background-image: url('{controlsPath}/Control_scalablebg.png');
     background-size: 100% 100%;
     background-repeat: no-repeat;
@@ -3131,7 +3141,7 @@
         class="hide-on-mobile"
         src="{controlsPath}/Control_divider.png" 
         alt="Divider"
-        style="height: {CONTROL_PANEL_HEIGHT * 0.8 * gameScale}px; flex-shrink: 0;"
+        style="height: {controlPanelPos.height * 0.8}px; flex-shrink: 0;"
       />
       
       <!-- BALANCE näyttö -->
@@ -3154,7 +3164,7 @@
         class="hide-on-mobile"
         src="{controlsPath}/Control_divider.png" 
         alt="Divider"
-        style="height: {CONTROL_PANEL_HEIGHT * 0.8 * gameScale}px; flex-shrink: 0;"
+        style="height: {controlPanelPos.height * 0.8}px; flex-shrink: 0;"
       />
     </div>
     
@@ -3245,7 +3255,7 @@
         class="hide-on-mobile" 
         src="{controlsPath}/Control_divider.png" 
         alt="Divider"
-        style="height: {CONTROL_PANEL_HEIGHT * 0.8 * gameScale}px; flex-shrink: 0;"
+        style="height: {controlPanelPos.height * 0.8}px; flex-shrink: 0;"
       />
       
       <!-- Spin Speed nappi (3 tilaa: slow/medium/fast) -->
@@ -3286,7 +3296,7 @@
         class="hide-on-mobile" 
         src="{controlsPath}/Control_divider.png" 
         alt="Divider"
-        style="height: {CONTROL_PANEL_HEIGHT * 0.8 * gameScale}px; flex-shrink: 0;"
+        style="height: {controlPanelPos.height * 0.8}px; flex-shrink: 0;"
       />
       
       <!-- WIN osio -->
@@ -3309,7 +3319,7 @@
         class="hide-on-mobile" 
         src="{controlsPath}/Control_divider.png" 
         alt="Divider"
-        style="height: {CONTROL_PANEL_HEIGHT * 0.8 * gameScale}px; flex-shrink: 0;"
+        style="height: {controlPanelPos.height * 0.8}px; flex-shrink: 0;"
       />
       
       <!-- Menu nappi -->
@@ -3338,7 +3348,7 @@
   <img 
     src="{controlsPath}/Control_rightend.png" 
     alt="Right End"
-    style="height: {CONTROL_PANEL_HEIGHT * gameScale}px; flex-shrink: 0;"
+    style="height: {controlPanelPos.height}px; flex-shrink: 0;"
   />
 </div> <!-- Suljetaan control panel -->
 </div> <!-- Suljetaan canvas-kontti -->

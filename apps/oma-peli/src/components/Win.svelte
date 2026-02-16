@@ -31,7 +31,13 @@
 
 	context.eventEmitter.subscribeOnMount({
 		winShow: () => (show = true),
-		winHide: () => (show = false),
+		winHide: async () => {
+			show = false;
+			// Odotetaan fade-out animaation valmistumista
+			await waitForResolve((resolve) => {
+				setTimeout(resolve, 300); // FadeContainer default duration
+			});
+		},
 		winUpdate: async (emitterEvent) => {
 			amount = emitterEvent.amount;
 			winLevelData = emitterEvent.winLevelData;

@@ -1,5 +1,3 @@
-import _ from 'lodash';
-
 import { recordBookEvent, checkIsMultipleRevealEvents, type BookEventHandlerMap } from 'utils-book';
 import { stateBet, stateUi } from 'state-shared';
 import { sequence } from 'utils-shared/sequence';
@@ -99,15 +97,15 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		eventEmitter.broadcast({ type: 'drawerFold' });
 	},
 	updateFreeSpin: async (bookEvent: BookEventOfType<'updateFreeSpin'>) => {
-		eventEmitter.broadcast({ type: 'freeSpinCounterShow' });
 		stateUi.freeSpinCounterShow = true;
+		stateUi.freeSpinCounterTotal = bookEvent.total;
+		
+		eventEmitter.broadcast({ type: 'freeSpinCounterShow' });
 		eventEmitter.broadcast({
 			type: 'freeSpinCounterUpdate',
 			current: bookEvent.amount + 1,
 			total: bookEvent.total,
 		});
-		stateUi.freeSpinCounterTotal = bookEvent.amount + 1;
-		stateUi.freeSpinCounterTotal = bookEvent.total;
 	},
 	freeSpinEnd: async (bookEvent: BookEventOfType<'freeSpinEnd'>) => {
 		const winLevelData = winLevelMap[bookEvent.winLevel as WinLevel];
@@ -118,13 +116,18 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		eventEmitter.broadcast({ type: 'freeSpinOutroShow' });
 		eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_youwon_panel' });
 		winLevelSoundsPlay({ winLevelData });
+		
+		// Odotetaan että käyttäjä klikkaa nappia ennen kuin jatketaan
 		await eventEmitter.broadcastAsync({
 			type: 'freeSpinOutroCountUp',
 			amount: bookEvent.amount,
 			winLevelData,
 		});
+		
 		winLevelSoundsStop();
-		eventEmitter.broadcast({ type: 'freeSpinOutroHide' });
+		
+		// Piilotetaan popup vasta napin klikkauksen jälkeen
+		await eventEmitter.broadcastAsync({ type: 'freeSpinOutroHide' });
 		eventEmitter.broadcast({ type: 'freeSpinCounterHide' });
 		stateUi.freeSpinCounterShow = false;
 		await eventEmitter.broadcastAsync({ type: 'transition' });
@@ -137,13 +140,18 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 
 		eventEmitter.broadcast({ type: 'winShow' });
 		winLevelSoundsPlay({ winLevelData });
+		
+		// Odotetaan että käyttäjä klikkaa nappia
 		await eventEmitter.broadcastAsync({
 			type: 'winUpdate',
 			amount: bookEvent.amount,
 			winLevelData,
 		});
+		
 		winLevelSoundsStop();
-		eventEmitter.broadcast({ type: 'winHide' });
+		
+		// Odotetaan fade-out animaation valmistumista
+		await eventEmitter.broadcastAsync({ type: 'winHide' });
 	},
 	finalWin: async (bookEvent: BookEventOfType<'finalWin'>) => {
 		// Do nothing
@@ -153,7 +161,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		const { bookEvents } = bookEvent;
 
 		function findLastBookEvent<T>(type: T) {
-			return _.findLast(bookEvents, (bookEvent) => bookEvent.type === type) as
+			return [...bookEvents].reverse().find((bookEvent) => bookEvent.type === type) as
 				| BookEventOfType<T>
 				| undefined;
 		}
@@ -164,8 +172,8 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		const lastUpdateGlobalMultEvent = findLastBookEvent('updateGlobalMult' as const);
 
 		if (lastFreeSpinTriggerEvent) await playBookEvent(lastFreeSpinTriggerEvent, { bookEvents });
-		if (lastUpdateFreeSpinEvent) playBookEvent(lastUpdateFreeSpinEvent, { bookEvents });
-		if (lastSetTotalWinEvent) playBookEvent(lastSetTotalWinEvent, { bookEvents });
-		if (lastUpdateGlobalMultEvent) playBookEvent(lastUpdateGlobalMultEvent, { bookEvents });
+		if (lastUpdateFreeSpinEvent) await playBookEvent(lastUpdateFreeSpinEvent, { bookEvents });
+		if (lastSetTotalWinEvent) await playBookEvent(lastSetTotalWinEvent, { bookEvents });
+		if (lastUpdateGlobalMultEvent) await playBookEvent(lastUpdateGlobalMultEvent, { bookEvents });
 	},
 };
