@@ -407,7 +407,6 @@
   
   // Layout system - NEW!
   import { getCurrentLayout, getCurrentDeviceType, calculateControlPanelPosition } from '../utils/layoutUtils';
-  import GameBackground from './GameBackground.svelte';
   
   // ===== PIXIJS KIRJASTON KOMPONENTIT =====
   // PixiJS on 2D-grafiikkakirjasto joka käyttää WebGL:ää
@@ -461,7 +460,7 @@
   const REEL_FRAMES_WIDTH = 1100;      // Kehysten leveys (leveämpi mobiilia varten)
   
   // LOGO-asetukset (helppo säätää)
-  const LOGO_SCALE = 0.5;     // Logon koko kerroin (1.0 = alkuperäinen koko)
+  const LOGO_SCALE = 1.0;     // Logon koko kerroin (1.0 = alkuperäinen koko)
   const LOGO_X = 30;          // Logon X-siirtymä keskikohdasta (+ = oikealle, - = vasemmalle)
   const LOGO_Y = -10;          // Logon Y-koordinaatti (+ = alaspäin, - = ylöspäin)
   
@@ -506,7 +505,7 @@
 
   // Uudet kuvien URLit
   const BACKGROUND_URL = `${symbolPath}/bg_base.jpg`;    // Uusi taustakuva (1445x1000)
-  const REEL_FRAMES_URL = `${symbolPath}/ReelFrames.png`; // Kiekkojen kehykset
+  const REEL_FRAMES_URL = `${symbolPath}/ReelFrames.png?v=${Date.now()}`; // Kiekkojen kehykset (cache busting)
   const LOGO_URL = `${symbolPath}/RockABillyReels_logo.png`; // Pelin logo
   
   // ===== ÄÄNIEFEKTIT =====
@@ -1780,21 +1779,17 @@
     const textures: Record<SymbolKey, Texture> = {} as any;
 
     try {
-      loadingStatus = "Loading background and UI images...";
-      debugInfo.push(`Loading background: ${BACKGROUND_URL}`);
+      loadingStatus = "Loading UI images...";
       debugInfo.push(`Loading reel frames: ${REEL_FRAMES_URL}`);
       debugInfo.push(`Loading logo: ${LOGO_URL}`);
       
-      // TAUSTAKUVAN JA UI-KUVIEN LATAUS
+      // UI-KUVIEN LATAUS (taustakuva käyttää nyt GameBackground-komponenttia HTML-puolella)
       await Assets.load([
-        {alias: 'background', src: BACKGROUND_URL},
         {alias: 'reelframes', src: REEL_FRAMES_URL},
         {alias: 'logo', src: LOGO_URL}
       ]);
-      backgroundTexture = Texture.from('background');
       reelFramesTexture = Texture.from('reelframes');
       logoTexture = Texture.from('logo');
-      console.log("✅ Background texture created:", backgroundTexture.width, "x", backgroundTexture.height);
       console.log("✅ Reel frames texture created:", reelFramesTexture.width, "x", reelFramesTexture.height);
       console.log("✅ Logo texture created:", logoTexture.width, "x", logoTexture.height);
       debugInfo.push("✅ All UI images loaded");
@@ -2804,13 +2799,6 @@
     width: {CANVAS_WIDTH * gameScale}px;
     height: {CANVAS_HEIGHT * gameScale}px;
   ">
-    <!-- TAUSTAKUVA (UUSI LAYOUT-JÄRJESTELMÄ) -->
-    <GameBackground 
-      layout={currentLayout()} 
-      gameScale={gameScale}
-      backgroundPath="{symbolPath}/bg_base.jpg"
-    />
-    
     <!-- PixiJS canvas sijoitetaan tähän (container-div) -->
     <div 
       bind:this={container}
