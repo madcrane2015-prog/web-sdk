@@ -1,5 +1,3 @@
-import _ from 'lodash';
-
 import { recordBookEvent, checkIsMultipleRevealEvents, type BookEventHandlerMap } from 'utils-book';
 import { stateBet } from 'state-shared';
 import { sequence } from 'utils-shared/sequence';
@@ -143,7 +141,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		const { bookEvents } = bookEvent;
 
 		function findLastBookEvent<T>(type: T) {
-			return _.findLast(bookEvents, (bookEvent) => bookEvent.type === type) as
+			return [...bookEvents].reverse().find((bookEvent) => bookEvent.type === type) as
 				| BookEventOfType<T>
 				| undefined;
 		}
@@ -154,8 +152,8 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		const lastUpdateGlobalMultEvent = findLastBookEvent('updateGlobalMult' as const);
 
 		if (lastFreeSpinTriggerEvent) await playBookEvent(lastFreeSpinTriggerEvent, { bookEvents });
-		if (lastUpdateFreeSpinEvent) playBookEvent(lastUpdateFreeSpinEvent, { bookEvents });
-		if (lastSetTotalWinEvent) playBookEvent(lastSetTotalWinEvent, { bookEvents });
-		if (lastUpdateGlobalMultEvent) playBookEvent(lastUpdateGlobalMultEvent, { bookEvents });
+		if (lastUpdateFreeSpinEvent) await playBookEvent(lastUpdateFreeSpinEvent, { bookEvents });
+		if (lastSetTotalWinEvent) await playBookEvent(lastSetTotalWinEvent, { bookEvents });
+		if (lastUpdateGlobalMultEvent) await playBookEvent(lastUpdateGlobalMultEvent, { bookEvents });
 	},
 };

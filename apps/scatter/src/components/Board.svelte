@@ -47,7 +47,7 @@
 					if (reelSymbol.rawSymbol.name === 'M') {
 						reelSymbol.rawSymbol = {
 							...reelSymbol.rawSymbol,
-							name: 'M_TAKEN', // TODO fix type error
+							name: 'M_TAKEN',
 						};
 					}
 				});

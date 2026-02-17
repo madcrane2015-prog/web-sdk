@@ -297,28 +297,9 @@
     display: none !important;
   }
   
-  /* Skaalataan debug ja control panel mobiilissa */
-  @media (max-width: 768px) {
-    .control-panel-mobile {
-      transform: scale(0.8) !important;
-      transform-origin: bottom center !important;
-    }
-  }
-  
   /* Mobiili portrait-tila - pelialue isompi, kontrollit alareunaan */
+  /* HUOM: Sijainti tulee nyt layoutConfig.ts:stä - CSS ei enää ylikirjoita */
   @media (max-width: 768px) and (orientation: portrait) {
-    .control-panel-mobile {
-      position: fixed !important;
-      bottom: 5px !important;
-      top: auto !important;
-      left: 50% !important;
-      transform: translateX(-50%) scale(0.85) !important;
-      transform-origin: bottom center !important;
-      width: 98vw !important;
-      max-width: 500px !important;
-      z-index: 2000 !important;
-    }
-    
     /* Debug-nappi pienemmmäksi ja yläkulmaan */
     button[style*="position: absolute"][style*="z-index: 10000"] {
       position: fixed !important;
@@ -357,13 +338,8 @@
   }
   
   /* Mobiili landscape-tila - myös yksinkertaistettu layout */
+  /* HUOM: Sijainti tulee nyt layoutConfig.ts:stä - CSS ei enää ylikirjoita */
   @media (max-width: 768px) and (orientation: landscape) {
-    .control-panel-mobile {
-      transform: scale(0.80) !important;
-      width: 75vw !important;
-      max-width: 500px !important;
-    }
-    
     .desktop-controls {
       display: none !important;
     }
@@ -3059,7 +3035,7 @@
     position: relative;
     gap: {20 * gameScale}px;
   ">
-    <!-- Vasen puoli (BET ja BALANCE) -->
+    <!-- Vasen puoli (BET desktop/landscape, BALANCE, tai Menu portrait) -->
     <div style="flex: 1; display: flex; align-items: center; justify-content: space-around; min-width: 0;">
       <!-- Menu nappi (näkyy vain mobiilissa, vasemmalla) -->
       <div class="hide-on-desktop" style="display: none; align-items: center; justify-content: center; margin-right: {10 * gameScale}px;">
@@ -3079,7 +3055,8 @@
         ></button>
       </div>
       
-      <!-- BET kontrollit -->
+      <!-- BET kontrollit (desktop ja landscape) -->
+      {#if deviceType() !== 'android-portrait' && deviceType() !== 'iphone-portrait'}
       <div style="display: flex; flex-direction: column; align-items: center;">
         <div style="color: #00ff00; font-size: {12 * gameScale}px; font-weight: bold; line-height: 1; height: {16 * gameScale}px; display: flex; align-items: flex-end; padding-bottom: {2 * gameScale}px;">BET</div>
         <div style="display: flex; gap: {5 * gameScale}px; align-items: center; height: {44 * gameScale}px;">
@@ -3123,6 +3100,7 @@
           ></button>
         </div>
       </div>
+      {/if}
       
       <!-- Divider -->
       <img 
@@ -3207,8 +3185,55 @@
       </div>
     </div>
     
-    <!-- Oikea puoli (Autoplay, Spin Speed, WIN, Menu) -->
+    <!-- Oikea puoli (BET portrait, Autoplay, Spin Speed, WIN, Menu) -->
     <div style="flex: 1; display: flex; align-items: center; justify-content: space-around; min-width: 0;">
+      <!-- BET kontrollit (portrait-mobiili) -->
+      {#if deviceType() === 'android-portrait' || deviceType() === 'iphone-portrait'}
+      <div style="display: flex; flex-direction: column; align-items: center;">
+        <div style="color: #00ff00; font-size: {12 * gameScale}px; font-weight: bold; line-height: 1; height: {16 * gameScale}px; display: flex; align-items: flex-end; padding-bottom: {2 * gameScale}px;">BET</div>
+        <div style="display: flex; gap: {5 * gameScale}px; align-items: center; height: {44 * gameScale}px;">
+          <button
+            on:click={decreaseBet}
+            style="
+              width: {40 * gameScale}px;
+              height: {40 * gameScale}px;
+              background-image: url('{controlsPath}/Control_lowerbet_select.png');
+              background-size: contain;
+              background-repeat: no-repeat;
+              border: none;
+              cursor: pointer;
+              background-color: transparent;
+            "
+            title="Decrease Bet"
+          ></button>
+          <div style="
+            color: #fff;
+            font-size: {18 * gameScale}px;
+            font-weight: bold;
+            min-width: {80 * gameScale}px;
+            text-align: center;
+            font-family: 'Courier New', monospace;
+          ">
+            {betAmount.toFixed(2)}
+          </div>
+          <button
+            on:click={increaseBet}
+            style="
+              width: {40 * gameScale}px;
+              height: {40 * gameScale}px;
+              background-image: url('{controlsPath}/Control_upperbet_select.png');
+              background-size: contain;
+              background-repeat: no-repeat;
+              border: none;
+              cursor: pointer;
+              background-color: transparent;
+            "
+            title="Increase Bet"
+          ></button>
+        </div>
+      </div>
+      {/if}
+      
       <!-- Autoplay nappi -->
       <div class="hide-on-mobile" style="display: flex; flex-direction: column; align-items: center; gap: {5 * gameScale}px;">
         <button

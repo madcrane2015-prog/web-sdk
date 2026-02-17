@@ -86,13 +86,13 @@ export const LAYOUT_ANDROID_PORTRAIT: LayoutConfig = {
   gameArea: {
     width: 1445,
     height: 1000,
-    scale: 0.95,            // Pelialue 95% selainikkunasta
+    scale: 1.0,            // Pelialue 95% selainikkunasta
     offsetX: 0,
     offsetY: -20,
   },
   controlPanel: {
     x: 250,
-    y: 820,                 // Alemmas mobiilissa
+    y: 790,                 // Alemmas mobiilissa
     width: 1100,
     height: 70,             // Matalampi
     scaleX: 0.85,
