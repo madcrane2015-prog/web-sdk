@@ -369,7 +369,7 @@
 </style>
 <script lang="ts">
   // Game version
-  const GAME_VERSION = "1.4.9";
+  const GAME_VERSION = "1.5.0";
   
   // Svelte lifecycle ja routing
   import { onMount } from "svelte";
@@ -3055,8 +3055,8 @@
         ></button>
       </div>
       
-      <!-- BET kontrollit (desktop ja landscape) -->
-      {#if deviceType() !== 'android-portrait' && deviceType() !== 'iphone-portrait'}
+      <!-- BET kontrollit (vain desktop) -->
+      {#if deviceType() === 'desktop'}
       <div style="display: flex; flex-direction: column; align-items: center;">
         <div style="color: #00ff00; font-size: {12 * gameScale}px; font-weight: bold; line-height: 1; height: {16 * gameScale}px; display: flex; align-items: flex-end; padding-bottom: {2 * gameScale}px;">BET</div>
         <div style="display: flex; gap: {5 * gameScale}px; align-items: center; height: {44 * gameScale}px;">
@@ -3185,10 +3185,10 @@
       </div>
     </div>
     
-    <!-- Oikea puoli (BET portrait, Autoplay, Spin Speed, WIN, Menu) -->
+    <!-- Oikea puoli (BET mobiili, Autoplay, Spin Speed, WIN, Menu) -->
     <div style="flex: 1; display: flex; align-items: center; justify-content: space-around; min-width: 0;">
-      <!-- BET kontrollit (portrait-mobiili) -->
-      {#if deviceType() === 'android-portrait' || deviceType() === 'iphone-portrait'}
+      <!-- BET kontrollit (kaikki mobiilitilat) -->
+      {#if deviceType() !== 'desktop'}
       <div style="display: flex; flex-direction: column; align-items: center;">
         <div style="color: #00ff00; font-size: {12 * gameScale}px; font-weight: bold; line-height: 1; height: {16 * gameScale}px; display: flex; align-items: flex-end; padding-bottom: {2 * gameScale}px;">BET</div>
         <div style="display: flex; gap: {5 * gameScale}px; align-items: center; height: {44 * gameScale}px;">
