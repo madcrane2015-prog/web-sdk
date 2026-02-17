@@ -369,7 +369,7 @@
 </style>
 <script lang="ts">
   // Game version
-  const GAME_VERSION = "1.4.8";
+  const GAME_VERSION = "1.4.9";
   
   // Svelte lifecycle ja routing
   import { onMount } from "svelte";
