@@ -57,7 +57,7 @@
 		left: 0;
 		width: 100vw;
 		height: 100vh;
-		background-color: #000;
+		background-color: #1a1a1a;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
@@ -66,7 +66,7 @@
 	">
 		<!-- MadCrane Logo -->
 		<img 
-			src="{base}/loading_screen/MadCraneLogo.jpg" 
+			src="{base}/loading_screen/madcrane_loader.png" 
 			alt="MadCrane Logo"
 			style="
 				max-width: 400px;
