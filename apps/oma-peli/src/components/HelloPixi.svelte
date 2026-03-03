@@ -437,7 +437,7 @@
   const REEL_FRAMES_WIDTH = 1100;      // Kehysten leveys (leveämpi mobiilia varten)
   
   // LOGO-asetukset (helppo säätää)
-  const LOGO_SCALE = 1.0;     // Logon koko kerroin (1.0 = alkuperäinen koko)
+  const LOGO_SCALE = 0.5;     // Logon koko kerroin (1.0 = alkuperäinen koko)
   const LOGO_X = 30;          // Logon X-siirtymä keskikohdasta (+ = oikealle, - = vasemmalle)
   const LOGO_Y = -10;          // Logon Y-koordinaatti (+ = alaspäin, - = ylöspäin)
   
