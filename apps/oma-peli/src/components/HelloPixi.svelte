@@ -373,9 +373,9 @@
   import { onMount } from "svelte";
   import { base } from "$app/paths";
   
-  // Game version from package.json
-  import pkg from '../../package.json';
-  const GAME_VERSION = pkg.version;
+  // Game version
+  import { VERSION } from '../version';
+  const GAME_VERSION = VERSION;
   
   // Win animation component
   import VinylWinAnimation from './VinylWinAnimation.svelte';

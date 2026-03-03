@@ -11,7 +11,7 @@
 	import { GameVersion, Modals } from 'components-ui-html';
 
 	import { getContext } from '../game/context';
-	import pkg from '../../package.json';
+	import { VERSION } from '../version';
 	import EnableSound from './EnableSound.svelte';
 	import EnableGameActor from './EnableGameActor.svelte';
 	import ResumeBet from './ResumeBet.svelte';
@@ -99,6 +99,6 @@
 
 <Modals>
 	{#snippet version()}
-		<GameVersion version={pkg.version} />
+		<GameVersion version={VERSION} />
 	{/snippet}
 </Modals>
