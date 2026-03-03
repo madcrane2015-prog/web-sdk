@@ -80,17 +80,17 @@
 		<div style="
 			width: 400px;
 			max-width: 80%;
-			height: 30px;
+			height: 20px; //muutettu 03032026
 			background-color: #222;
-			border-radius: 15px;
+			border-radius: 10px; //muutettu 03032026
 			overflow: hidden;
-			border: 2px solid #444;
+			border: 1px solid #444; //muutettu 03032026
 		">
 			<!-- Loading Bar Progress -->
 			<div style="
 				width: {loadingProgress}%;
 				height: 100%;
-				background: linear-gradient(90deg, #ff0000, #ff6600);
+				background: linear-gradient(90deg, #aaaaaa, #cccccc);
 				transition: width 0.3s ease;
 			"></div>
 		</div>

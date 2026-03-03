@@ -66,6 +66,7 @@
   - Wild on middle reel: 55% probability
   
   VERSION HISTORY:
+  - v1.5.2: High-resolution logo (796×552px) with improved antialiasing, mipmaps, and retina display support
   - v1.3.1: Poistettu "HELLO MAD CRANE" teksti, palautettu pieni bounce effect (8px, 0.85 damping), tehty wrapper läpinäkyväksi
   - v1.3.0: Poistettu reelien taustalla olevat värilliset debug-neliöt ja numerot
   - v1.2.9: Poistettu kiekon pomppuefekti [PALAUTETTU v1.3.1 pienempänä]
@@ -1669,7 +1670,10 @@
     await app.init({
       width: CANVAS_WIDTH,     // Canvas leveys pikseleinä (1445px)
       height: CANVAS_HEIGHT,   // Canvas korkeus pikseleinä (1000px)
-      backgroundAlpha: 0       // Läpinäkyvä tausta (taustakuva asetetaan CSS:llä)
+      backgroundAlpha: 0,      // Läpinäkyvä tausta (taustakuva asetetaan CSS:llä)
+      antialias: true,         // Antialiasing päälle - sileät reunat
+      resolution: window.devicePixelRatio || 1, // Käytä laitteen pixel ratiota (retina-tuki)
+      autoDensity: true        // Automaattinen CSS-skaalaus retina-näytöille
     });
 
     // Liitä PixiJS canvas HTML-elementtiin (container-diviin)
@@ -1766,6 +1770,25 @@
       ]);
       reelFramesTexture = Texture.from('reelframes');
       logoTexture = Texture.from('logo');
+      
+      // Aseta antialiasing ja korkea laatu UI-tekstuureille
+      if (reelFramesTexture.source) {
+        reelFramesTexture.source.scaleMode = 'linear';
+        // @ts-ignore - PixiJS 8 antialias
+        reelFramesTexture.source.antialias = true;
+        reelFramesTexture.source.autoGenerateMipmaps = true;
+      }
+      if (logoTexture.source) {
+        logoTexture.source.scaleMode = 'linear';
+        // @ts-ignore - PixiJS 8 antialias  
+        logoTexture.source.antialias = true;
+        logoTexture.source.autoGenerateMipmaps = true;
+        // Käytä korkeampaa resoluutiota mobiilille
+        if (window.devicePixelRatio > 1) {
+          logoTexture.source.resolution = window.devicePixelRatio;
+        }
+      }
+      
       console.log("✅ Reel frames texture created:", reelFramesTexture.width, "x", reelFramesTexture.height);
       console.log("✅ Logo texture created:", logoTexture.width, "x", logoTexture.height);
       debugInfo.push("✅ All UI images loaded");
@@ -1786,6 +1809,13 @@
         
         try {
           const texture = Texture.from(key); // Käytä aliasta
+          
+          // Aseta antialiasing päälle symbolitekstuureille
+          if (texture.source) {
+            texture.source.scaleMode = 'linear';
+            texture.source.antialias = true;
+          }
+          
           textures[key] = texture;
           console.log(`✅ Symbol ${key} loaded:`, texture.width, "x", texture.height);
           debugInfo.push(`✅ Symbol ${key} loaded`);
@@ -2005,18 +2035,23 @@
     
     // ===== 7) PELIN LOGO (PÄÄLLIMMÄINEN LAYER) =====
     if (logoTexture) {
-      // Käytetään linear scaleMode ja antialias parempaa skaalautuvuutta varten
+      // Varmista parhaat laatu-asetukset
       if (logoTexture.source) {
         logoTexture.source.scaleMode = 'linear';
+        // @ts-ignore - PixiJS 8 antialias
         logoTexture.source.antialias = true;
+        logoTexture.source.autoGenerateMipmaps = true;
         // Varmista että tekstuuri päivittyy
         logoTexture.source.update();
       }
       
       const logoSprite = new Sprite(logoTexture);
       
-      // Sileä skaalautuminen ilman roundPixels-rajoitusta
+      // Sileä skaalautuminen - roundPixels OFF estää pikselöitymisen
       logoSprite.roundPixels = false;
+      
+      // Parempi tekstuurin suodatus (bilinear interpolation)
+      logoSprite.texture.source.scaleMode = 'linear';
       
       // Käytä määriteltyjä logo-asetuksia
       logoSprite.scale.set(LOGO_SCALE);
