@@ -369,12 +369,13 @@
   }
 </style>
 <script lang="ts">
-  // Game version
-  const GAME_VERSION = "1.5.1";
-  
   // Svelte lifecycle ja routing
   import { onMount } from "svelte";
   import { base } from "$app/paths";
+  
+  // Game version from package.json
+  import pkg from '../../package.json';
+  const GAME_VERSION = pkg.version;
   
   // Win animation component
   import VinylWinAnimation from './VinylWinAnimation.svelte';
