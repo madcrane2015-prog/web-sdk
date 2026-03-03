@@ -369,7 +369,7 @@
 </style>
 <script lang="ts">
   // Game version
-  const GAME_VERSION = "1.5.0";
+  const GAME_VERSION = "1.5.1";
   
   // Svelte lifecycle ja routing
   import { onMount } from "svelte";
@@ -2005,18 +2005,18 @@
     
     // ===== 7) PELIN LOGO (PÄÄLLIMMÄINEN LAYER) =====
     if (logoTexture) {
-      // Käytetään nearest scaleMode parempaa laatu varten (ei blur-efektiä)
+      // Käytetään linear scaleMode ja antialias parempaa skaalautuvuutta varten
       if (logoTexture.source) {
-        logoTexture.source.scaleMode = 'nearest';
-        logoTexture.source.antialias = false;
+        logoTexture.source.scaleMode = 'linear';
+        logoTexture.source.antialias = true;
         // Varmista että tekstuuri päivittyy
         logoTexture.source.update();
       }
       
       const logoSprite = new Sprite(logoTexture);
       
-      // Aseta myös sprite-tason asetukset terävää renderöintiä varten
-      logoSprite.roundPixels = true;  // Pyöristä pikselit
+      // Sileä skaalautuminen ilman roundPixels-rajoitusta
+      logoSprite.roundPixels = false;
       
       // Käytä määriteltyjä logo-asetuksia
       logoSprite.scale.set(LOGO_SCALE);
