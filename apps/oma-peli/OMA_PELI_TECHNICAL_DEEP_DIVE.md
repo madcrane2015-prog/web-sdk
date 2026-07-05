@@ -815,7 +815,9 @@ Recommendation: clean these when the SDK path is next touched.
 
 Phase 02 fixed the stale standalone layout trigger. `HelloPixi` now refreshes `viewportModel`, increments `layoutUpdateTrigger`, and applies the centralized `viewportModel.gameScale` during resize. Safe-area-aware offsets are applied to top-right controls and the bottom control panel when safe-area inset values are available.
 
-Recommendation: manually validate desktop resize, mobile portrait, and mobile landscape in a browser before larger mobile UI refactors. The code path is now reactive, but visual fit still depends on the existing layout constants.
+The UI refactor Phase 01 added a responsive viewport-class model in `src/utils/layoutUtils.ts`. `ViewportModel` now exposes `viewportClass`, safe-area-adjusted usable dimensions, touch/compact/wide flags, and `usesViewportAnchoredTopActions`. `HelloPixi` now uses that model instead of a local `isMobile || height <= 500` expression for top action anchoring. Browser checks confirmed this fixes the expanded-baseline top-action failures at `1024x768` and `1366x768`, while keeping compact behavior at `844x390` and `900x500` and desktop behavior at `2560x1080`.
+
+Recommendation: manually validate desktop resize, mobile portrait, and mobile landscape in a browser before larger mobile UI refactors. The code path is now reactive and shape-aware, but visual fit still depends on hard-coded geometry constants that should move into layout tokens in the next UI phase.
 
 ### 9. Final Refactor Status After Phase 10
 
@@ -824,6 +826,7 @@ Phases 00 through 10 are now completed in `OMA_PELI_REFACTOR_PLAN.yaml`. The fir
 Known unresolved items remain:
 
 - A deeper UI refactor is still needed to make mobile portrait feel full, handle unusual monitor/window shapes, reduce inline layout arithmetic, and extract the remaining control/menu UI from `HelloPixi`; this is planned in `OMA_PELI_UI_REFACTOR_PHASES.md`.
+- UI refactor Phase 02 remains needed to centralize layout tokens; Phase 01 classified viewport shapes but did not remove scattered geometry values.
 - Real-device mobile validation remains needed; the known phase 06 top-toggle, spin-size, and menu-close viewport failures were fixed and rechecked with browser viewport automation.
 - The deployed route remains local/client-simulated and is not RGS-authoritative.
 - Some simulator/math documents still reflect older math states and should not be treated as runtime truth.

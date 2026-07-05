@@ -12,11 +12,29 @@ import {
 	type DeviceType,
 } from '../config/layoutConfig';
 
+export type ViewportClass =
+	| 'phonePortraitCompact'
+	| 'phonePortrait'
+	| 'phoneLandscapeCompact'
+	| 'tabletPortrait'
+	| 'tabletLandscape'
+	| 'desktopShort'
+	| 'desktopStandard'
+	| 'desktopWide';
+
 export interface ViewportModel {
 	width: number;
 	height: number;
+	usableWidth: number;
+	usableHeight: number;
 	isMobile: boolean;
+	isTouchLayout: boolean;
 	isPortrait: boolean;
+	isCompactHeight: boolean;
+	isWide: boolean;
+	isCompactViewport: boolean;
+	usesViewportAnchoredTopActions: boolean;
+	viewportClass: ViewportClass;
 	safeAreaInsets: {
 		top: number;
 		right: number;
@@ -42,18 +60,99 @@ export interface ControlPanelPosition {
 export function createViewportModel(canvasSize: CanvasSize): ViewportModel {
 	const width = typeof window === 'undefined' ? canvasSize.width : window.innerWidth;
 	const height = typeof window === 'undefined' ? canvasSize.height : window.innerHeight;
-	const isMobile = width <= 768;
+	const safeAreaInsets = readSafeAreaInsets();
+	const usableWidth = Math.max(0, width - safeAreaInsets.left - safeAreaInsets.right);
+	const usableHeight = Math.max(0, height - safeAreaInsets.top - safeAreaInsets.bottom);
 	const isPortrait = height > width;
+	const viewportClass = getViewportClass({ width, height, usableWidth, usableHeight, isPortrait });
+	const isTouchLayout = isTouchViewportClass(viewportClass);
+	const isCompactHeight = usableHeight <= 500 || viewportClass === 'desktopShort';
+	const isWide = viewportClass === 'desktopWide';
+	const isCompactViewport = isCompactViewportClass(viewportClass);
+	const isMobile = isPhoneViewportClass(viewportClass);
+	const usesViewportAnchoredTopActions =
+		isCompactViewport || viewportClass === 'tabletLandscape' || usableWidth < 1400;
 
 	return {
 		width,
 		height,
+		usableWidth,
+		usableHeight,
 		isMobile,
+		isTouchLayout,
 		isPortrait,
-		safeAreaInsets: readSafeAreaInsets(),
+		isCompactHeight,
+		isWide,
+		isCompactViewport,
+		usesViewportAnchoredTopActions,
+		viewportClass,
+		safeAreaInsets,
 		deviceType: getDeviceType(),
 		gameScale: calculateGameScale({ width, height, isMobile, isPortrait }, canvasSize),
 	};
+}
+
+export function getViewportClass(viewport: {
+	width: number;
+	height: number;
+	usableWidth?: number;
+	usableHeight?: number;
+	isPortrait?: boolean;
+}): ViewportClass {
+	const usableWidth = viewport.usableWidth ?? viewport.width;
+	const usableHeight = viewport.usableHeight ?? viewport.height;
+	const isPortrait = viewport.isPortrait ?? viewport.height > viewport.width;
+	const aspectRatio = usableHeight > 0 ? usableWidth / usableHeight : 1;
+
+	if (usableWidth <= 390 && isPortrait) {
+		return usableHeight < 780 ? 'phonePortraitCompact' : 'phonePortrait';
+	}
+
+	if (usableWidth <= 480 && isPortrait) {
+		return 'phonePortrait';
+	}
+
+	if (usableHeight <= 430 && usableWidth > usableHeight) {
+		return 'phoneLandscapeCompact';
+	}
+
+	if (usableWidth <= 900 && isPortrait) {
+		return 'tabletPortrait';
+	}
+
+	if (usableWidth <= 1200 && usableHeight <= 900) {
+		return 'tabletLandscape';
+	}
+
+	if (usableWidth > 900 && usableHeight <= 700) {
+		return 'desktopShort';
+	}
+
+	if (aspectRatio >= 2) {
+		return 'desktopWide';
+	}
+
+	return 'desktopStandard';
+}
+
+function isPhoneViewportClass(viewportClass: ViewportClass): boolean {
+	return (
+		viewportClass === 'phonePortraitCompact' ||
+		viewportClass === 'phonePortrait' ||
+		viewportClass === 'phoneLandscapeCompact'
+	);
+}
+
+function isTouchViewportClass(viewportClass: ViewportClass): boolean {
+	return isPhoneViewportClass(viewportClass) || viewportClass === 'tabletPortrait';
+}
+
+function isCompactViewportClass(viewportClass: ViewportClass): boolean {
+	return (
+		isPhoneViewportClass(viewportClass) ||
+		viewportClass === 'tabletLandscape' ||
+		viewportClass === 'desktopShort'
+	);
 }
 
 export function calculateGameScale(

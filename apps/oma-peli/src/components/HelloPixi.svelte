@@ -729,7 +729,7 @@
 	const debugButtonTop = $derived(getSafeTopPosition(190 * gameScale, viewportModel));
 	const audioButtonTop = $derived(getSafeTopPosition(10 * gameScale, viewportModel));
 	const audioButtonRight = $derived(getSafeRightPosition(10 * gameScale, viewportModel));
-	const isCompactViewport = $derived(viewportModel.isMobile || viewportModel.height <= 500);
+	const usesViewportAnchoredTopActions = $derived(viewportModel.usesViewportAnchoredTopActions);
 
 	onMount(() => {
 		let destroyed = false;
@@ -1872,7 +1872,7 @@
 			<TopToggles
 				{controlsPath}
 				{gameScale}
-				isMobile={isCompactViewport}
+				isMobile={usesViewportAnchoredTopActions}
 				paytableTop={paytableButtonTop}
 				debugTop={debugButtonTop}
 				topRight={topButtonRight}

@@ -381,6 +381,17 @@ progress:
         density notes, control rectangles, and modal fit in UI_TEST_MATRIX.md.
         No production code was changed. Next UI phase is Phase 01: define a
         responsive viewport-class model.
+    - date: '2026-07-05'
+      author: 'GitHub Copilot'
+      note: >-
+        Completed OMA_PELI_UI_REFACTOR_PHASES.md Phase 01 for the deployed
+        HelloPixi route. Added a typed ViewportClass model and derived flags to
+        src/utils/layoutUtils.ts, then routed HelloPixi top action anchoring
+        through viewportModel.usesViewportAnchoredTopActions. get_errors passed
+        for layoutUtils; HelloPixi only reported the known editor-only
+        $app/paths diagnostic. Browser checks confirmed top actions are now
+        visible at 1024x768 and 1366x768, and pnpm run build --filter=oma-peli
+        passed with the known warning set.
 
 phases:
   - id: 'phase_00_workflow_and_docs'

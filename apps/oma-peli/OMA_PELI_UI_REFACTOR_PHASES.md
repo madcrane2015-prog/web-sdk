@@ -9,21 +9,21 @@ This document is an implementation plan, not a retrospective. It should be follo
 
 ## Phase Progress
 
-| Phase                                                                    | Status      | Last Updated | Notes                                                                                 |
-| ------------------------------------------------------------------------ | ----------- | ------------ | ------------------------------------------------------------------------------------- |
-| Phase 00 - Baseline Capture And UI Contract                              | completed   | 2026-07-05   | Expanded viewport matrix recorded in `UI_TEST_MATRIX.md`. No production code changed. |
-| Phase 01 - Define Responsive Layout Model                                | not started | -            | Next implementation phase.                                                            |
-| Phase 02 - Establish Layout Tokens And Geometry Rules                    | not started | -            | -                                                                                     |
-| Phase 03 - Recompose Mobile Portrait For Fullness                        | not started | -            | -                                                                                     |
-| Phase 04 - Recompose Mobile Landscape And Short Screens                  | not started | -            | -                                                                                     |
-| Phase 05 - Extract A Real Control Shell                                  | not started | -            | -                                                                                     |
-| Phase 06 - Replace The Menu/Paytable With A Modal System                 | not started | -            | -                                                                                     |
-| Phase 07 - Make The Game Stage Responsive By Composition, Not Only Scale | not started | -            | -                                                                                     |
-| Phase 08 - Visual Polish And Density Pass                                | not started | -            | -                                                                                     |
-| Phase 09 - Accessibility And Input Behavior Pass                         | not started | -            | -                                                                                     |
-| Phase 10 - Automated Layout Regression Harness                           | not started | -            | -                                                                                     |
-| Phase 11 - Real Device And Browser Compatibility Pass                    | not started | -            | -                                                                                     |
-| Phase 12 - Final UI Acceptance And Cleanup                               | not started | -            | -                                                                                     |
+| Phase                                                                    | Status      | Last Updated | Notes                                                                                  |
+| ------------------------------------------------------------------------ | ----------- | ------------ | -------------------------------------------------------------------------------------- |
+| Phase 00 - Baseline Capture And UI Contract                              | completed   | 2026-07-05   | Expanded viewport matrix recorded in `UI_TEST_MATRIX.md`. No production code changed.  |
+| Phase 01 - Define Responsive Layout Model                                | completed   | 2026-07-05   | Added viewport classes and routed compact/top-action behavior through `ViewportModel`. |
+| Phase 02 - Establish Layout Tokens And Geometry Rules                    | not started | -            | Next implementation phase.                                                             |
+| Phase 03 - Recompose Mobile Portrait For Fullness                        | not started | -            | -                                                                                      |
+| Phase 04 - Recompose Mobile Landscape And Short Screens                  | not started | -            | -                                                                                      |
+| Phase 05 - Extract A Real Control Shell                                  | not started | -            | -                                                                                      |
+| Phase 06 - Replace The Menu/Paytable With A Modal System                 | not started | -            | -                                                                                      |
+| Phase 07 - Make The Game Stage Responsive By Composition, Not Only Scale | not started | -            | -                                                                                      |
+| Phase 08 - Visual Polish And Density Pass                                | not started | -            | -                                                                                      |
+| Phase 09 - Accessibility And Input Behavior Pass                         | not started | -            | -                                                                                      |
+| Phase 10 - Automated Layout Regression Harness                           | not started | -            | -                                                                                      |
+| Phase 11 - Real Device And Browser Compatibility Pass                    | not started | -            | -                                                                                      |
+| Phase 12 - Final UI Acceptance And Cleanup                               | not started | -            | -                                                                                      |
 
 ## Product Standard
 
@@ -135,7 +135,8 @@ Findings to carry into Phase 01:
 
 ## Phase 01 - Define Responsive Layout Model
 
-Status: not started  
+Status: completed
+
 Target files: `src/utils/layoutUtils.ts`, `src/config/layoutConfig.ts`, `OMA_PELI_TECHNICAL_DEEP_DIVE.md`.
 
 ### Objective
@@ -175,6 +176,29 @@ Replace ambiguous device buckets with a viewport-class model that can handle rea
 - `get_errors` on `layoutUtils.ts`, `layoutConfig.ts`, and `HelloPixi.svelte` if touched.
 - `pnpm run build --filter=oma-peli`.
 - Browser console/debug readout confirms expected classes for every required viewport.
+
+### Completion Notes
+
+Completed on 2026-07-05 for the deployed `HelloPixi` route.
+
+Implemented:
+
+- Added `ViewportClass` and pure `getViewportClass()` in `src/utils/layoutUtils.ts`.
+- Extended `ViewportModel` with `usableWidth`, `usableHeight`, `viewportClass`, `isTouchLayout`, `isCompactHeight`, `isWide`, `isCompactViewport`, and `usesViewportAnchoredTopActions`.
+- Replaced the local `HelloPixi` compact-top-action expression with `viewportModel.usesViewportAnchoredTopActions`.
+- Preserved existing `DeviceType` compatibility for legacy layout config while moving new UI decisions to viewport classes.
+
+Validation results:
+
+- `get_errors` passed for `layoutUtils.ts`; `HelloPixi.svelte` only reports the existing editor-only `$app/paths` diagnostic.
+- `pnpm run build --filter=oma-peli` passed with the known warning set.
+- Browser checks confirmed top actions are now fully visible at the Phase 00 hard-failure viewports `1024x768` and `1366x768`.
+- Browser checks also confirmed compact top actions remain visible at `844x390` and `900x500`, while `2560x1080` keeps the desktop top actions.
+
+Findings to carry into Phase 02:
+
+- The viewport model now classifies the screen shape, but hard-coded geometry numbers still live in `HelloPixi` and CSS media queries.
+- Phase 02 should move spin sizes, top action sizes, modal dimensions, and bottom safe gaps into layout tokens keyed by `ViewportClass`.
 
 ## Phase 02 - Establish Layout Tokens And Geometry Rules
 
