@@ -18,6 +18,10 @@
 		getCurrentLayout,
 		getCurrentDeviceType,
 		calculateControlPanelPosition,
+		createViewportModel,
+		applyControlPanelSafeArea,
+		getSafeRightPosition,
+		getSafeTopPosition,
 	} from '../utils/layoutUtils';
 
 	// ===== PIXIJS KIRJASTON KOMPONENTIT =====
@@ -44,6 +48,7 @@
 	// ===== LAYOUT JÄRJESTELMÄ (UUSI!) =====
 	// Layout state - päivittyy ikkunan koon muuttuessa
 	let layoutUpdateTrigger = $state(0);
+	let viewportModel = $state(createViewportModel({ width: 1445, height: 1000 }));
 	const currentLayout = $derived(() => {
 		layoutUpdateTrigger;
 		return getCurrentLayout();
@@ -1335,7 +1340,19 @@
 	let gameScale = $state(1);
 
 	// Control panel position (lasketaan gameScalen kanssa)
-	const controlPanelPos = $derived(calculateControlPanelPosition(currentLayout(), gameScale));
+	const controlPanelPos = $derived(
+		applyControlPanelSafeArea(
+			calculateControlPanelPosition(currentLayout(), gameScale),
+			viewportModel,
+			CANVAS_HEIGHT,
+			gameScale,
+		),
+	);
+	const topButtonRight = $derived(getSafeRightPosition(20 * gameScale, viewportModel));
+	const paytableButtonTop = $derived(getSafeTopPosition(130 * gameScale, viewportModel));
+	const debugButtonTop = $derived(getSafeTopPosition(190 * gameScale, viewportModel));
+	const audioButtonTop = $derived(getSafeTopPosition(10 * gameScale, viewportModel));
+	const audioButtonRight = $derived(getSafeRightPosition(10 * gameScale, viewportModel));
 
 	onMount(async () => {
 		// ===== 1) PIXIJS SOVELLUKSEN LUONTI =====
@@ -1356,29 +1373,9 @@
 		// ===== 2) RESPONSIIVINEN SKAALAUS =====
 		// Skaalataan peliä ikkunan koon mukaan mutta ei koskaan suuremmaksi kuin 100%
 		const resizeGame = () => {
-			const windowWidth = window.innerWidth; // Selaimen ikkunan leveys
-			const windowHeight = window.innerHeight; // Selaimen ikkunan korkeus
-			const scaleX = windowWidth / CANVAS_WIDTH; // Leveys-skaalauskertoin
-			const scaleY = windowHeight / CANVAS_HEIGHT; // Korkeus-skaalauskertoin
-
-			// Portrait-moodissa (korkea ja kapea näyttö) kasvatetaan pelialuetta
-			const isPortrait = windowHeight > windowWidth;
-			const isMobile = windowWidth <= 768;
-			let newScale;
-
-			if (isMobile && isPortrait) {
-				// Mobile Portrait: käytä maksimaalinen tila
-				newScale = Math.min(scaleX * 1.0, scaleY * 0.95, 1.2);
-			} else if (isMobile) {
-				// Mobile Landscape: myös suurempi
-				newScale = Math.min(scaleX * 0.98, scaleY * 0.95, 1.1);
-			} else if (isPortrait) {
-				// Desktop Portrait: normaali portrait-skaalaus
-				newScale = Math.min(scaleX * 0.95, scaleY * 0.85, 1);
-			} else {
-				// Desktop Landscape: normaali skaalaus
-				newScale = Math.min(scaleX, scaleY, 1);
-			}
+			viewportModel = createViewportModel({ width: CANVAS_WIDTH, height: CANVAS_HEIGHT });
+			layoutUpdateTrigger += 1;
+			const newScale = viewportModel.gameScale;
 
 			// Päivitä reactive skaalaus (käytetään UI-elementeissä)
 			gameScale = newScale;
@@ -2592,8 +2589,8 @@
 				}}
 				style="
           position: absolute;
-          top: {130 * gameScale}px;
-          right: {20 * gameScale}px;
+						top: {paytableButtonTop}px;
+						right: {topButtonRight}px;
           padding: {10 * gameScale}px {15 * gameScale}px;
           background-color: rgba(255, 215, 0, 0.3);
           border: {2 * gameScale}px solid rgba(255, 215, 0, 0.7);
@@ -3313,8 +3310,8 @@
 			}}
 			style="
     position: absolute;
-    top: {190 * gameScale}px;
-    right: {20 * gameScale}px;
+	top: {debugButtonTop}px;
+	right: {topButtonRight}px;
     padding: {10 * gameScale}px {15 * gameScale}px;
     background-color: rgba(0, 255, 0, 0.3);
     border: {2 * gameScale}px solid rgba(0, 255, 0, 0.7);
@@ -3555,8 +3552,8 @@
 		<div
 			style="
   position: absolute;
-  top: {10 * gameScale}px;
-  right: {10 * gameScale}px;
+	top: {audioButtonTop}px;
+	right: {audioButtonRight}px;
   display: flex;
   gap: {10 * gameScale}px;
   z-index: 1001;

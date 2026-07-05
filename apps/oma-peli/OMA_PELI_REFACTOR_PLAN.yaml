@@ -144,6 +144,11 @@ progress:
     - '01.04_fix_obvious_identifier_bug'
     - '01.05_remove_or_reconnect_unused_css'
     - '01.06_build_baseline'
+    - '02.01_define_viewport_model'
+    - '02.02_fix_layout_update_trigger'
+    - '02.03_remove_duplicate_scale_logic'
+    - '02.04_safe_area_support'
+    - '02.05_document_layout_truth'
   blocked_steps: []
   agent_journal:
     - date: '2026-07-05'
@@ -194,6 +199,16 @@ progress:
         get_errors passed for all phase target files. pnpm run build
         --filter=oma-peli passed with existing warnings about SvelteKit tsconfig,
         virtual public env exports, and an unused TextStyle import.
+    - date: '2026-07-05'
+      author: 'GitHub Copilot'
+      note: >-
+        Completed phase_02_layout_state_repair for active_deployed_hellopixi.
+        Added a ViewportModel in layoutUtils, centralized existing gameScale
+        calculation, made HelloPixi resize updates increment layoutUpdateTrigger,
+        and added safe-area-aware top/right and bottom control positioning. Code
+        diagnostics passed for HelloPixi, layoutConfig, and layoutUtils. Build
+        passed with the known phase_01 warning set. Manual browser/device resize
+        validation remains queued for later review.
 
 phases:
   - id: 'phase_00_workflow_and_docs'
@@ -301,7 +316,7 @@ phases:
       - 'Update this phase status and agent_journal.'
 
   - id: 'phase_02_layout_state_repair'
-    status: 'not_started'
+    status: 'completed'
     priority: 2
     goal: 'Make device type, orientation, canvas scale, and control panel placement reactive and predictable.'
     why: 'Mobile bugs are likely caused by mixed CSS media queries, non-reactive device detection, and fixed 1445x1000 assumptions.'
@@ -311,17 +326,17 @@ phases:
       - 'src/components/HelloPixi.svelte'
     steps:
       - id: '02.01_define_viewport_model'
-        status: 'not_started'
+        status: 'completed'
         action: 'Add or document a single viewport model with width, height, isMobile, isPortrait, safeAreaInsets, deviceType, and gameScale.'
         output: 'One helper owns device/orientation decisions.'
         validation: 'Typecheck touched TypeScript files through get_errors.'
       - id: '02.02_fix_layout_update_trigger'
-        status: 'not_started'
+        status: 'completed'
         action: 'Increment layoutUpdateTrigger inside resizeGame or replace it with a state object updated by the resize listener.'
         output: 'currentLayout() and deviceType() recompute when viewport/orientation changes.'
         validation: 'Manual dev-server check by resizing browser and logging deviceType/currentLayout from debug panel or console.'
       - id: '02.03_remove_duplicate_scale_logic'
-        status: 'not_started'
+        status: 'completed'
         action: 'Move resizeGame scale calculation into layoutUtils or a new standalone layout module.'
         details:
           - 'Keep existing numeric behavior first.'
@@ -329,15 +344,33 @@ phases:
         output: 'HelloPixi calls a helper instead of owning long viewport math inline.'
         validation: 'Build and manual desktop/mobile viewport smoke check.'
       - id: '02.04_safe_area_support'
-        status: 'not_started'
+        status: 'completed'
         action: 'Add CSS variables or style calculations for iOS safe-area insets around top buttons and bottom control panel.'
         output: 'Top-right buttons and bottom controls avoid notches/home indicator.'
         validation: 'Manual check using browser mobile emulation for iPhone portrait and landscape.'
       - id: '02.05_document_layout_truth'
-        status: 'not_started'
+        status: 'completed'
         action: 'Update OMA_PELI_TECHNICAL_DEEP_DIVE.md with the actual final layout model.'
         output: 'Master document no longer warns that layoutUpdateTrigger is stale if fixed.'
         validation: 'Diff confirms docs reflect code.'
+    phase_notes:
+      - date: '2026-07-05'
+        note: >-
+          layoutUtils now owns ViewportModel creation, safe-area inset reading,
+          and the preserved gameScale formula. HelloPixi assigns a fresh
+          viewportModel on resize, increments layoutUpdateTrigger, and then uses
+          viewportModel.gameScale for Pixi stage scaling.
+      - date: '2026-07-05'
+        note: >-
+          Safe-area support is intentionally conservative: when CSS env-derived
+          safe-area variables are zero, existing positions are unchanged. When
+          present, top-right buttons are offset from top/right insets and the
+          control panel is shifted upward from the bottom inset.
+      - date: '2026-07-05'
+        note: >-
+          Manual browser validation for desktop resize, mobile portrait, and
+          mobile landscape remains recommended because no shared browser page was
+          available in this run.
 
   - id: 'phase_03_extract_runtime_config_and_math'
     status: 'not_started'

@@ -448,7 +448,7 @@ The custom layout system is in:
 - `src/utils/layoutUtils.ts`
 - `src/components/GameBackground.svelte`
 
-`HelloPixi` currently imports `getCurrentLayout`, `getCurrentDeviceType`, and `calculateControlPanelPosition`. It does not render `GameBackground.svelte`; the actual page background is handled in `+layout.svelte` and the Pixi canvas remains transparent.
+`HelloPixi` currently imports `getCurrentLayout`, `getCurrentDeviceType`, `calculateControlPanelPosition`, `createViewportModel`, and safe-area helpers from `layoutUtils`. It does not render `GameBackground.svelte`; the actual page background is handled in `+layout.svelte` and the Pixi canvas remains transparent.
 
 Device types:
 
@@ -472,9 +472,11 @@ Each layout config controls:
 - Play button scale and offsets
 - Background y-shift, scale, and fit mode
 
-`calculateControlPanelPosition(layout, gameScale)` multiplies configured control-panel coordinates and dimensions by the current Pixi game scale.
+`layoutUtils` now owns the deployed route viewport model. `createViewportModel()` returns viewport width, height, mobile/portrait flags, safe-area insets, detected device type, and the current game scale. The game scale formula was moved out of `HelloPixi` while preserving the existing numeric behavior: mobile portrait uses `min(scaleX * 1.0, scaleY * 0.95, 1.2)`, mobile landscape uses `min(scaleX * 0.98, scaleY * 0.95, 1.1)`, desktop portrait uses `min(scaleX * 0.95, scaleY * 0.85, 1)`, and desktop landscape uses `min(scaleX, scaleY, 1)`.
 
-One caveat: `layoutUpdateTrigger` is declared in `HelloPixi`, but the observed code does not increment it on resize. The main canvas still resizes through the local `resizeGame` listener, but the derived `currentLayout()` value will only change if some state dependency changes.
+`calculateControlPanelPosition(layout, gameScale)` multiplies configured control-panel coordinates and dimensions by the current Pixi game scale. `applyControlPanelSafeArea()` can shift that position upward when a bottom safe-area inset is present. `getSafeTopPosition()` and `getSafeRightPosition()` offset the top-right HTML controls away from notches and rounded/safe-area edges.
+
+`HelloPixi` updates a `viewportModel` and increments `layoutUpdateTrigger` inside the resize listener before applying `viewportModel.gameScale` to the Pixi stage. That makes `currentLayout()` and `deviceType()` recompute on resize/orientation changes instead of relying only on local canvas scaling.
 
 ## Static Assets
 
@@ -746,11 +748,11 @@ Recommendation: add the missing file, adjust the random set to actual files, or 
 
 Recommendation: clean these when the SDK path is next touched.
 
-### 8. Layout Reactivity Caveat
+### 8. Layout Reactivity Status
 
-The standalone layout derives `currentLayout()` through `layoutUpdateTrigger`, but no observed code increments the trigger during resize.
+Phase 02 fixed the stale standalone layout trigger. `HelloPixi` now refreshes `viewportModel`, increments `layoutUpdateTrigger`, and applies the centralized `viewportModel.gameScale` during resize. Safe-area-aware offsets are applied to top-right controls and the bottom control panel when safe-area inset values are available.
 
-Recommendation: update `layoutUpdateTrigger` inside the resize listener if live device-layout switching is required.
+Recommendation: manually validate desktop resize, mobile portrait, and mobile landscape in a browser before larger mobile UI refactors. The code path is now reactive, but visual fit still depends on the existing layout constants.
 
 ## Practical Change Guide
 
