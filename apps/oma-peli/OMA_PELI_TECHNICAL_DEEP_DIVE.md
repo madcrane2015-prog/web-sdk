@@ -698,6 +698,8 @@ The phase automation system lives under `agentic-refactor/`. It uses `gh copilot
 
 Validation note from runner setup: dry-run prompt generation works, including an all-phase dry-run from `phase_00_workflow_and_docs` through `phase_10_final_cleanup_and_agent_hardening`. Real push-enabled execution also requires `gh auth login` and a reviewed worktree baseline. At setup time, `gh auth status` reported no GitHub login, and the repository had unrelated dirty/untracked files, so full autonomous execution was not started.
 
+Follow-up workflow finding: after GitHub CLI authentication, `gh copilot -p` could install and run the Copilot CLI, read/search project files, and inspect the refactor plan, but non-interactive file-edit operations were denied in this VS Code workflow. The reliable queued execution path is to run each phase directly through the VS Code agent using the next-`not_started` prompt, then validate, commit, and report.
+
 ### 1. Two Game Architectures
 
 The active page and Storybook validate different game implementations. A change can pass Storybook while not affecting the deployed game, or change the deployed game while Storybook remains unchanged.

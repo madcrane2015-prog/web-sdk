@@ -134,7 +134,10 @@ target_architecture:
 progress:
   active_phase: null
   active_step: null
-  completed_steps: []
+  completed_steps:
+    - '00.01_read_context'
+    - '00.02_set_scope'
+    - '00.03_update_docs_contract'
   blocked_steps: []
   agent_journal:
     - date: '2026-07-05'
@@ -164,29 +167,52 @@ progress:
         agentic-refactor/generated-prompts/. Full autonomous execution remains
         blocked until GitHub CLI auth is configured and the dirty worktree
         baseline is reviewed.
+    - date: '2026-07-05'
+      author: 'GitHub Copilot'
+      note: >-
+        Completed phase_00_workflow_and_docs as shared_docs_only. Required
+        context was read, the deployed HelloPixi path and SDK Storybook path were
+        kept explicitly separated, and the documentation/update contract was
+        confirmed for subsequent phases. A live gh copilot -p attempt showed that
+        this CLI mode is not reliable for headless repo file edits in this VS
+        Code workflow; execute phases directly through the VS Code agent instead.
 
 phases:
   - id: 'phase_00_workflow_and_docs'
-    status: 'not_started'
+    status: 'completed'
     priority: 0
     goal: 'Establish agent workflow, documentation discipline, and decision boundaries before touching game behavior.'
     why: 'The project is already split between deployed HelloPixi and SDK Storybook paths. Future agents must not blur those paths.'
+    target_path: 'shared_docs_only'
     steps:
       - id: '00.01_read_context'
-        status: 'not_started'
+        status: 'completed'
         action: 'Read AGENTS.md, OMA_PELI_TECHNICAL_DEEP_DIVE.md, and this YAML.'
         output: 'Agent can state which implementation path it is changing.'
         validation: 'No code validation required.'
       - id: '00.02_set_scope'
-        status: 'not_started'
+        status: 'completed'
         action: 'Set progress.active_phase and progress.active_step in this YAML before editing code.'
         output: 'This plan records the current working scope.'
         validation: 'git diff shows only the intended progress metadata change before code edits.'
       - id: '00.03_update_docs_contract'
-        status: 'not_started'
+        status: 'completed'
         action: 'After each phase, add discoveries to master_document and progress notes to this YAML.'
         output: 'Living docs remain synchronized with implementation.'
         validation: 'git diff includes doc updates with the code phase.'
+    phase_notes:
+      - date: '2026-07-05'
+        note: >-
+          This phase made no game runtime changes. Future execution should target
+          one implementation path at a time: active_deployed_hellopixi for
+          +page.svelte -> PasswordProtection -> HelloPixi, sdk_storybook_shell
+          for Game.svelte/src/game Storybook work, or shared_docs_only for plan
+          and agent-instruction updates.
+      - date: '2026-07-05'
+        note: >-
+          gh copilot -p could read/search the repository but file-edit operations
+          were denied in the attempted non-interactive run, even after broad tool
+          allowance. Use this VS Code agent workflow for queued phase execution.
 
   - id: 'phase_01_baseline_and_compile_hygiene'
     status: 'not_started'
