@@ -149,6 +149,12 @@ progress:
     - '02.03_remove_duplicate_scale_logic'
     - '02.04_safe_area_support'
     - '02.05_document_layout_truth'
+    - '03.01_create_types_module'
+    - '03.02_create_math_config'
+    - '03.03_extract_coordinate_helpers'
+    - '03.04_extract_random_symbol'
+    - '03.05_extract_check_wins'
+    - '03.06_update_docs'
   blocked_steps: []
   agent_journal:
     - date: '2026-07-05'
@@ -209,6 +215,18 @@ progress:
         diagnostics passed for HelloPixi, layoutConfig, and layoutUtils. Build
         passed with the known phase_01 warning set. Manual browser/device resize
         validation remains queued for later review.
+    - date: '2026-07-05'
+      author: 'GitHub Copilot'
+      note: >-
+        Completed phase_03_extract_runtime_config_and_math for
+        active_deployed_hellopixi. Added src/game-standalone/types.ts,
+        mathConfig.ts, and math.ts. HelloPixi now imports symbol keys, shared
+        types, bet levels, random symbol selection, coordinate helpers, and pure
+        calculateWins while retaining Svelte state transitions for scatter/free
+        spins and music switching. get_errors passed for HelloPixi and the new
+        modules. pnpm run build --filter=oma-peli passed with the known warning
+        set. A direct tsx fixture smoke command could not run because tsx is not
+        installed, so build validation was used as the executable check.
 
 phases:
   - id: 'phase_00_workflow_and_docs'
@@ -373,7 +391,7 @@ phases:
           available in this run.
 
   - id: 'phase_03_extract_runtime_config_and_math'
-    status: 'not_started'
+    status: 'completed'
     priority: 3
     goal: 'Move symbol keys, assets, weights, paytable, bet levels, multipliers, and win math out of HelloPixi into pure modules.'
     why: 'Math and UI changes are currently tangled, making regressions likely and making simulator/docs drift.'
@@ -383,27 +401,27 @@ phases:
       - 'src/game-standalone/math.ts'
     steps:
       - id: '03.01_create_types_module'
-        status: 'not_started'
+        status: 'completed'
         action: 'Move SymbolKey, WinResult, SpinSpeed, reel position types, and GameMode-like standalone types to game-standalone/types.ts.'
         output: 'HelloPixi imports types without changing runtime behavior.'
         validation: 'get_errors on HelloPixi.svelte and new TypeScript file.'
       - id: '03.02_create_math_config'
-        status: 'not_started'
+        status: 'completed'
         action: 'Move SYMBOL_KEYS, SYMBOL_WEIGHTS_BASE, SYMBOL_WEIGHTS_FS, SYMBOL_PAYTABLE, BET_LEVELS, and multiplier distribution into mathConfig.ts.'
         output: 'One runtime config module becomes source of truth for docs and future simulator alignment.'
         validation: 'Build or get_errors.'
       - id: '03.03_extract_coordinate_helpers'
-        status: 'not_started'
+        status: 'completed'
         action: 'Move getReelPosition and getReelIndex into pure math.ts with unit-like inline assertions or small test helpers if local test framework exists.'
         output: 'Coordinate mapping can be reused by render and win math.'
         validation: 'Add cheap script or console-free function checks if test framework is unavailable.'
       - id: '03.04_extract_random_symbol'
-        status: 'not_started'
+        status: 'completed'
         action: 'Move randomSymbol into math.ts and pass dependencies explicitly: reelIndex, isFreeSpinMode, rng.'
         output: 'Math becomes deterministic under injected rng.'
         validation: 'Create a small development-only smoke script or Storybook/debug hook only if existing patterns allow it.'
       - id: '03.05_extract_check_wins'
-        status: 'not_started'
+        status: 'completed'
         action: 'Move checkWins into a pure calculateWins function that accepts reelData, betAmount, isFreeSpinMode, and rng/multiplier provider.'
         details:
           - 'Do not mutate freeSpinsRemaining inside pure win calculation.'
@@ -412,10 +430,33 @@ phases:
         output: 'HelloPixi handles state transitions; math module returns calculation results.'
         validation: 'Run a known reelData fixture before and after extraction and record matching results.'
       - id: '03.06_update_docs'
-        status: 'not_started'
+        status: 'completed'
         action: 'Update master_document to list new modules and mark mathConfig.ts as current runtime truth.'
         output: 'Future agents stop treating HelloPixi as the only source of math truth.'
         validation: 'Diff confirms references are updated.'
+    phase_notes:
+      - date: '2026-07-05'
+        note: >-
+          Extracted standalone math without changing payout constants: SYMBOL_KEYS
+          and shared runtime types live in types.ts; BET_LEVELS, base/free-spin
+          weights, paytable, and multiplier distributions live in mathConfig.ts;
+          randomSymbol, getReelPosition, getReelIndex, getWinMultiplier, and
+          calculateWins live in math.ts.
+      - date: '2026-07-05'
+        note: >-
+          calculateWins is pure with respect to Svelte state. It accepts reelData,
+          betAmount, isFreeSpinMode, and an optional rng, and returns wins plus
+          scatterTrigger metadata. HelloPixi.checkWins applies free-spin counter
+          mutations and music switching around that result.
+      - date: '2026-07-05'
+        note: >-
+          Validation: get_errors passed for HelloPixi.svelte and the three new
+          game-standalone modules; pnpm run build --filter=oma-peli passed with
+          the known warnings about SvelteKit tsconfig, missing virtual public env
+          exports, and TextStyle import. Attempted a deterministic fixture smoke
+          command with pnpm exec tsx, but tsx is not installed in the workspace.
+          Add a test runner or package-level script before relying on direct TS
+          fixture checks.
 
   - id: 'phase_04_extract_pixi_reel_runtime'
     status: 'not_started'

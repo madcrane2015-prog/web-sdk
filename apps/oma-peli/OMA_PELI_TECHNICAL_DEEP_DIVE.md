@@ -125,9 +125,9 @@ This is not real security for a production gambling environment. It is a client-
 
 - PixiJS application creation
 - Asset loading
-- Symbol math and random generation
+- Symbol generation orchestration through `src/game-standalone/math.ts`
 - Spin state and reel animation
-- Ways win calculation
+- Ways win state transitions around the pure `calculateWins()` result
 - Free spin triggering and retriggering
 - Balance, bet levels, autoplay, stats, win log
 - HTML overlays and controls
@@ -135,7 +135,15 @@ This is not real security for a production gambling environment. It is a client-
 - Music through Howler.js loaded from CDN
 - Responsive layout handling through `src/config/layoutConfig.ts` and `src/utils/layoutUtils.ts`
 
-It does not use the SDK BookEvent pipeline for the actual deployed play loop. All spin results are generated locally with `Math.random()`.
+It does not use the SDK BookEvent pipeline for the actual deployed play loop. All spin results are generated locally with `Math.random()`, now routed through pure helpers in `src/game-standalone/math.ts`.
+
+Phase 03 introduced the standalone runtime math module set:
+
+- `src/game-standalone/types.ts`: `SYMBOL_KEYS`, `SymbolKey`, `SpinSpeed`, `WinResult`, reel coordinate, and calculation result types.
+- `src/game-standalone/mathConfig.ts`: active bet levels, base/free-spin symbol weights, paytable, and multiplier distributions.
+- `src/game-standalone/math.ts`: `randomSymbol()`, `getReelPosition()`, `getReelIndex()`, `getWinMultiplier()`, and pure `calculateWins()`.
+
+`HelloPixi` still owns state transitions and side effects: it increments free-spin counters, changes music when free spins start, records stats, highlights wins, and renders Pixi/HTML UI. The math module returns scatter trigger metadata separately from paying wins so those state transitions stay outside the pure calculation.
 
 ### PixiJS Initialization
 
@@ -199,7 +207,7 @@ The active standalone symbol keys are:
 
 ### Symbol Weights
 
-Current source weights in `HelloPixi` are the runtime truth for the deployed local game.
+Runtime weights now live in `src/game-standalone/mathConfig.ts`, which is the source of truth for the deployed local game.
 
 Base game outer reels:
 
@@ -245,7 +253,7 @@ Middle reel behavior:
 
 ### Paytable
 
-Runtime paytable values in `HelloPixi`:
+Runtime paytable values now live in `src/game-standalone/mathConfig.ts`:
 
 | Key | 3-kind | 4-kind | 5-kind |
 | --- | -----: | -----: | -----: |
@@ -264,7 +272,7 @@ Wild, scatter, and empty do not directly pay.
 
 ### Multipliers
 
-`getWinMultiplier()` returns one multiplier per winning spin, not one multiplier per win line.
+`getWinMultiplier()` in `src/game-standalone/math.ts` returns one multiplier per winning spin, not one multiplier per win line. Its distribution thresholds are configured in `src/game-standalone/mathConfig.ts`.
 
 Base game:
 
@@ -314,7 +322,7 @@ This is not an RGS-authoritative calculation. It is local simulation/math in the
 
 Scatter symbol key: `l`.
 
-`checkWins()` counts scatter positions anywhere across the 13 visible reels.
+`calculateWins()` counts scatter positions anywhere across the 13 visible reels and returns scatter trigger metadata. `HelloPixi.checkWins()` applies the resulting state changes.
 
 - If scatter count is at least 5, free spins are triggered or retriggered.
 - Awarded free spins equals the scatter count in current source.
@@ -647,7 +655,7 @@ There are several math documents and simulator scripts:
 - `src/game/math-config.yaml`
 - `src/game/math_varmuuskopio/*`
 
-These files reflect multiple iterations. They do not all agree with the current `HelloPixi` source. When investigating runtime behavior, treat `HelloPixi.svelte` as the current source of truth unless the task explicitly concerns the simulator or math config files.
+These files reflect multiple iterations. They do not all agree with the current standalone runtime modules. When investigating deployed runtime behavior, treat `src/game-standalone/mathConfig.ts` and `src/game-standalone/math.ts` as the current math source of truth unless the task explicitly concerns the simulator or legacy SDK math config files.
 
 Known mismatches found during this investigation:
 
@@ -716,9 +724,9 @@ Recommendation: for production Stake Engine integration, move outcome generation
 
 ### 3. Stale Documentation
 
-Existing math documents represent different historical states. Current runtime values should be re-exported or centralized to avoid divergence.
+Existing math documents represent different historical states. Phase 03 centralized current runtime symbol weights, paytable, bet levels, and multiplier distribution in `src/game-standalone/mathConfig.ts`.
 
-Recommendation: move active symbol weights, paytable, free-spin rules, and multiplier distribution into a typed config module consumed by both the game and simulators.
+Recommendation: update simulator scripts to consume the standalone math/config modules before treating simulator output as authoritative.
 
 ### 4. Large Monolithic Component
 
@@ -726,9 +734,9 @@ Phase 01 baseline hygiene was completed on 2026-07-05 for the deployed `HelloPix
 
 The current build baseline passes with `pnpm run build --filter=oma-peli`. The build still reports existing warnings about `tsconfig.json` not extending SvelteKit's generated config, missing virtual public env exports for `PUBLIC_SITE_MODE`, `PUBLIC_SENTRY_DSN`, and `PUBLIC_CHROMATIC`, plus an unused `TextStyle` import in the bundle graph.
 
-`HelloPixi.svelte` mixes renderer setup, math, state, layout, audio, and UI overlays in one file.
+`HelloPixi.svelte` still mixes renderer setup, state transitions, layout, audio, and UI overlays in one file, but phase 03 extracted standalone types, config, random symbol selection, coordinate helpers, multiplier selection, and pure win calculation.
 
-Recommendation: split it into modules only when making behavior changes. Natural boundaries are `math.ts`, `reel.ts`, `audio.ts`, `layout.ts`, and presentational control components.
+Recommendation: continue splitting it into modules only when making behavior changes. Remaining natural boundaries are `reel.ts`, `audio.ts`, additional layout orchestration, and presentational control components.
 
 ### 5. Asset Path Special Cases
 
@@ -773,9 +781,9 @@ For SDK/storybook changes:
 
 For math changes:
 
-1. Treat `HelloPixi.svelte` as current runtime truth.
-2. Update simulator scripts or math docs only after deciding which model is canonical.
-3. Keep weights, paytable, multipliers, and free-spin rules synchronized in one shared config if possible.
+1. Treat `src/game-standalone/mathConfig.ts` and `src/game-standalone/math.ts` as current deployed runtime math truth.
+2. Keep `HelloPixi.svelte` responsible for Svelte state transitions around pure math results.
+3. Update simulator scripts or legacy math docs only after deciding which model is canonical for that tool.
 
 ## Quick File Map
 
@@ -786,6 +794,7 @@ For math changes:
 | Password gate            | `src/components/PasswordProtection.svelte`                                                                       |
 | Loading/splash           | `src/components/LoadingScreen.svelte`                                                                            |
 | Standalone win animation | `src/components/VinylWinAnimation.svelte`                                                                        |
+| Standalone math/config   | `src/game-standalone/types.ts`, `src/game-standalone/mathConfig.ts`, `src/game-standalone/math.ts`               |
 | Standalone layout config | `src/config/layoutConfig.ts`, `src/utils/layoutUtils.ts`                                                         |
 | SDK shell                | `src/components/Game.svelte`                                                                                     |
 | SDK context              | `src/game/context.ts`                                                                                            |

@@ -23,6 +23,19 @@
 		getSafeRightPosition,
 		getSafeTopPosition,
 	} from '../utils/layoutUtils';
+	import { BET_LEVELS } from '../game-standalone/mathConfig';
+	import {
+		calculateWins,
+		getReelIndex,
+		getReelPosition,
+		randomSymbol as getRandomSymbol,
+	} from '../game-standalone/math';
+	import {
+		SYMBOL_KEYS,
+		type SpinSpeed,
+		type SymbolKey,
+		type WinResult,
+	} from '../game-standalone/types';
 
 	// ===== PIXIJS KIRJASTON KOMPONENTIT =====
 	// PixiJS on 2D-grafiikkakirjasto joka käyttää WebGL:ää
@@ -100,24 +113,6 @@
 	const gap = 10; // Väli symbolien välillä pikseleinä
 	const ROW_HEIGHT = symbolHeight + gap; // Yhden rivin kokonaiskorkeus (symboli + väli)
 
-	// Avaimet symboleille - kaikki uudet rockabilly-teemalliset symbolit
-	const SYMBOL_KEYS = [
-		'a',
-		'b',
-		'c',
-		'd',
-		'e',
-		'f',
-		'g',
-		'h',
-		'i',
-		'j',
-		'k',
-		'l',
-		'emptyslot',
-	] as const;
-	type SymbolKey = (typeof SYMBOL_KEYS)[number];
-
 	// URL jokaiselle symbolille (static/symbols/...)
 	// GitHub Pages: käytä suoria polkuja, localhost: käytä base-polkuja
 	const isGitHubPages =
@@ -194,7 +189,6 @@
 		slow: 18, // Slow: ~7 sec (32 frames/kiekko * 13 kiekkoa = 416 frames = ~6.9s @ 60fps)
 	};
 
-	type SpinSpeed = 'slow' | 'medium' | 'fast';
 	let spinSpeed = $state<SpinSpeed>('medium'); // Nykyinen spinninopeus
 	let showSpinSpeedMenu = $state(false); // Näytetäänkö nopeusvalikko
 
@@ -446,7 +440,6 @@
 
 	// Bet levels - ennalta määritellyt panostasot
 	// Pelaaja voi valita näistä + ja - napeilla
-	const BET_LEVELS = [0.4, 0.8, 1, 1.6, 2, 3, 5, 8, 10, 15, 20, 25, 30, 40, 50, 60, 80, 100];
 	let currentBetIndex = $state(5); // Aloitetaan indeksistä 5 = 3.0 (default bet)
 	let betAmount = $derived(BET_LEVELS[currentBetIndex]); // Panoksen määrä per spin (automaattisesti laskettu)
 	let lastWin = $state(0); // Viimeisin voittosumma (näytetään UI:ssa)
@@ -568,90 +561,12 @@
 	// - Premium-taso KOROTETTU: f=14%, e=12%, g=11% (peritty matalalta tasolta)
 	// - Tulos: Enemmän premium-symboleja vapaan pelin aikana suurempaan voittoon
 	// ============================================================================
-	const SYMBOL_WEIGHTS_BASE: Record<SymbolKey, number> = {
-		// LOW TIER - Low value, moderate frequency
-		k: 0.08, // Red_milkshake
-		j: 0.07, // Red_fries
-		i: 0.07, // Red_burger
-
-		// MID TIER - Mid value, moderate frequency
-		c: 0.07, // Blue_rollers
-		d: 0.07, // Blue_speakers
-		b: 0.07, // Blue_jacket
-		a: 0.07, // Blue_hotrod
-
-		// PREMIUM TIER - High value, lower frequency
-		f: 0.06, // Premium_brunette
-		e: 0.05, // Premium_blonde
-		g: 0.04, // Premium_rocker (JACKPOT symbol)
-
-		// SPECIAL SYMBOLS
-		l: 0.1, // Scatter (10% - triggers free spins)
-		h: 0, // Wild - ONLY on middle reel (handled separately)
-		emptyslot: 0.25, // Empty slots (25%)
-	};
-
-	// FREE SPINS WEIGHTS - Symbol replacements applied:
-	// k → f (milkshake → brunette)
-	// j → e (fries → blonde)
-	// i → g (burger → rockabilly)
-	const SYMBOL_WEIGHTS_FS: Record<SymbolKey, number> = {
-		// LOW TIER - Replaced in free spins
-		k: 0, // Milkshake - REMOVED in free spins
-		j: 0, // Fries - REMOVED in free spins
-		i: 0, // Burger - REMOVED in free spins
-
-		// MID TIER - Mid value, moderate frequency
-		c: 0.07, // Blue_rollers
-		d: 0.07, // Blue_speakers
-		b: 0.07, // Blue_jacket
-		a: 0.07, // Blue_hotrod
-
-		// PREMIUM TIER - Increased frequency in free spins (gets k+j+i weights)
-		f: 0.14, // Premium_brunette (0.06 + 0.08 from k)
-		e: 0.12, // Premium_blonde (0.05 + 0.07 from j)
-		g: 0.11, // Premium_rocker (0.04 + 0.07 from i)
-
-		// SPECIAL SYMBOLS
-		l: 0.1, // Scatter (10% - triggers free spins)
-		h: 0, // Wild - ONLY on middle reel (handled separately)
-		emptyslot: 0.25, // Empty slots (25%)
-	};
-
 	// ===== SATUNNAINEN SYMBOLI =====
 	// Palauttaa satunnaisen symbolin tietylle kiekolle (painotettu jakauma)
 	// @param reelIndex - Kiekon indeksi (0-12)
 	// @returns SymbolKey - Valittu symboli
 	function randomSymbol(reelIndex: number): SymbolKey {
-		// Kiekko 6 (keskikiekko) - Wild (55%) tai tyhjä ruutu (45%)
-		// Tämä on ainoa kiekko jossa Wild voi esiintyä!
-		if (reelIndex === 6) {
-			return Math.random() < 0.55 ? 'h' : 'emptyslot';
-		}
-
-		// Valitse oikea painotustaulukko (peruspeli tai vapaapelit)
-		const SYMBOL_WEIGHTS = isFreeSpinMode ? SYMBOL_WEIGHTS_FS : SYMBOL_WEIGHTS_BASE;
-
-		// Kiekot 1,2,4,5 (ulkokiekot) - Sisältää tyhjät ruudut
-		const rand = Math.random(); // Satunnaisluku 0-1
-		let cumulative = 0; // Kumulatiivinen paino
-
-		// Kaikki symbolit PAITSI Wild (h)
-		const availableSymbols = SYMBOL_KEYS.filter((s) => s !== 'h');
-
-		// Laske kokonaispaino
-		const totalWeight = availableSymbols.reduce((sum, sym) => sum + SYMBOL_WEIGHTS[sym], 0);
-
-		// Painotettu valinta (roulette wheel selection)
-		for (const symbol of availableSymbols) {
-			cumulative += SYMBOL_WEIGHTS[symbol] / totalWeight;
-			if (rand < cumulative) {
-				return symbol;
-			}
-		}
-
-		// Varavaihtoeht (ei pitäisi koskaan toteutua)
-		return 'f';
+		return getRandomSymbol(reelIndex, isFreeSpinMode);
 	}
 
 	// ===== KIEKKOJEN LUOMINEN =====
@@ -675,409 +590,30 @@
 		return reelData;
 	}
 
-	// ===== KOORDINAATTIMUUNNOKSET =====
-	// Nämä funktiot muuntavat kiekko-indeksin (0-12) grid-koordinaateiksi (col, row)
-	// ja päinvastoin
-
-	// Muuntaa reel-indeksin (0-12) koordinaateiksi (col, row)
-	// Layout: [0,1,2] [3,4,5] [6] [7,8,9] [10,11,12]
-	//         Col 0    Col 1   Col 2  Col 3   Col 4
-	function getReelPosition(reelIndex: number): { col: number; row: number } {
-		if (reelIndex < 3) return { col: 0, row: reelIndex }; // Sarake 0: ruudut 0,1,2
-		if (reelIndex < 6) return { col: 1, row: reelIndex - 3 }; // Sarake 1: ruudut 3,4,5
-		if (reelIndex === 6) return { col: 2, row: 0 }; // Keskikiekko: ruutu 6 (vain 1 rivi!)
-		if (reelIndex < 10) return { col: 3, row: reelIndex - 7 }; // Sarake 3: ruudut 7,8,9
-		return { col: 4, row: reelIndex - 10 }; // Sarake 4: ruudut 10,11,12
-	}
-
-	// Muuntaa koordinaatit (col, row) reel-indeksiksi (0-12)
-	// Käänteistoiminto getReelPosition():lle
-	function getReelIndex(col: number, row: number): number {
-		if (col === 0) return row;
-		if (col === 1) return 3 + row;
-		if (col === 2) return 6; // Keskikiekko on aina indeksi 6
-		if (col === 3) return 7 + row;
-		if (col === 4) return 10 + row;
-		return -1; // Virhe - virheellinen koordinaatti
-	}
-
-	// ===== VOITTOLOGIIKKA =====
-	type WinResult = {
-		symbol: SymbolKey;
-		count: number;
-		payout: number;
-		positions: number[]; // Voittavien kiekkojen indeksit
-		multiplier: number; // 1x/2x/3x (base), 3x/5x/10x (free spins)
-	};
-
-	// ============================================================================
-	// MULTIPLIERS - YAML Config v1.7
-	// ============================================================================
-	// Base game: 1x (70%), 2x (22%), 3x (8%)
-	// Free spins: 3x (70%), 5x (22%), 10x (8%)
-	// ============================================================================
-	function getWinMultiplier(): number {
-		if (isFreeSpinMode) {
-			// Free spins: 3x/5x/10x distribution
-			const rand = Math.random();
-			if (rand < 0.7) return 3; // 70%
-			if (rand < 0.92) return 5; // 22%
-			return 10; // 8%
-		} else {
-			// Base game: 1x/2x/3x distribution
-			const rand = Math.random();
-			if (rand < 0.7) return 1; // 70%
-			if (rand < 0.92) return 2; // 22%
-			return 3; // 8%
-		}
-	}
-
-	// ============================================================================
-	// PAYTABLE - Symbol Payouts (Multipliers × Bet × Ways)
-	// ============================================================================
-	// Values represent payout multipliers PER SYMBOL for 3/4/5-of-a-kind.
-	//
-	// WAYS CALCULATION:
-	// Final payout = paytable_value × bet × ways × multiplier
-	// Where ways = count_reel0 × count_reel1 × count_reel2 × count_reel3 × count_reel4
-	// Multiplier = 1x/2x/3x (base game) or 3x/5x/10x (free spins)
-	//
-	// Example: 4×k with 2 symbols on reel 0, 1 on reel 1, 1 wild, 1 on reel 3, 2x multiplier:
-	// - Ways = 2 × 1 × 1 × 1 = 2 ways
-	// - Payout = 0.60 × 1 (bet) × 2 (ways) × 2 (multiplier) = 2.40
-	//
-	// Paytable from YAML config v1.0
-	// ============================================================================
-	const SYMBOL_PAYTABLE: Record<SymbolKey, { 3?: number; 4?: number; 5?: number }> = {
-		// LOW TIER - From YAML config
-		k: { 3: 0.2, 4: 0.6, 5: 1.5 }, // Red_milkshake
-		j: { 3: 0.4, 4: 1.0, 5: 2.5 }, // Red_fries
-		i: { 3: 0.4, 4: 1.0, 5: 2.5 }, // Red_burger
-
-		// MID TIER - From YAML config
-		c: { 3: 0.8, 4: 2.0, 5: 5.0 }, // Blue_rollers
-		d: { 3: 0.8, 4: 2.0, 5: 5.0 }, // Blue_speakers
-		b: { 3: 1.5, 4: 4.0, 5: 8.0 }, // Blue_jacket
-		a: { 3: 1.5, 4: 4.0, 5: 8.0 }, // Blue_hotrod
-
-		// PREMIUM TIER - From YAML config
-		f: { 3: 3.0, 4: 8.0, 5: 20.0 }, // Premium_brunette
-		e: { 3: 5.0, 4: 10.0, 5: 25.0 }, // Premium_blonde
-		g: { 3: 7.0, 4: 15.0, 5: 50.0 }, // Premium_rocker (JACKPOT)
-
-		// SPECIAL SYMBOLS (no payouts)
-		h: {}, // Wild (substitutes only)
-		l: {}, // Scatter (triggers free spins only)
-		emptyslot: {}, // Empty
-	};
-
 	// Tarkista voitot 81-ways järjestelmällä
 	function checkWins(): WinResult[] {
-		const wins: WinResult[] = [];
+		const result = calculateWins(reelData, betAmount, isFreeSpinMode);
 
-		// 1. Tarkista scatter-symbolit (l) - voivat olla missä tahansa
-		const scatterPositions: number[] = [];
-		for (let i = 0; i < TOTAL_REELS; i++) {
-			if (reelData[i] === 'l') {
-				scatterPositions.push(i);
-			}
-		}
-
-		// Scatter-voitot ja free spinsit
-		// Variable free spins based on scatter count (YAML config v1.0)
-		// 5 scatters = 5 spins, 6 = 6, ..., 12 = 12 spins
-		if (scatterPositions.length >= 5) {
-			const freeSpinsTriggered = scatterPositions.length; // Variable: 5-12 free spins
-
-			// Add free spins (trigger or retrigger)
+		if (result.scatterTrigger) {
+			const { scatterPositions, freeSpinsTriggered } = result.scatterTrigger;
 			freeSpinsRemaining += freeSpinsTriggered;
 
-			// If not already in free spin mode, enter it
 			if (!isFreeSpinMode) {
 				isFreeSpinMode = true;
 				freeSpinsTotalWon = 0;
-				freeSpinsTriggerCount++; // Laske uusi vapaaerä
+				freeSpinsTriggerCount++;
 				console.log(
 					`🎰 FREE SPINS TRIGGERED! ${scatterPositions.length} scatters = ${freeSpinsTriggered} FREE SPINS!`,
 				);
-
-				// Vaihda musiikkia free spins -musiikiksi
 				switchMusic();
 			} else {
 				console.log(
 					`🎰 FREE SPINS RETRIGGERED! +${freeSpinsTriggered} FREE SPINS! Total: ${freeSpinsRemaining}`,
 				);
 			}
-
-			// Scatters don't pay, just trigger free spins
-			wins.push({
-				symbol: 'l',
-				count: scatterPositions.length,
-				payout: 0,
-				positions: scatterPositions,
-				multiplier: 1,
-			});
 		}
 
-		// ============================================================================
-		// 81 WAYS-PAYING LOGIC (v1.0.6: Column-based calculation)
-		// ============================================================================
-		// Generate all 81 valid paths through the grid
-		// NO RESTRICTIONS: All possible row combinations allowed
-		// Grid: 3×3×1×3×3 = 81 total ways
-		//
-		// COLUMN-BASED WIN CALCULATION (v1.0.6):
-		// - Win length determined by consecutive columns from left that contain symbol
-		// - Example: If columns 0,1,2 have symbol but column 3 doesn't → 3-symbol win
-		// - For 4-symbol win: Symbol MUST appear on columns 0,1,2,3
-		// - This prevents false 4-symbol wins when symbol missing from column 3
-		//
-		// WAYS COUNTING:
-		// - Each unique path through the grid counts as separate way
-		// - If 2 symbols on column 0, 1 on column 1, 1 on column 2 → 2 ways of 3-symbol win
-		// - Ways multiply together: column0_count × column1_count × column2_count...
-		// ============================================================================
-		const allPaths: number[][] = [];
-
-		// Iterate through all possible row combinations (NO ±1 restriction)
-		for (let r0 = 0; r0 < 3; r0++) {
-			// Column 0: rows 0,1,2
-			for (let r1 = 0; r1 < 3; r1++) {
-				// Column 1: rows 0,1,2
-				for (let r2 = 0; r2 < 1; r2++) {
-					// Column 2: 1 row (middle reel, always 0)
-					for (let r3 = 0; r3 < 3; r3++) {
-						// Column 3: rows 0,1,2
-						for (let r4 = 0; r4 < 3; r4++) {
-							// Column 4: rows 0,1,2
-							const path = [
-								getReelIndex(0, r0),
-								getReelIndex(1, r1),
-								getReelIndex(2, r2),
-								getReelIndex(3, r3),
-								getReelIndex(4, r4),
-							];
-							allPaths.push(path);
-						}
-					}
-				}
-			}
-		}
-
-		console.log(`Generated ${allPaths.length} possible paths (should be 81)`);
-
-		// Laske voittolinjat: jokainen polku arvioidaan erikseen
-		// Kerää KAIKKI voitot (myös samat symbolit eri riveiltä erikseen)
-		interface WinPath {
-			symbol: SymbolKey;
-			length: number;
-			path: number[];
-			startRow: number; // Miltä riviltä alkaa (0, 1, 2)
-		}
-
-		const allWins: WinPath[] = [];
-
-		for (const path of allPaths) {
-			const symbols = path.map((idx) => reelData[idx]);
-
-			// Ohita jos ensimmäinen symboli on emptyslot tai scatter
-			if (symbols[0] === 'emptyslot' || symbols[0] === 'l') continue;
-
-			// Määritä voittosymboli: jos ensimmäinen on wild, etsi ensimmäinen ei-wild
-			let winSymbol: SymbolKey | null = null;
-
-			for (let i = 0; i < symbols.length; i++) {
-				if (symbols[i] !== 'h' && symbols[i] !== 'emptyslot' && symbols[i] !== 'l') {
-					winSymbol = symbols[i];
-					break;
-				}
-			}
-
-			// Jos kaikki symbolit ovat wildeja, emptyslotteja tai scattereita, ohita
-			if (!winSymbol) continue;
-
-			// Laske kuinka monta peräkkäistä KIEKKOA (column) sisältää symbolin
-			// CRITICAL: For a 4-symbol win, the symbol must appear on columns 0,1,2,3
-			// If column 3 has no matching symbol, the win stops at column 2 (= 3 symbols)
-			let matchLength = 0;
-
-			// Track which columns have this symbol on this path
-			const columnsWithSymbol = new Set<number>();
-
-			for (let i = 0; i < path.length; i++) {
-				const position = path[i];
-				const { col } = getReelPosition(position);
-				const currentSymbol = symbols[i];
-
-				// Check if this position has the winning symbol or wild
-				if (currentSymbol === winSymbol || currentSymbol === 'h') {
-					columnsWithSymbol.add(col);
-				}
-			}
-
-			// Now check how many consecutive columns from the left have the symbol
-			for (let col = 0; col < 5; col++) {
-				if (columnsWithSymbol.has(col)) {
-					matchLength++;
-				} else {
-					break; // Stop as soon as we hit a column without the symbol
-				}
-			}
-
-			// Tarkista onko vähintään 3 symbolia (voittoon tarvitaan 3, 4 tai 5)
-			if (matchLength >= 3) {
-				// Määritä aloitusrivi (0, 1, 2)
-				const startReelIndex = path[0];
-				const startRow = startReelIndex % 3;
-
-				allWins.push({
-					symbol: winSymbol,
-					length: matchLength,
-					path: path.slice(0, matchLength),
-					startRow: startRow,
-				});
-			}
-		}
-
-		// Suodata voitot: Pidä vain PISIMMÄT voitot kullekin POLULLE
-		// Ways-peleissä jokainen uniikki polku maksetaan erikseen!
-		const filteredWins: WinPath[] = [];
-		const winsGroupedByPath = new Map<string, WinPath[]>();
-
-		// Ryhmittele voitot polun mukaan (symboli + koko polku)
-		for (const win of allWins) {
-			const pathKey = `${win.symbol}-${win.path.join(',')}`;
-			if (!winsGroupedByPath.has(pathKey)) {
-				winsGroupedByPath.set(pathKey, []);
-			}
-			winsGroupedByPath.get(pathKey)!.push(win);
-		}
-
-		// Jokaisesta polusta ota vain PISIN voitto
-		for (const [pathKey, wins] of winsGroupedByPath.entries()) {
-			// Etsi pisin pituus tälle polulle
-			const maxLength = Math.max(...wins.map((w) => w.length));
-
-			// Ota ensimmäinen voitto jolla on tämä pituus
-			const longestWin = wins.find((w) => w.length === maxLength);
-
-			if (longestWin) {
-				filteredWins.push(longestWin);
-			}
-		}
-
-		// ============================================================================
-		// TRUE WAYS LOGIC: Laske yksilölliset positiot voittopoluilta
-		// ============================================================================
-		// TÄRKEÄÄ (v1.0.4): Maksetaan VAIN PISIN yhdistelmä jokaiselle symbolille
-		// Esimerkki: Jos symboli 'a' on voittanut sekä 3-symbolilla ETTÄ 4-symbolilla,
-		//            maksetaan VAIN 4-symboli voitot
-		// Mutta lasketaan KAIKKI polut/tavat joilla pisin yhdistelmä saavutetaan
-		//
-		// WAYS-LASKENTA (81 WAYS):
-		// - Laske montako kertaa pisin yhdistelmä esiintyy kaikilla poluilla
-		// - Jokainen uniikki polku = 1 tapa (way)
-		// - Useita symboleja samoissa sarakkeissa = useita tapoja
-		// - Esimerkki: 2 symbolia sarake0 × 1 sarake1 × 1 sarake2 = 2 tapaa 3-symbolin voittoon
-		//
-		// Tämä "vain pisin" sääntö vähentää merkittävästi RTP:tä (~80% vs ~96% ilman sitä)
-		// ============================================================================
-		const foundWinCombos: WinResult[] = [];
-
-		// ===== VAIHE 1: Ryhmittele voitot symboleittain =====
-		// Tämä varmistaa että jokaiselle symbolille käsitellään vain pisin mahdollinen voitto
-		const winsBySymbol = new Map<SymbolKey, WinPath[]>();
-
-		for (const win of filteredWins) {
-			if (!winsBySymbol.has(win.symbol)) {
-				winsBySymbol.set(win.symbol, []);
-			}
-			winsBySymbol.get(win.symbol)!.push(win);
-		}
-
-		// ===== VAIHE 2: Pidä vain PISIMMÄT voitot jokaiselle symbolille =====
-		// Jos symboli 'a' voitti sekä 3- ETTÄ 4-symbolilla, pidetään vain 4-symbolin voitot
-		const finalFilteredWins: WinPath[] = [];
-		for (const [symbol, wins] of winsBySymbol.entries()) {
-			const maxLength = Math.max(...wins.map((w) => w.length)); // Etsi pisin
-			const longestWins = wins.filter((w) => w.length === maxLength); // Suodata
-			finalFilteredWins.push(...longestWins);
-		}
-
-		// ===== VAIHE 3: Ryhmittele symboli+pituus -yhdistelmillä maksujen laskentaa varten =====
-		const winsBySymbolAndLength = new Map<string, WinPath[]>();
-
-		for (const win of finalFilteredWins) {
-			const key = `${win.symbol}-${win.length}`;
-			if (!winsBySymbolAndLength.has(key)) {
-				winsBySymbolAndLength.set(key, []);
-			}
-			winsBySymbolAndLength.get(key)!.push(win);
-		}
-
-		// ===== VAIHE 4: Hae kerroin koko spinille =====
-		// Yksi kerroin koko kierrokselle (ei jokaiselle voitolle erikseen)
-		// Peruspeli: 1x (70%), 2x (22%), 3x (8%)
-		// Vapaapelit: 3x (70%), 5x (22%), 10x (8%)
-		const winMultiplier = finalFilteredWins.length > 0 ? getWinMultiplier() : 1;
-
-		// ===== VAIHE 5: Käsittele jokainen symboli+pituus -yhdistelmä =====
-		for (const [key, winsInGroup] of winsBySymbolAndLength.entries()) {
-			const firstWin = winsInGroup[0];
-
-			// Hae paytable-kerroin tälle symbolille ja pituudelle (3, 4 tai 5)
-			const payoutMultiplier = SYMBOL_PAYTABLE[firstWin.symbol]?.[firstWin.length as 3 | 4 | 5];
-
-			if (payoutMultiplier !== undefined && payoutMultiplier > 0) {
-				// ===== LASKE WAYS (TAVAT) =====
-				// Laske yksilölliset positiot per kiekko kaikista voittopoluista tässä ryhmässä
-				// Esimerkki: Jos on 2 symbolia sarakkeessa 0, 1 sarakkeessa 1, 1 sarakkeessa 2:
-				//            ways = 2 × 1 × 1 = 2 tapaa voittaa
-				const positionsPerReel = new Map<number, Set<number>>();
-
-				for (const win of winsInGroup) {
-					for (let i = 0; i < win.length; i++) {
-						if (!positionsPerReel.has(i)) {
-							positionsPerReel.set(i, new Set());
-						}
-						positionsPerReel.get(i)!.add(win.path[i]);
-					}
-				}
-
-				// Calculate ways by multiplying position counts
-				let ways = 1;
-				for (let i = 0; i < firstWin.length; i++) {
-					const s = positionsPerReel.get(i);
-					ways *= s ? s.size : 1;
-				}
-
-				// Payout = paytable × bet × ways × multiplier
-				const totalPayout = payoutMultiplier * betAmount * ways * winMultiplier;
-
-				console.log(
-					`  ${firstWin.length}x${firstWin.symbol}: ${ways} ways × ${payoutMultiplier}x × ${betAmount} bet × ${winMultiplier} mult = ${totalPayout}`,
-				);
-
-				// Collect all unique positions for highlighting
-				const allPositions = new Set<number>();
-				for (const win of winsInGroup) {
-					win.path.forEach((pos) => allPositions.add(pos));
-				}
-
-				foundWinCombos.push({
-					symbol: firstWin.symbol,
-					count: firstWin.length,
-					payout: totalPayout,
-					positions: Array.from(allPositions),
-					multiplier: winMultiplier,
-				});
-			}
-		}
-
-		// Add all found wins
-		wins.push(...foundWinCombos);
-
-		return wins;
+		return result.wins;
 	}
 
 	// Kokonaisvoitto
