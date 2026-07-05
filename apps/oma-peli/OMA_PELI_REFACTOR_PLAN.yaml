@@ -1,0 +1,551 @@
+schema_version: 1
+document_type: oma_peli_refactor_plan
+status: active
+created: '2026-07-05'
+last_updated: '2026-07-05'
+master_document: 'apps/oma-peli/OMA_PELI_TECHNICAL_DEEP_DIVE.md'
+agent_rules: 'apps/oma-peli/AGENTS.md'
+phase_runner: 'apps/oma-peli/agentic-refactor/Invoke-OmaPeliCopilotRefactor.ps1'
+
+purpose:
+  summary: >-
+    Refactor oma-peli from the current monolithic, locally simulated HelloPixi
+    implementation into a maintainable, mobile-stable, agent-friendly game system.
+  main_problem: >-
+    The deployed route uses PasswordProtection -> HelloPixi, while Storybook uses
+    the separate SDK Game.svelte path. HelloPixi owns rendering, math, audio,
+    controls, layout, and debug tools in one file. The UI is especially fragile on
+    mobile because layout is controlled by mixed inline styles, media queries,
+    gameScale math, and device-specific config that is not fully reactive.
+  explicit_non_goal_for_first_pass: >-
+    Do not rewrite the full game into the SDK/RGS BookEvent pipeline before the
+    standalone HelloPixi behavior has been stabilized, covered, and split into
+    smaller modules. The SDK migration is a later decision phase.
+
+source_investigation:
+  required_reading_order:
+    - 'apps/oma-peli/AGENTS.md'
+    - 'apps/oma-peli/OMA_PELI_TECHNICAL_DEEP_DIVE.md'
+    - 'apps/oma-peli/OMA_PELI_REFACTOR_PLAN.yaml'
+    - 'apps/oma-peli/src/routes/+page.svelte'
+    - 'apps/oma-peli/src/components/HelloPixi.svelte'
+    - 'apps/oma-peli/src/config/layoutConfig.ts'
+    - 'apps/oma-peli/src/utils/layoutUtils.ts'
+  online_references_used:
+    - name: 'VS Code agent customization docs'
+      url: 'https://code.visualstudio.com/docs/copilot/copilot-customization'
+      relevant_points:
+        - 'Use project instructions, path-specific instructions, custom agents, skills, and hooks incrementally.'
+        - 'Use monorepo-aware customization files and nearest applicable instructions.'
+        - 'Evaluate customization files for contradictions when they grow.'
+    - name: 'GitHub Copilot repository custom instructions'
+      url: 'https://docs.github.com/en/copilot/how-tos/configure-custom-instructions/add-repository-instructions'
+      relevant_points:
+        - 'Repository instructions live in .github/copilot-instructions.md.'
+        - 'Path-specific instructions use .github/instructions/*.instructions.md with applyTo frontmatter.'
+        - 'AGENTS.md files can live anywhere; the nearest one takes precedence for agents.'
+    - name: 'AGENTS.md convention'
+      url: 'https://agents.md/'
+      relevant_points:
+        - 'AGENTS.md is a README for agents with build, test, style, security, and workflow details.'
+        - 'Nested AGENTS.md files are recommended for monorepos so each subproject can carry tailored instructions.'
+        - 'Treat AGENTS.md as living documentation.'
+
+global_agent_contract:
+  before_any_code_change:
+    - 'Read master_document and this plan.'
+    - 'Identify whether the task targets active_deployed_hellopixi, sdk_storybook_shell, or shared_docs_only.'
+    - 'Pick exactly one phase and one step unless the user explicitly asks for a broader batch.'
+    - 'Record the intended step in progress.active_step before editing.'
+    - 'Use apply_patch for manual edits.'
+  after_each_substantive_change:
+    - 'Run the narrowest available validation for the touched files.'
+    - 'Update this YAML: mark completed steps, add notes, add blockers, and update last_updated.'
+    - 'Update the master document if new architecture facts, commands, asset behavior, bugs, or decisions were found.'
+    - 'If a change affects agent workflow, update AGENTS.md too.'
+  documentation_update_rule: >-
+    Documentation is part of the refactor output. A phase is not complete until
+    OMA_PELI_TECHNICAL_DEEP_DIVE.md and this YAML reflect what changed and what
+    was learned.
+  validation_priority:
+    - 'get_errors for directly touched Svelte/TypeScript files'
+    - 'pnpm run build --filter=oma-peli'
+    - 'pnpm run lint --filter=oma-peli'
+    - 'manual browser/dev-server checks for layout and interaction'
+    - 'Storybook checks only for SDK Game.svelte changes'
+  never_do:
+    - 'Do not treat Storybook passing as proof that the deployed HelloPixi route works.'
+    - 'Do not change math constants and UI layout in the same step.'
+    - 'Do not migrate to RGS/BookEvents before the standalone behavior is documented and covered.'
+    - 'Do not delete existing deployment folders or generated outputs unless explicitly requested.'
+    - 'Do not rewrite unrelated Web SDK packages during oma-peli UI cleanup.'
+
+current_findings:
+  active_route:
+    fact: 'src/routes/+page.svelte renders PasswordProtection, then HelloPixi.'
+    implication: 'Most user-visible bugs are likely in HelloPixi or its direct children.'
+  storybook_route:
+    fact: 'Storybook renders Game.svelte and the SDK BookEvent path.'
+    implication: 'Storybook does not currently validate deployed HelloPixi UI/mobile behavior.'
+  diagnostics_seen:
+    - file: 'apps/oma-peli/src/components/HelloPixi.svelte'
+      issue: 'Svelte 5 reports many deprecated on:event directives.'
+      first_fix_phase: 'phase_01_baseline_and_compile_hygiene'
+    - file: 'apps/oma-peli/src/components/HelloPixi.svelte'
+      issue: 'Icon-only buttons lack aria-label or aria-labelledby.'
+      first_fix_phase: 'phase_01_baseline_and_compile_hygiene'
+    - file: 'apps/oma-peli/src/components/HelloPixi.svelte'
+      issue: 'Unused CSS selectors such as .win3d are reported.'
+      first_fix_phase: 'phase_01_baseline_and_compile_hygiene'
+    - file: 'apps/oma-peli/src/components/HelloPixi.svelte'
+      issue: 'Mobile menu references autoPlayRounds, but state variable is autoPlayRoundsLeft.'
+      first_fix_phase: 'phase_01_baseline_and_compile_hygiene'
+    - file: 'apps/oma-peli/src/components/HelloPixi.svelte'
+      issue: 'layoutUpdateTrigger is used to derive layout/device type, but resizeGame does not increment it.'
+      first_fix_phase: 'phase_02_layout_state_repair'
+    - file: 'apps/oma-peli/static/music'
+      issue: 'Music randomizer expects loop numbers 1 through 20, but loop 14 is missing from static/music.'
+      first_fix_phase: 'phase_07_assets_and_audio'
+
+target_architecture:
+  short_term: 'A modular standalone HelloPixi game that still renders through +page.svelte but has separated math, layout, Pixi lifecycle, controls, audio, and debug modules.'
+  medium_term: 'A responsive UI shell with mobile-first controls, stable safe-area sizing, accessible buttons, and screenshot/manual validation across desktop, mobile portrait, and mobile landscape.'
+  long_term_decision: 'Choose whether to keep the standalone local game for demo use or migrate the game into the SDK BookEvent/RGS path.'
+  proposed_modules:
+    - path: 'src/game-standalone/types.ts'
+      responsibility: 'Shared SymbolKey, WinResult, ReelState, GameMode, SpinSpeed, layout and UI state types for HelloPixi-derived code.'
+    - path: 'src/game-standalone/mathConfig.ts'
+      responsibility: 'Runtime symbol weights, paytable, multipliers, bet levels, scatter/free-spin rules.'
+    - path: 'src/game-standalone/math.ts'
+      responsibility: 'Pure functions for random symbol selection, reel-position mapping, path generation, win calculation, and payout calculation.'
+    - path: 'src/game-standalone/reel.ts'
+      responsibility: 'Pixi Reel class or factory with no Svelte state and no UI overlay knowledge.'
+    - path: 'src/game-standalone/audio.ts'
+      responsibility: 'HTMLAudio and Howler music orchestration with asset manifest and missing-file safeguards.'
+    - path: 'src/game-standalone/assets.ts'
+      responsibility: 'Centralized asset URLs derived from SvelteKit base without GitHub hostname branching unless documented.'
+    - path: 'src/game-standalone/layout.ts'
+      responsibility: 'Viewport, safe-area, canvas scale, control panel placement, and device/orientation helpers.'
+    - path: 'src/components/standalone/ControlPanel.svelte'
+      responsibility: 'Bet, play, autoplay, speed, menu, and win display controls with responsive markup.'
+    - path: 'src/components/standalone/GameOverlay.svelte'
+      responsibility: 'Paytable/menu, win popup, free-spin outro, debug panel, and modal overlays.'
+
+progress:
+  active_phase: null
+  active_step: null
+  completed_steps: []
+  blocked_steps: []
+  agent_journal:
+    - date: '2026-07-05'
+      author: 'GitHub Copilot'
+      note: >-
+        Initial refactor plan created from OMA_PELI_TECHNICAL_DEEP_DIVE.md,
+        direct HelloPixi inspection, current diagnostics, and online agent
+        instruction references.
+    - date: '2026-07-05'
+      author: 'GitHub Copilot'
+      note: >-
+        Added guarded Copilot CLI phase runner under agentic-refactor/. The
+        runner targets gh copilot, defaults to dry-run, generates one prompt per
+        phase, and requires explicit -Execute for real autonomous work.
+    - date: '2026-07-05'
+      author: 'GitHub Copilot'
+      note: >-
+        Runner dry-run passed for phase prompt generation. Real execution was
+        intentionally not started because gh auth status reports no GitHub login
+        and the worktree contains unrelated dirty/untracked files. The runner now
+        fails early with a clear gh auth login message and dirty-worktree guard.
+    - date: '2026-07-05'
+      author: 'GitHub Copilot'
+      note: >-
+        All-phase dry-run passed. The runner enumerated phase_00 through
+        phase_10 and generated ignored prompts for each phase under
+        agentic-refactor/generated-prompts/. Full autonomous execution remains
+        blocked until GitHub CLI auth is configured and the dirty worktree
+        baseline is reviewed.
+
+phases:
+  - id: 'phase_00_workflow_and_docs'
+    status: 'not_started'
+    priority: 0
+    goal: 'Establish agent workflow, documentation discipline, and decision boundaries before touching game behavior.'
+    why: 'The project is already split between deployed HelloPixi and SDK Storybook paths. Future agents must not blur those paths.'
+    steps:
+      - id: '00.01_read_context'
+        status: 'not_started'
+        action: 'Read AGENTS.md, OMA_PELI_TECHNICAL_DEEP_DIVE.md, and this YAML.'
+        output: 'Agent can state which implementation path it is changing.'
+        validation: 'No code validation required.'
+      - id: '00.02_set_scope'
+        status: 'not_started'
+        action: 'Set progress.active_phase and progress.active_step in this YAML before editing code.'
+        output: 'This plan records the current working scope.'
+        validation: 'git diff shows only the intended progress metadata change before code edits.'
+      - id: '00.03_update_docs_contract'
+        status: 'not_started'
+        action: 'After each phase, add discoveries to master_document and progress notes to this YAML.'
+        output: 'Living docs remain synchronized with implementation.'
+        validation: 'git diff includes doc updates with the code phase.'
+
+  - id: 'phase_01_baseline_and_compile_hygiene'
+    status: 'not_started'
+    priority: 1
+    goal: 'Make the current HelloPixi file cleaner to compile and easier to refactor without changing behavior.'
+    why: 'Current diagnostics create noise that will obscure real refactor regressions.'
+    target_files:
+      - 'src/components/HelloPixi.svelte'
+      - 'src/components/PasswordProtection.svelte'
+      - 'src/components/LoadingScreen.svelte'
+    steps:
+      - id: '01.01_capture_baseline_errors'
+        status: 'not_started'
+        action: 'Run get_errors on HelloPixi.svelte, layoutConfig.ts, layoutUtils.ts, PasswordProtection.svelte, and LoadingScreen.svelte.'
+        output: 'List of current compile/a11y warnings is recorded in this YAML under current_findings or a phase note.'
+        validation: 'No edits yet.'
+      - id: '01.02_fix_svelte_event_directives'
+        status: 'not_started'
+        action: 'Convert deprecated on:click, on:mouseenter, on:mouseleave, and on:keydown in HelloPixi-facing components to Svelte 5 event attributes.'
+        details:
+          - 'Use onclick={handler} instead of on:click={handler}.'
+          - 'Use onmouseenter and onmouseleave for hover handlers.'
+          - 'Do not change handler bodies except when extracting repeated functions is necessary for readability.'
+        output: 'Deprecated event directive diagnostics are gone or materially reduced.'
+        validation: 'Run get_errors on touched files.'
+      - id: '01.03_add_accessible_labels'
+        status: 'not_started'
+        action: 'Add aria-label to icon-only buttons in HelloPixi controls and audio toggles.'
+        details:
+          - 'Keep existing title attributes if present.'
+          - 'Labels must describe action, such as Increase bet, Decrease bet, Spin, Stop autoplay, Toggle menu, Toggle music, Toggle sound.'
+        output: 'a11y_consider_explicit_label diagnostics are gone or materially reduced.'
+        validation: 'Run get_errors on HelloPixi.svelte.'
+      - id: '01.04_fix_obvious_identifier_bug'
+        status: 'not_started'
+        action: 'Replace mobile menu reference to autoPlayRounds with autoPlayRoundsLeft.'
+        output: 'Mobile autoplay status displays the correct state variable.'
+        validation: 'Run get_errors on HelloPixi.svelte.'
+      - id: '01.05_remove_or_reconnect_unused_css'
+        status: 'not_started'
+        action: 'Remove unused .win3d CSS selectors or reconnect them if they are meant to style the current win label.'
+        decision_rule: 'Prefer removal unless a visible current element uses the class after a small local read.'
+        output: 'Unused CSS warnings shrink.'
+        validation: 'Run get_errors on HelloPixi.svelte.'
+      - id: '01.06_build_baseline'
+        status: 'not_started'
+        action: 'Run pnpm run build --filter=oma-peli.'
+        output: 'Known build status is recorded in this YAML.'
+        validation: 'Build succeeds, or failure is logged with exact error and next local step.'
+    documentation_required:
+      - 'Update master_document Risks And Maintenance Notes if diagnostics reveal new categories.'
+      - 'Update this phase status and agent_journal.'
+
+  - id: 'phase_02_layout_state_repair'
+    status: 'not_started'
+    priority: 2
+    goal: 'Make device type, orientation, canvas scale, and control panel placement reactive and predictable.'
+    why: 'Mobile bugs are likely caused by mixed CSS media queries, non-reactive device detection, and fixed 1445x1000 assumptions.'
+    target_files:
+      - 'src/config/layoutConfig.ts'
+      - 'src/utils/layoutUtils.ts'
+      - 'src/components/HelloPixi.svelte'
+    steps:
+      - id: '02.01_define_viewport_model'
+        status: 'not_started'
+        action: 'Add or document a single viewport model with width, height, isMobile, isPortrait, safeAreaInsets, deviceType, and gameScale.'
+        output: 'One helper owns device/orientation decisions.'
+        validation: 'Typecheck touched TypeScript files through get_errors.'
+      - id: '02.02_fix_layout_update_trigger'
+        status: 'not_started'
+        action: 'Increment layoutUpdateTrigger inside resizeGame or replace it with a state object updated by the resize listener.'
+        output: 'currentLayout() and deviceType() recompute when viewport/orientation changes.'
+        validation: 'Manual dev-server check by resizing browser and logging deviceType/currentLayout from debug panel or console.'
+      - id: '02.03_remove_duplicate_scale_logic'
+        status: 'not_started'
+        action: 'Move resizeGame scale calculation into layoutUtils or a new standalone layout module.'
+        details:
+          - 'Keep existing numeric behavior first.'
+          - 'Only after behavior is preserved, simplify mobile portrait and landscape scale constants.'
+        output: 'HelloPixi calls a helper instead of owning long viewport math inline.'
+        validation: 'Build and manual desktop/mobile viewport smoke check.'
+      - id: '02.04_safe_area_support'
+        status: 'not_started'
+        action: 'Add CSS variables or style calculations for iOS safe-area insets around top buttons and bottom control panel.'
+        output: 'Top-right buttons and bottom controls avoid notches/home indicator.'
+        validation: 'Manual check using browser mobile emulation for iPhone portrait and landscape.'
+      - id: '02.05_document_layout_truth'
+        status: 'not_started'
+        action: 'Update OMA_PELI_TECHNICAL_DEEP_DIVE.md with the actual final layout model.'
+        output: 'Master document no longer warns that layoutUpdateTrigger is stale if fixed.'
+        validation: 'Diff confirms docs reflect code.'
+
+  - id: 'phase_03_extract_runtime_config_and_math'
+    status: 'not_started'
+    priority: 3
+    goal: 'Move symbol keys, assets, weights, paytable, bet levels, multipliers, and win math out of HelloPixi into pure modules.'
+    why: 'Math and UI changes are currently tangled, making regressions likely and making simulator/docs drift.'
+    target_new_files:
+      - 'src/game-standalone/types.ts'
+      - 'src/game-standalone/mathConfig.ts'
+      - 'src/game-standalone/math.ts'
+    steps:
+      - id: '03.01_create_types_module'
+        status: 'not_started'
+        action: 'Move SymbolKey, WinResult, SpinSpeed, reel position types, and GameMode-like standalone types to game-standalone/types.ts.'
+        output: 'HelloPixi imports types without changing runtime behavior.'
+        validation: 'get_errors on HelloPixi.svelte and new TypeScript file.'
+      - id: '03.02_create_math_config'
+        status: 'not_started'
+        action: 'Move SYMBOL_KEYS, SYMBOL_WEIGHTS_BASE, SYMBOL_WEIGHTS_FS, SYMBOL_PAYTABLE, BET_LEVELS, and multiplier distribution into mathConfig.ts.'
+        output: 'One runtime config module becomes source of truth for docs and future simulator alignment.'
+        validation: 'Build or get_errors.'
+      - id: '03.03_extract_coordinate_helpers'
+        status: 'not_started'
+        action: 'Move getReelPosition and getReelIndex into pure math.ts with unit-like inline assertions or small test helpers if local test framework exists.'
+        output: 'Coordinate mapping can be reused by render and win math.'
+        validation: 'Add cheap script or console-free function checks if test framework is unavailable.'
+      - id: '03.04_extract_random_symbol'
+        status: 'not_started'
+        action: 'Move randomSymbol into math.ts and pass dependencies explicitly: reelIndex, isFreeSpinMode, rng.'
+        output: 'Math becomes deterministic under injected rng.'
+        validation: 'Create a small development-only smoke script or Storybook/debug hook only if existing patterns allow it.'
+      - id: '03.05_extract_check_wins'
+        status: 'not_started'
+        action: 'Move checkWins into a pure calculateWins function that accepts reelData, betAmount, isFreeSpinMode, and rng/multiplier provider.'
+        details:
+          - 'Do not mutate freeSpinsRemaining inside pure win calculation.'
+          - 'Return scatter trigger metadata separately from paying wins.'
+          - 'Keep payout parity with current behavior first.'
+        output: 'HelloPixi handles state transitions; math module returns calculation results.'
+        validation: 'Run a known reelData fixture before and after extraction and record matching results.'
+      - id: '03.06_update_docs'
+        status: 'not_started'
+        action: 'Update master_document to list new modules and mark mathConfig.ts as current runtime truth.'
+        output: 'Future agents stop treating HelloPixi as the only source of math truth.'
+        validation: 'Diff confirms references are updated.'
+
+  - id: 'phase_04_extract_pixi_reel_runtime'
+    status: 'not_started'
+    priority: 4
+    goal: 'Move Pixi reel animation and texture drawing concerns out of HelloPixi.'
+    why: 'The Reel class currently mixes animation state, random symbol generation, sound triggers, and direct stage drawing.'
+    target_new_files:
+      - 'src/game-standalone/reel.ts'
+      - 'src/game-standalone/pixiRuntime.ts'
+    steps:
+      - id: '04.01_extract_reel_class'
+        status: 'not_started'
+        action: 'Move Reel into reel.ts with constructor dependencies for texture lookup, randomSymbol callback, dimensions, and callbacks for stop events.'
+        output: 'Reel no longer closes over HelloPixi state except through callbacks.'
+        validation: 'get_errors and one manual spin.'
+      - id: '04.02_reduce_sprite_churn'
+        status: 'not_started'
+        action: 'Investigate whether draw() removeChildren/addChild every frame is causing mobile performance issues; if yes, reuse sprites and swap textures.'
+        output: 'Mobile frame stability improves or documented reason to defer.'
+        validation: 'Manual mobile-emulation spin check and console performance observation.'
+      - id: '04.03_extract_pixi_setup'
+        status: 'not_started'
+        action: 'Move Application init, asset loading, masks, frames, logo setup, and cleanup into a runtime helper or Svelte action.'
+        output: 'HelloPixi onMount becomes orchestration rather than detailed Pixi construction.'
+        validation: 'Build and manual load/spin check.'
+      - id: '04.04_add_cleanup'
+        status: 'not_started'
+        action: 'Ensure resize and keydown listeners are removed and Pixi app is destroyed on component teardown.'
+        output: 'Hot reload and navigation do not leak listeners/canvases.'
+        validation: 'Manual dev-server reload check; no duplicate spin handlers.'
+
+  - id: 'phase_05_mobile_first_ui_refactor'
+    status: 'not_started'
+    priority: 5
+    goal: 'Replace fragile inline-control markup with mobile-first components and CSS classes.'
+    why: 'The current UI mixes inline style math, media-query display overrides, duplicated controls, and canvas-relative absolute positioning.'
+    target_new_files:
+      - 'src/components/standalone/ControlPanel.svelte'
+      - 'src/components/standalone/GameMenu.svelte'
+      - 'src/components/standalone/WinPopup.svelte'
+      - 'src/components/standalone/DebugPanel.svelte'
+      - 'src/components/standalone/TopToggles.svelte'
+    steps:
+      - id: '05.01_inventory_controls'
+        status: 'not_started'
+        action: 'List every current interactive control, state dependency, and desktop/mobile visibility rule.'
+        output: 'Add inventory to this YAML under phase notes.'
+        validation: 'No code change.'
+      - id: '05.02_create_control_api'
+        status: 'not_started'
+        action: 'Define props/events for ControlPanel: betAmount, balance, lastWin, isAutoPlaying, spinSpeed, deviceType, handlers.'
+        output: 'ControlPanel has a simple typed contract independent of Pixi internals.'
+        validation: 'get_errors on new component.'
+      - id: '05.03_extract_desktop_control_panel'
+        status: 'not_started'
+        action: 'Move current desktop control panel markup into ControlPanel without changing layout yet.'
+        output: 'HelloPixi loses one large markup block but behavior remains unchanged on desktop.'
+        validation: 'Manual desktop spin, bet, menu, autoplay, speed checks.'
+      - id: '05.04_extract_mobile_control_panel'
+        status: 'not_started'
+        action: 'Replace duplicated mobile markup with a compact mobile layout: menu button, bet stepper, central spin/stop button, and optional drawer for autoplay/speed.'
+        output: 'Mobile controls fit within viewport and safe area.'
+        validation: 'Manual mobile portrait and landscape checks.'
+      - id: '05.05_extract_overlays'
+        status: 'not_started'
+        action: 'Move paytable/menu, win popup, free-spin-end popup, top toggles, and debug panel into components.'
+        output: 'HelloPixi renders named components instead of long inline overlay blocks.'
+        validation: 'Manual checks for all overlays.'
+      - id: '05.06_css_module_or_global_style_decision'
+        status: 'not_started'
+        action: 'Choose component-scoped Svelte styles for standalone UI; remove repeated inline styles where practical.'
+        output: 'UI styles become readable and mobile-specific without !important-heavy overrides.'
+        validation: 'get_errors for unused CSS and build.'
+
+  - id: 'phase_06_visual_mobile_validation'
+    status: 'not_started'
+    priority: 6
+    goal: 'Create repeatable validation for desktop and mobile layout.'
+    why: 'The user specifically identified UI and mobile bugs; future agents need concrete checks.'
+    steps:
+      - id: '06.01_start_dev_server'
+        status: 'not_started'
+        action: 'Run pnpm run dev --filter=oma-peli, keeping the dev server available for browser checks.'
+        output: 'Local URL is known, usually http://localhost:3010.'
+        validation: 'Server starts without fatal errors.'
+      - id: '06.02_browser_smoke_desktop'
+        status: 'not_started'
+        action: 'Open app, pass password gate, complete loading/splash, run one spin, open menu, toggle sound/music.'
+        output: 'Desktop behavior notes recorded in this YAML.'
+        validation: 'No blank canvas, no obvious console errors, controls clickable.'
+      - id: '06.03_browser_smoke_mobile_portrait'
+        status: 'not_started'
+        action: 'Use browser viewport around 390x844 or similar. Check safe area, spin button, bet controls, menu drawer, paytable scroll, win popup.'
+        output: 'Mobile portrait notes and screenshots if tooling available.'
+        validation: 'No text/control overlap; spin is reachable; menu fits.'
+      - id: '06.04_browser_smoke_mobile_landscape'
+        status: 'not_started'
+        action: 'Use browser viewport around 844x390. Check canvas scale, controls, top toggles, debug button, and overlays.'
+        output: 'Mobile landscape notes and screenshots if tooling available.'
+        validation: 'No critical controls offscreen.'
+      - id: '06.05_record_manual_test_matrix'
+        status: 'not_started'
+        action: 'Add a test matrix to master_document or a new UI_TEST_MATRIX.md if it grows too large.'
+        output: 'Future agents have exact viewport checks.'
+        validation: 'Docs updated.'
+
+  - id: 'phase_07_assets_and_audio'
+    status: 'not_started'
+    priority: 7
+    goal: 'Make asset and audio loading deterministic, documented, and mobile-friendly.'
+    target_files:
+      - 'src/components/HelloPixi.svelte'
+      - 'static/music'
+      - 'static/sounds'
+      - 'static/symbols'
+    steps:
+      - id: '07.01_create_asset_manifest'
+        status: 'not_started'
+        action: 'Move symbol, control, sound, and music URL construction into a manifest helper.'
+        output: 'No scattered path construction in HelloPixi.'
+        validation: 'Manual asset load check.'
+      - id: '07.02_fix_music_loop_manifest'
+        status: 'not_started'
+        action: 'Replace hardcoded 1..20 random loop selection with an explicit list of existing loop filenames, or add missing loop 14 if user provides it.'
+        output: 'Random music never selects a missing asset.'
+        validation: 'Console shows no load warning for missing loop during repeated spins.'
+      - id: '07.03_remove_cdn_dependency_decision'
+        status: 'not_started'
+        action: 'Decide whether to install Howler as a dependency or keep CDN. Prefer package dependency for deterministic builds if allowed.'
+        output: 'Audio dependency strategy documented.'
+        validation: 'Build after dependency change, if any.'
+      - id: '07.04_mobile_audio_unlock'
+        status: 'not_started'
+        action: 'Confirm music starts only after user gesture from loading/splash or first spin, especially on iOS.'
+        output: 'Mobile audio behavior documented.'
+        validation: 'Manual mobile browser check.'
+
+  - id: 'phase_08_game_state_flow'
+    status: 'not_started'
+    priority: 8
+    goal: 'Separate game state transitions from rendering and UI handlers.'
+    why: 'spin, free-spin state, autoplay, wins, and balance currently mutate many local variables directly.'
+    target_new_files:
+      - 'src/game-standalone/state.ts'
+      - 'src/game-standalone/actions.ts'
+    steps:
+      - id: '08.01_model_state'
+        status: 'not_started'
+        action: 'Define a StandaloneGameState type covering balance, bet index, free spins, wins, autoplay, stats, audio toggles, and debug visibility.'
+        output: 'State shape is explicit and typed.'
+        validation: 'get_errors.'
+      - id: '08.02_extract_actions'
+        status: 'not_started'
+        action: 'Move pure or mostly-pure transitions into action functions: startSpin, completeSpin, addWin, startAutoPlay, stopAutoPlay, triggerFreeSpins.'
+        output: 'UI handlers call named actions instead of mutating many variables.'
+        validation: 'Manual spin/autoplay/free-spin checks.'
+      - id: '08.03_guard_concurrent_spins'
+        status: 'not_started'
+        action: 'Make spin and skip-spin state explicit so rapid taps cannot start duplicate spins or corrupt autoplay.'
+        output: 'Mobile repeated tapping is safe.'
+        validation: 'Manual rapid-tap checks.'
+
+  - id: 'phase_09_sdk_or_standalone_decision'
+    status: 'not_started'
+    priority: 9
+    goal: 'Make an explicit product/architecture decision about local standalone play versus SDK/RGS integration.'
+    why: 'Perfecting mobile UI is useful, but production casino game correctness should eventually come from RGS BookEvents.'
+    steps:
+      - id: '09.01_write_decision_record'
+        status: 'not_started'
+        action: 'Create or update a decision section in master_document: keep standalone demo, migrate to SDK, or maintain both deliberately.'
+        output: 'Future agents stop guessing.'
+        validation: 'User or maintainer review required.'
+      - id: '09.02_if_keep_standalone'
+        status: 'not_started'
+        action: 'Delete or clearly mark unused SDK path only with explicit user approval. Otherwise leave it documented.'
+        output: 'No accidental removal of Storybook path.'
+        validation: 'User approval.'
+      - id: '09.03_if_migrate_to_sdk'
+        status: 'not_started'
+        action: 'Plan a separate migration from standalone math results to BookEvents and EmitterEvents; do not combine with UI refactor.'
+        output: 'Migration plan exists as a new phase or separate file.'
+        validation: 'Storybook book-event stories cover new flow.'
+
+  - id: 'phase_10_final_cleanup_and_agent_hardening'
+    status: 'not_started'
+    priority: 10
+    goal: 'Leave the project easier for the next agent and safer for future UI changes.'
+    steps:
+      - id: '10.01_update_master_document_complete'
+        status: 'not_started'
+        action: 'Update OMA_PELI_TECHNICAL_DEEP_DIVE.md to describe final modules, validation commands, known risks, and any deferred decisions.'
+        output: 'Master document is current.'
+        validation: 'Diff review.'
+      - id: '10.02_update_this_plan_complete'
+        status: 'not_started'
+        action: 'Mark completed phases, add remaining blockers, and record validation outcomes.'
+        output: 'This YAML is a truthful project state file.'
+        validation: 'YAML remains parseable.'
+      - id: '10.03_update_agents_rules'
+        status: 'not_started'
+        action: 'Update AGENTS.md with newly discovered commands, pitfalls, and workflows.'
+        output: 'Future agents get latest instructions automatically.'
+        validation: 'Read AGENTS.md for contradictions with global copilot instructions.'
+      - id: '10.04_final_validation'
+        status: 'not_started'
+        action: 'Run pnpm run build --filter=oma-peli and focused manual UI checks. Run lint if time and existing issues permit.'
+        output: 'Final status known.'
+        validation: 'Command results recorded in this YAML and final response.'
+
+review_queue:
+  needs_human_decision:
+    - id: 'RQ-001'
+      question: 'Should oma-peli remain a standalone local demo game, or should it be migrated to the SDK/RGS BookEvent pipeline?'
+      default_until_answered: 'Keep standalone, stabilize UI, do not remove SDK path.'
+    - id: 'RQ-002'
+      question: 'Should Howler be installed as a package dependency instead of loaded from CDN?'
+      default_until_answered: 'Keep CDN but isolate it behind audio.ts and document the tradeoff.'
+    - id: 'RQ-003'
+      question: 'Should debug UI be hidden behind query param, build flag, or kept visible with the debug button?'
+      default_until_answered: 'Keep visible for development, but make it non-overlapping and mobile-safe.'
+    - id: 'RQ-004'
+      question: 'Can the missing music loop 14 be added, or should the random music manifest exclude it?'
+      default_until_answered: 'Exclude missing files from random selection.'
+
+phase_notes: []
