@@ -132,8 +132,8 @@ target_architecture:
       responsibility: 'Paytable/menu, win popup, free-spin outro, debug panel, and modal overlays.'
 
 progress:
-  active_phase: 'ui_phase_08_visual_polish'
-  active_step: '08.01_modal_and_section_density'
+  active_phase: 'ui_phase_09_accessibility_input'
+  active_step: '09.02_toggle_pressed_state_quick_pass'
   completed_steps:
     - '00.01_read_context'
     - '00.02_set_scope'
@@ -184,6 +184,8 @@ progress:
     - '10.02_update_this_plan_complete'
     - '10.03_update_agents_rules'
     - '10.04_final_validation'
+    - 'ui.08_visual_polish_complete'
+    - 'ui.09.02_toggle_pressed_state_quick_pass'
   blocked_steps: []
   agent_journal:
     - date: '2026-07-05'
@@ -583,6 +585,17 @@ progress:
         confirmed modal and settings fit at 390x844, 740x360, and 1440x1000,
         including tightened short-landscape settings controls. pnpm run build
         --filter=oma-peli passed with the known warning set.
+    - date: '2026-07-05'
+      author: 'GitHub Copilot'
+      note: >-
+        Completed OMA_PELI_UI_REFACTOR_PHASES.md Phase 08 for the deployed
+        HelloPixi route. TopToggles, SpinButton, QuickActions, and MenuButton
+        now have consistent hover, focus-visible, and pressed states while
+        preserving stable dimensions. Browser smoke confirmed controls stay
+        in-bounds at 390x844, 844x390, 900x500, and 1440x1000. A quick Phase 09
+        accessibility checkpoint added aria-pressed to mobile and desktop music
+        and sound toggles. get_errors passed for all touched control components;
+        pnpm run build --filter=oma-peli passed with the known warning set.
 
 phases:
   - id: 'phase_00_workflow_and_docs'

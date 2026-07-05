@@ -48,6 +48,7 @@
 				: 'music_off.png'}')"
 			title={musicEnabled ? 'Music: ON' : 'Music: OFF'}
 			aria-label="Toggle music"
+			aria-pressed={musicEnabled}
 		></button>
 		<button
 			onclick={onToggleSound}
@@ -57,6 +58,7 @@
 				: 'sounds_off.png'}')"
 			title={soundEnabled ? 'Sound: ON' : 'Sound: OFF'}
 			aria-label="Toggle sound"
+			aria-pressed={soundEnabled}
 		></button>
 	</div>
 {:else}
@@ -104,6 +106,7 @@
 				: 'music_off.png'}')"
 			title={musicEnabled ? 'Music: ON' : 'Music: OFF'}
 			aria-label="Toggle music"
+			aria-pressed={musicEnabled}
 		></button>
 		<button
 			onclick={onToggleSound}
@@ -115,6 +118,7 @@
 				: 'sounds_off.png'}')"
 			title={soundEnabled ? 'Sound: ON' : 'Sound: OFF'}
 			aria-label="Toggle sound"
+			aria-pressed={soundEnabled}
 		></button>
 	</div>
 {/if}
@@ -128,6 +132,23 @@
 		text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
 		z-index: 1000;
 		pointer-events: auto;
+		transition:
+			filter 120ms ease,
+			transform 120ms ease;
+	}
+
+	.top-action:hover,
+	.top-action:focus-visible,
+	.icon-button:hover,
+	.icon-button:focus-visible {
+		filter: brightness(1.12) drop-shadow(0 0 8px rgba(255, 215, 0, 0.35));
+		outline: 2px solid rgba(255, 215, 0, 0.8);
+		outline-offset: 2px;
+	}
+
+	.top-action:active,
+	.icon-button:active {
+		transform: translateY(1px) scale(0.98);
 	}
 
 	.paytable {
@@ -155,6 +176,10 @@
 		border: none;
 		cursor: pointer;
 		background-color: transparent;
+		border-radius: 8px;
+		transition:
+			filter 120ms ease,
+			transform 120ms ease;
 	}
 
 	.mobile-top-actions {

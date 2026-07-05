@@ -834,7 +834,7 @@ UI refactor Phase 07 started the stage-composition split. `src/game-standalone/s
 
 Phase 07 validation confirmed the stage remains bounded and centered on desktop wide layouts without an extra transform: `1920x1080` and `2560x1080` keep the full canvas visible with equal side margins, while `900x500` keeps spin and bottom controls reachable. The remaining side-area treatment is visual polish rather than functional stage composition.
 
-UI refactor Phase 08 started with modal and section density polish. `ModalShell.svelte` now has a denser sticky header, stronger modal surface treatment, scrollbar color, and close-button focus/hover state. `PaytableSection.svelte` uses tabular numeric values and switches symbol groups to two columns on wider modal bodies. `SettingsSection.svelte` uses stable active button borders, focus states, touch-sized buttons, and compact short-landscape spacing.
+UI refactor Phase 08 completed the visual polish and density pass. `ModalShell.svelte` now has a denser sticky header, stronger modal surface treatment, scrollbar color, and close-button focus/hover state. `PaytableSection.svelte` uses tabular numeric values and switches symbol groups to two columns on wider modal bodies. `SettingsSection.svelte` uses stable active button borders, focus states, touch-sized buttons, and compact short-landscape spacing. `TopToggles.svelte`, `SpinButton.svelte`, `QuickActions.svelte`, and `MenuButton.svelte` now share consistent hover, focus-visible, and pressed states without changing the established control dimensions. Phase 09 started with a quick accessibility checkpoint: the music and sound toggles expose `aria-pressed` in mobile and desktop layouts.
 
 ### 9. Final Refactor Status After Phase 10
 
@@ -843,7 +843,7 @@ Phases 00 through 10 are now completed in `OMA_PELI_REFACTOR_PLAN.yaml`. The fir
 Known unresolved items remain:
 
 - A deeper UI refactor is still needed to handle unusual monitor/window shapes, reduce inline layout arithmetic, and extract the remaining control/menu UI from `HelloPixi`; this is planned in `OMA_PELI_UI_REFACTOR_PHASES.md`.
-- UI refactor Phase 08 remains needed for visual polish, density, and side-area treatment now that the main control, modal, and stage composition checkpoints are in place.
+- UI refactor Phase 09 remains needed for a deeper keyboard/focus pass around modal focus return, spin-disabled semantics, and spacebar behavior around focused controls.
 - Real-device mobile validation remains needed; the known phase 06 top-toggle, spin-size, and menu-close viewport failures were fixed and rechecked with browser viewport automation.
 - The deployed route remains local/client-simulated and is not RGS-authoritative.
 - Some simulator/math documents still reflect older math states and should not be treated as runtime truth.

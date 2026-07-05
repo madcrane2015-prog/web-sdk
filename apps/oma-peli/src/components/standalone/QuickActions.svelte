@@ -81,6 +81,21 @@
 		border: none;
 		cursor: pointer;
 		background-color: transparent;
+		border-radius: 8px;
+		transition:
+			filter 120ms ease,
+			transform 120ms ease;
+	}
+
+	button:hover,
+	button:focus-visible {
+		filter: brightness(1.1) drop-shadow(0 0 8px rgba(255, 215, 0, 0.32));
+		outline: 2px solid rgba(255, 215, 0, 0.78);
+		outline-offset: 2px;
+	}
+
+	button:active {
+		transform: translateY(1px) scale(0.97);
 	}
 
 	img {

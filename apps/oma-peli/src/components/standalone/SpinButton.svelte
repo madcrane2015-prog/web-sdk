@@ -64,6 +64,20 @@
 		position: relative;
 		z-index: 10;
 		border-radius: 50%;
+		transition:
+			filter 120ms ease,
+			transform 120ms ease;
+	}
+
+	.play-button:hover,
+	.play-button:focus-visible {
+		filter: brightness(1.08) drop-shadow(0 0 10px rgba(255, 215, 0, 0.32));
+		outline: 2px solid rgba(255, 215, 0, 0.82);
+		outline-offset: 2px;
+	}
+
+	.play-button:active {
+		transform: scale(0.97);
 	}
 
 	@media (max-width: 768px) and (orientation: portrait),
