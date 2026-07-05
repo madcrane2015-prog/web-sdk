@@ -132,8 +132,8 @@ target_architecture:
       responsibility: 'Paytable/menu, win popup, free-spin outro, debug panel, and modal overlays.'
 
 progress:
-  active_phase: 'ui_phase_07_stage_composition'
-  active_step: '07.03_phone_portrait_stage_transform'
+  active_phase: null
+  active_step: null
   completed_steps:
     - '00.01_read_context'
     - '00.02_set_scope'
@@ -563,6 +563,14 @@ progress:
         in-bounds at 390x844, 360x740, 844x390, and 1440x1000, and one spin
         returns to Spin-ready state at 390x844, 844x390, and 1440x1000. pnpm
         run build --filter=oma-peli passed with the known warning set.
+    - date: '2026-07-05'
+      author: 'GitHub Copilot'
+      note: >-
+        Completed OMA_PELI_UI_REFACTOR_PHASES.md Phase 07. Browser smoke
+        confirmed 900x500 keeps spin and bottom controls reachable, and
+        1920x1080 / 2560x1080 keep the full canvas visible with bounded,
+        centered side margins. No additional wide-stage transform was needed;
+        remaining side-area improvements belong to visual polish Phase 08.
 
 phases:
   - id: 'phase_00_workflow_and_docs'

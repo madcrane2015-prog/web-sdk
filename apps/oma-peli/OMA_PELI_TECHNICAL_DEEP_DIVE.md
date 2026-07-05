@@ -832,6 +832,8 @@ UI refactor Phase 06 completed the modal/menu split checkpoint. `AutoplayMenu.sv
 
 UI refactor Phase 07 started the stage-composition split. `src/game-standalone/stageComposition.ts` now records the logical canvas bounds, reel frame bounds, and an initial reel viewport bound used as the target board area for crop/anchor transforms. It also exports `createPixiStageTransform()`, which currently enlarges and centers the Pixi stage around the reel viewport for phone portrait layouts while leaving HTML controls on the base `gameScale`. `HelloPixi.svelte` applies that transform in `resizeGame()` and exposes the stage composition values as CSS variables on the stage wrapper.
 
+Phase 07 validation confirmed the stage remains bounded and centered on desktop wide layouts without an extra transform: `1920x1080` and `2560x1080` keep the full canvas visible with equal side margins, while `900x500` keeps spin and bottom controls reachable. The remaining side-area treatment is visual polish rather than functional stage composition.
+
 ### 9. Final Refactor Status After Phase 10
 
 Phases 00 through 10 are now completed in `OMA_PELI_REFACTOR_PLAN.yaml`. The first-pass refactor produced durable documentation, scoped agent rules, modular standalone math/Pixi/assets/state helpers, partial standalone UI extraction, browser validation notes, an explicit standalone-versus-SDK decision, and final validation records.
@@ -839,7 +841,7 @@ Phases 00 through 10 are now completed in `OMA_PELI_REFACTOR_PLAN.yaml`. The fir
 Known unresolved items remain:
 
 - A deeper UI refactor is still needed to handle unusual monitor/window shapes, reduce inline layout arithmetic, and extract the remaining control/menu UI from `HelloPixi`; this is planned in `OMA_PELI_UI_REFACTOR_PHASES.md`.
-- UI refactor Phase 07 remains needed to make the Pixi stage responsive by composition rather than only by scaling the full logical canvas.
+- UI refactor Phase 08 remains needed for visual polish, density, and side-area treatment now that the main control, modal, and stage composition checkpoints are in place.
 - Real-device mobile validation remains needed; the known phase 06 top-toggle, spin-size, and menu-close viewport failures were fixed and rechecked with browser viewport automation.
 - The deployed route remains local/client-simulated and is not RGS-authoritative.
 - Some simulator/math documents still reflect older math states and should not be treated as runtime truth.

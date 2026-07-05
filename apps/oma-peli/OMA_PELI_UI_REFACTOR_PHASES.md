@@ -18,7 +18,7 @@ This document is an implementation plan, not a retrospective. It should be follo
 | Phase 04 - Recompose Mobile Landscape And Short Screens                  | completed   | 2026-07-05   | Added short-screen status strip, desktopShort routing, and fixed autoplay picker.       |
 | Phase 05 - Extract A Real Control Shell                                  | completed   | 2026-07-05   | Extracted spin, status, quick actions, menu buttons, and the control panel frame.       |
 | Phase 06 - Replace The Menu/Paytable With A Modal System                 | completed   | 2026-07-05   | Extracted autoplay selector, modal shell, paytable section, and settings section.       |
-| Phase 07 - Make The Game Stage Responsive By Composition, Not Only Scale | in progress | 2026-07-05   | Added stage bounds and phone-portrait Pixi transform; wide-stage work remains.          |
+| Phase 07 - Make The Game Stage Responsive By Composition, Not Only Scale | completed   | 2026-07-05   | Added stage bounds and phone-portrait Pixi transform; verified short/wide stage fit.    |
 | Phase 08 - Visual Polish And Density Pass                                | not started | -            | -                                                                                       |
 | Phase 09 - Accessibility And Input Behavior Pass                         | not started | -            | -                                                                                       |
 | Phase 10 - Automated Layout Regression Harness                           | not started | -            | -                                                                                       |
@@ -540,7 +540,7 @@ Completion notes:
 
 ## Phase 07 - Make The Game Stage Responsive By Composition, Not Only Scale
 
-Status: in progress
+Status: completed
 Target files: `HelloPixi.svelte`, `src/game-standalone/pixiRuntime.ts`, layout utilities.
 
 ### Objective
@@ -585,12 +585,13 @@ Checkpoint validation:
 - `get_errors` passed for `stageComposition.ts`; `HelloPixi.svelte` only reports the existing editor-only `$app/paths` diagnostic.
 - Browser smoke confirmed controls remain in-bounds at `390x844`, `360x740`, `844x390`, and `1440x1000` after applying the Pixi stage transform.
 - Browser smoke confirmed one spin returns to the Spin-ready state at `390x844`, `844x390`, and `1440x1000`.
+- Browser smoke confirmed `900x500` keeps spin and bottom controls reachable, and `1920x1080` / `2560x1080` keep the stage bounded and centered with intentional side margins.
 - `pnpm run build --filter=oma-peli` passed with the known warning set.
 
-Remaining for this phase:
+Completion notes:
 
-- Add desktop-wide and short-screen stage composition rules.
-- Validate canvas nonblank and spin completion after any additional visual stage movement.
+- Wide desktop did not need a new transform because the stage is already bounded and centered; `2560x1080` measured equal 558 px side margins around the canvas.
+- Future polish may improve the surrounding side treatment, but the Phase 07 functional fit criteria are met.
 
 ## Phase 08 - Visual Polish And Density Pass
 
