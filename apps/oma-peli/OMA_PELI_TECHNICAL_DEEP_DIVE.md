@@ -174,9 +174,10 @@ Phase 05 started the standalone HTML UI split:
 - `src/components/standalone/WinPopup.svelte` and `FreeSpinsEndPopup.svelte`: own the win and free-spin-end overlay markup while `HelloPixi` keeps payout/free-spin state transitions.
 - `src/components/standalone/DebugPanel.svelte`: owns the RTP/statistics/debug monitor markup while `HelloPixi` keeps the counters and test actions.
 - `src/components/standalone/BetControls.svelte`, `DesktopControlPanel.svelte`, and `MobileControlPanel.svelte`: remove duplicated bet-control markup for desktop and mobile branches without changing the surrounding control-panel chrome.
-- `src/components/standalone/controlPanelApi.ts`: documents the intended control-panel state, visual, and callback API for later deeper extraction.
+- `src/components/standalone/SpinButton.svelte`, `StatusMeters.svelte`, `QuickActions.svelte`, `MenuButton.svelte`, and `ControlPanelFrame.svelte`: own the main bottom control presentation slices while `HelloPixi` keeps spin, autoplay, speed, menu, and payout state transitions.
+- `src/components/standalone/controlPanelApi.ts`: documents the typed control-panel state, visual, callback, and component prop API for the extracted controls.
 
-The surrounding control panel frame, play button, autoplay icon, spin speed icon, balance, win display, paytable menu content, and mobile menu content still live in `HelloPixi`; phase 05 only began componentizing the highest-duplication and overlay portions.
+The bottom control frame and most repeated control presentation are now extracted from `HelloPixi`. The slot content still preserves existing desktop/mobile branch composition in `HelloPixi` so behavior stayed stable during extraction. Paytable menu content, mobile menu content, and modal structure remain inline and are the next UI refactor target.
 
 Phase 06 created `UI_TEST_MATRIX.md` and ran browser validation against the deployed standalone route at `http://localhost:3010/` after passing the local password gate. Desktop at 1440x1000 passed the smoke flow: canvas mounted, paytable opened/closed, audio toggles clicked, spin clicked, autoplay menu opened/cancelled, and speed clicked. Mobile portrait 390x844 and mobile landscape 844x390 still fail layout validation because the top paytable/debug/music/sound controls are positioned offscreen to the right. The bottom mobile menu, spin, and bet controls are visible, but the primary spin button measured about 30x30 px in portrait and 43x43 px in landscape, and the paytable/menu close button was below the viewport in both mobile checks.
 
@@ -825,7 +826,7 @@ The UI refactor Phase 04 made compact landscape and short-height desktop windows
 
 Recommendation: manually validate desktop resize, mobile portrait, and mobile landscape in a browser before larger mobile UI refactors. The code path is now reactive, shape-aware, partly tokenized, phone portrait has a dedicated status strip, and compact landscape/short screens have bounded status/autoplay behavior. The old asset-based control panel is still embedded inside `HelloPixi`, so extraction remains the next maintainability risk.
 
-UI refactor Phase 05 has started. `SpinButton.svelte` now owns the central play/stop button markup, glare styling, responsive spin sizing, and accessible title/label. `StatusMeters.svelte` owns the mobile Balance / Bet / Win status strip and desktop single Balance/Win display markup. `QuickActions.svelte` owns the desktop autoplay and spin-speed controls while receiving callback props from `HelloPixi`. `MenuButton.svelte` owns the mobile-left and desktop-right menu button presentation. `HelloPixi.svelte` still owns game-state transitions through `pressSpinButton()` and `cycleSpinSpeed()`, and the full bottom control frame still needs to be extracted into a later `ControlShell.svelte` checkpoint.
+UI refactor Phase 05 completed the standalone control-shell extraction checkpoint. `SpinButton.svelte` owns the central play/stop button markup, glare styling, responsive spin sizing, and accessible title/label. `StatusMeters.svelte` owns the mobile Balance / Bet / Win status strip and desktop single Balance/Win display markup. `QuickActions.svelte` owns the desktop autoplay and spin-speed controls while receiving callback props from `HelloPixi`. `MenuButton.svelte` owns the mobile-left and desktop-right menu button presentation. `ControlPanelFrame.svelte` owns the asset-based left/center/right bottom frame and named slots for overlay/status/default content. `HelloPixi.svelte` still owns game-state transitions through `pressSpinButton()` and `cycleSpinSpeed()` and preserves the existing branch composition inside the frame slots.
 
 ### 9. Final Refactor Status After Phase 10
 
@@ -834,7 +835,7 @@ Phases 00 through 10 are now completed in `OMA_PELI_REFACTOR_PLAN.yaml`. The fir
 Known unresolved items remain:
 
 - A deeper UI refactor is still needed to handle unusual monitor/window shapes, reduce inline layout arithmetic, and extract the remaining control/menu UI from `HelloPixi`; this is planned in `OMA_PELI_UI_REFACTOR_PHASES.md`.
-- UI refactor Phase 05 remains needed to extract the real control shell and remove duplicated inline desktop/mobile control branches from `HelloPixi`.
+- UI refactor Phase 06 remains needed to extract the inline paytable/menu/autoplay modal content from `HelloPixi` into a real modal system.
 - Real-device mobile validation remains needed; the known phase 06 top-toggle, spin-size, and menu-close viewport failures were fixed and rechecked with browser viewport automation.
 - The deployed route remains local/client-simulated and is not RGS-authoritative.
 - Some simulator/math documents still reflect older math states and should not be treated as runtime truth.

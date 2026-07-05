@@ -13,6 +13,7 @@
 	// Loading screen component
 	import LoadingScreen from './LoadingScreen.svelte';
 	import DebugPanel from './standalone/DebugPanel.svelte';
+	import ControlPanelFrame from './standalone/ControlPanelFrame.svelte';
 	import DesktopControlPanel from './standalone/DesktopControlPanel.svelte';
 	import FreeSpinsEndPopup from './standalone/FreeSpinsEndPopup.svelte';
 	import MenuButton from './standalone/MenuButton.svelte';
@@ -1948,24 +1949,13 @@
 			<!-- Pelin pääkontrollit näytön alareunassa -->
 			<!-- Sisältää: Panos-kontrollit, Balance, Play-nappi, Autoplay, Spin Speed, Win-näyttö, Menu -->
 			<!-- HUOM: Sijainti ja koko tulevat nyt layout-järjestelmästä! -->
-			<div
-				class="control-panel-mobile"
-				style="
-        position: absolute;
-        left: {controlPanelPos.x}px;
-        top: {controlPanelPos.y}px;
-        width: {controlPanelPos.width}px;
-        height: {controlPanelPos.height}px;
-        display: flex;
-        align-items: center;
-        z-index: 1000;
-      "
-			>
-				<!-- Autoplay valikko (näkyy kun showAutoPlayMenu = true) -->
-				{#if showAutoPlayMenu}
-					<div
-						class="autoplay-menu-popover"
-						style="
+			<ControlPanelFrame {controlsPath} {gameScale} {controlPanelPos}>
+				<div slot="overlay">
+					<!-- Autoplay valikko (näkyy kun showAutoPlayMenu = true) -->
+					{#if showAutoPlayMenu}
+						<div
+							class="autoplay-menu-popover"
+							style="
     position: absolute;
     bottom: {(controlPanelPos.height / gameScale + 20) * gameScale}px;
     left: 50%;
@@ -1978,19 +1968,19 @@
     z-index: 2000;
     min-width: {250 * gameScale}px;
   "
-					>
-						<div
-							style="color: white; font-weight: bold; margin-bottom: {15 *
-								gameScale}px; text-align: center; font-size: {18 * gameScale}px;"
 						>
-							🔄 Select Rounds
-						</div>
-						<button
-							onclick={() => {
-								startAutoPlay(10);
-								showAutoPlayMenu = false;
-							}}
-							style="
+							<div
+								style="color: white; font-weight: bold; margin-bottom: {15 *
+									gameScale}px; text-align: center; font-size: {18 * gameScale}px;"
+							>
+								🔄 Select Rounds
+							</div>
+							<button
+								onclick={() => {
+									startAutoPlay(10);
+									showAutoPlayMenu = false;
+								}}
+								style="
         width: 100%;
         padding: {12 * gameScale}px;
         margin-bottom: {8 * gameScale}px;
@@ -2003,15 +1993,15 @@
         font-size: {16 * gameScale}px;
         box-shadow: 0 {4 * gameScale}px {10 * gameScale}px rgba(68, 170, 68, 0.4);
       "
-						>
-							10 Rounds
-						</button>
-						<button
-							onclick={() => {
-								startAutoPlay(25);
-								showAutoPlayMenu = false;
-							}}
-							style="
+							>
+								10 Rounds
+							</button>
+							<button
+								onclick={() => {
+									startAutoPlay(25);
+									showAutoPlayMenu = false;
+								}}
+								style="
         width: 100%;
         padding: {12 * gameScale}px;
         margin-bottom: {8 * gameScale}px;
@@ -2024,15 +2014,15 @@
         font-size: {16 * gameScale}px;
         box-shadow: 0 {4 * gameScale}px {10 * gameScale}px rgba(68, 170, 68, 0.4);
       "
-						>
-							25 Rounds
-						</button>
-						<button
-							onclick={() => {
-								startAutoPlay(50);
-								showAutoPlayMenu = false;
-							}}
-							style="
+							>
+								25 Rounds
+							</button>
+							<button
+								onclick={() => {
+									startAutoPlay(50);
+									showAutoPlayMenu = false;
+								}}
+								style="
         width: 100%;
         padding: {12 * gameScale}px;
         margin-bottom: {8 * gameScale}px;
@@ -2045,15 +2035,15 @@
         font-size: {16 * gameScale}px;
         box-shadow: 0 {4 * gameScale}px {10 * gameScale}px rgba(68, 170, 68, 0.4);
       "
-						>
-							50 Rounds
-						</button>
-						<button
-							onclick={() => {
-								startAutoPlay(100);
-								showAutoPlayMenu = false;
-							}}
-							style="
+							>
+								50 Rounds
+							</button>
+							<button
+								onclick={() => {
+									startAutoPlay(100);
+									showAutoPlayMenu = false;
+								}}
+								style="
         width: 100%;
         padding: {12 * gameScale}px;
         margin-bottom: {8 * gameScale}px;
@@ -2066,15 +2056,15 @@
         font-size: {16 * gameScale}px;
         box-shadow: 0 {4 * gameScale}px {10 * gameScale}px rgba(68, 136, 255, 0.4);
       "
-						>
-							100 Rounds
-						</button>
-						<button
-							onclick={() => {
-								startAutoPlay(200);
-								showAutoPlayMenu = false;
-							}}
-							style="
+							>
+								100 Rounds
+							</button>
+							<button
+								onclick={() => {
+									startAutoPlay(200);
+									showAutoPlayMenu = false;
+								}}
+								style="
         width: 100%;
         padding: {12 * gameScale}px;
         margin-bottom: {8 * gameScale}px;
@@ -2087,15 +2077,15 @@
         font-size: {16 * gameScale}px;
         box-shadow: 0 {4 * gameScale}px {10 * gameScale}px rgba(68, 136, 255, 0.4);
       "
-						>
-							200 Rounds
-						</button>
-						<button
-							onclick={() => {
-								startAutoPlay(500);
-								showAutoPlayMenu = false;
-							}}
-							style="
+							>
+								200 Rounds
+							</button>
+							<button
+								onclick={() => {
+									startAutoPlay(500);
+									showAutoPlayMenu = false;
+								}}
+								style="
         width: 100%;
         padding: {12 * gameScale}px;
         margin-bottom: {8 * gameScale}px;
@@ -2108,15 +2098,15 @@
         font-size: {16 * gameScale}px;
         box-shadow: 0 {4 * gameScale}px {10 * gameScale}px rgba(255, 136, 68, 0.4);
       "
-						>
-							500 Rounds
-						</button>
-						<button
-							onclick={() => {
-								startAutoPlay(1000);
-								showAutoPlayMenu = false;
-							}}
-							style="
+							>
+								500 Rounds
+							</button>
+							<button
+								onclick={() => {
+									startAutoPlay(1000);
+									showAutoPlayMenu = false;
+								}}
+								style="
         width: 100%;
         padding: {12 * gameScale}px;
         margin-bottom: {8 * gameScale}px;
@@ -2129,15 +2119,15 @@
         font-size: {16 * gameScale}px;
         box-shadow: 0 {4 * gameScale}px {10 * gameScale}px rgba(255, 136, 68, 0.4);
       "
-						>
-							1,000 Rounds
-						</button>
-						<button
-							onclick={() => {
-								startAutoPlay(5000);
-								showAutoPlayMenu = false;
-							}}
-							style="
+							>
+								1,000 Rounds
+							</button>
+							<button
+								onclick={() => {
+									startAutoPlay(5000);
+									showAutoPlayMenu = false;
+								}}
+								style="
         width: 100%;
         padding: {12 * gameScale}px;
         margin-bottom: {15 * gameScale}px;
@@ -2150,14 +2140,14 @@
         font-size: {16 * gameScale}px;
         box-shadow: 0 {4 * gameScale}px {10 * gameScale}px rgba(255, 68, 68, 0.4);
       "
-						>
-							5,000 Rounds
-						</button>
-						<button
-							onclick={() => {
-								showAutoPlayMenu = false;
-							}}
-							style="
+							>
+								5,000 Rounds
+							</button>
+							<button
+								onclick={() => {
+									showAutoPlayMenu = false;
+								}}
+								style="
         width: 100%;
         padding: {10 * gameScale}px;
         background: rgba(255, 255, 255, 0.1);
@@ -2167,11 +2157,12 @@
         cursor: pointer;
         font-size: {14 * gameScale}px;
       "
-						>
-							Cancel
-						</button>
-					</div>
-				{/if}
+							>
+								Cancel
+							</button>
+						</div>
+					{/if}
+				</div>
 
 				<!-- ===== CONTROL PANEL (v1.1.0) ===== -->
 				<!--
@@ -2185,188 +2176,160 @@
   v1.2.3: Siirretty canvas-kontin sisään oikean skaalauksen varmistamiseksi
 -->
 				<!-- Vasen pää -->
-				{#if showsMobileStatusStrip}
-					<StatusMeters mode="strip" {balance} {betAmount} {lastWin} />
-				{/if}
-
-				<!-- Vasen pää -->
-				<img
-					src="{controlsPath}/Control_leftend.png"
-					alt="Left End"
-					style="height: {controlPanelPos.height}px; flex-shrink: 0;"
-				/>
-
-				<!-- Keskiosa (skaalautuva tausta) -->
-				<div
-					style="
-    flex-grow: 1;
-    height: {controlPanelPos.height}px;
-    background-image: url('{controlsPath}/Control_scalablebg.png');
-    background-size: 100% 100%;
-    background-repeat: no-repeat;
-    display: flex;
-    align-items: center;
-    padding: 0 {20 * gameScale}px;
-    position: relative;
-    gap: {20 * gameScale}px;
-  "
-				>
-					<!-- Vasen puoli (BET desktop/landscape, BALANCE, tai Menu portrait) -->
-					<div
-						style="flex: 1; display: flex; align-items: center; justify-content: space-around; min-width: 0;"
-					>
-						<!-- Menu nappi (näkyy vain mobiilissa, vasemmalla) -->
-						<div
-							class="hide-on-desktop"
-							style="display: none; align-items: center; justify-content: center; margin-right: {10 *
-								gameScale}px;"
-						>
-							<MenuButton
-								{controlsPath}
-								{gameScale}
-								onTogglePaytable={() => (showPaytable = !showPaytable)}
-							/>
-						</div>
-
-						<!-- BET kontrollit (vain desktop) -->
-						{#if deviceType() === 'desktop'}
-							<DesktopControlPanel
-								{controlsPath}
-								{gameScale}
-								{betAmount}
-								onDecreaseBet={decreaseBet}
-								onIncreaseBet={increaseBet}
-							/>
-						{/if}
-
-						<!-- Divider -->
-						<img
-							class="hide-on-mobile"
-							src="{controlsPath}/Control_divider.png"
-							alt="Divider"
-							style="height: {controlPanelPos.height * 0.8}px; flex-shrink: 0;"
-						/>
-
-						<!-- BALANCE näyttö -->
-						<div class="hide-on-mobile">
-							<StatusMeters
-								mode="single"
-								label="BALANCE"
-								value={balance}
-								{balance}
-								{betAmount}
-								{lastWin}
-								{gameScale}
-							/>
-						</div>
-
-						<!-- Divider -->
-						<img
-							class="hide-on-mobile"
-							src="{controlsPath}/Control_divider.png"
-							alt="Divider"
-							style="height: {controlPanelPos.height * 0.8}px; flex-shrink: 0;"
-						/>
-					</div>
-
-					<!-- Keskiosan tyhjä tila Play-buttonille -->
-					<div style="flex-shrink: 0; width: {130 * gameScale}px;"></div>
-
-					<!-- PLAY nappi (keskellä, iso - tulee paneelin yli) -->
-					<div
-						style="position: absolute; left: 50%; transform: translateX(-50%); display: flex; align-items: center; justify-content: center; z-index: 10;"
-					>
-						<SpinButton
-							{controlsPath}
-							{gameScale}
-							{isAutoPlaying}
-							{playButtonGlareActive}
-							onPress={pressSpinButton}
-						/>
-					</div>
-
-					<!-- Oikea puoli (BET mobiili, Autoplay, Spin Speed, WIN, Menu) -->
-					<div
-						style="flex: 1; display: flex; align-items: center; justify-content: space-around; min-width: 0;"
-					>
-						<!-- BET kontrollit (kaikki mobiilitilat) -->
-						{#if deviceType() !== 'desktop'}
-							<MobileControlPanel
-								{controlsPath}
-								{gameScale}
-								{betAmount}
-								onDecreaseBet={decreaseBet}
-								onIncreaseBet={increaseBet}
-							/>
-						{/if}
-
-						<QuickActions
-							{controlsPath}
-							{gameScale}
-							{isAutoPlaying}
-							{spinSpeed}
-							onToggleAutoplayMenu={() => (showAutoPlayMenu = !showAutoPlayMenu)}
-							onStopAutoplay={stopAutoPlay}
-							onCycleSpinSpeed={cycleSpinSpeed}
-						>
-							<img
-								slot="afterAutoplay"
-								class="hide-on-mobile"
-								src="{controlsPath}/Control_divider.png"
-								alt="Divider"
-								style="height: {controlPanelPos.height * 0.8}px; flex-shrink: 0;"
-							/>
-							<img
-								slot="afterSpeed"
-								class="hide-on-mobile"
-								src="{controlsPath}/Control_divider.png"
-								alt="Divider"
-								style="height: {controlPanelPos.height * 0.8}px; flex-shrink: 0;"
-							/>
-						</QuickActions>
-
-						<!-- WIN osio -->
-						<div class="hide-on-mobile">
-							<StatusMeters
-								mode="single"
-								label="WIN"
-								value={lastWin}
-								{balance}
-								{betAmount}
-								{lastWin}
-								{gameScale}
-							/>
-						</div>
-
-						<!-- Divider -->
-						<img
-							class="hide-on-mobile"
-							src="{controlsPath}/Control_divider.png"
-							alt="Divider"
-							style="height: {controlPanelPos.height * 0.8}px; flex-shrink: 0;"
-						/>
-
-						<!-- Menu nappi -->
-						<div
-							class="hide-on-mobile"
-							style="display: flex; align-items: center; justify-content: center;"
-						>
-							<MenuButton
-								{controlsPath}
-								{gameScale}
-								onTogglePaytable={() => (showPaytable = !showPaytable)}
-							/>
-						</div>
-					</div>
+				<div slot="status">
+					{#if showsMobileStatusStrip}
+						<StatusMeters mode="strip" {balance} {betAmount} {lastWin} />
+					{/if}
 				</div>
 
-				<!-- Oikea pää -->
-				<img
-					src="{controlsPath}/Control_rightend.png"
-					alt="Right End"
-					style="height: {controlPanelPos.height}px; flex-shrink: 0;"
-				/>
-			</div>
+				<!-- Vasen puoli (BET desktop/landscape, BALANCE, tai Menu portrait) -->
+				<div
+					style="flex: 1; display: flex; align-items: center; justify-content: space-around; min-width: 0;"
+				>
+					<!-- Menu nappi (näkyy vain mobiilissa, vasemmalla) -->
+					<div
+						class="hide-on-desktop"
+						style="display: none; align-items: center; justify-content: center; margin-right: {10 *
+							gameScale}px;"
+					>
+						<MenuButton
+							{controlsPath}
+							{gameScale}
+							onTogglePaytable={() => (showPaytable = !showPaytable)}
+						/>
+					</div>
+
+					<!-- BET kontrollit (vain desktop) -->
+					{#if deviceType() === 'desktop'}
+						<DesktopControlPanel
+							{controlsPath}
+							{gameScale}
+							{betAmount}
+							onDecreaseBet={decreaseBet}
+							onIncreaseBet={increaseBet}
+						/>
+					{/if}
+
+					<!-- Divider -->
+					<img
+						class="hide-on-mobile"
+						src="{controlsPath}/Control_divider.png"
+						alt="Divider"
+						style="height: {controlPanelPos.height * 0.8}px; flex-shrink: 0;"
+					/>
+
+					<!-- BALANCE näyttö -->
+					<div class="hide-on-mobile">
+						<StatusMeters
+							mode="single"
+							label="BALANCE"
+							value={balance}
+							{balance}
+							{betAmount}
+							{lastWin}
+							{gameScale}
+						/>
+					</div>
+
+					<!-- Divider -->
+					<img
+						class="hide-on-mobile"
+						src="{controlsPath}/Control_divider.png"
+						alt="Divider"
+						style="height: {controlPanelPos.height * 0.8}px; flex-shrink: 0;"
+					/>
+				</div>
+
+				<!-- Keskiosan tyhjä tila Play-buttonille -->
+				<div style="flex-shrink: 0; width: {130 * gameScale}px;"></div>
+
+				<!-- PLAY nappi (keskellä, iso - tulee paneelin yli) -->
+				<div
+					style="position: absolute; left: 50%; transform: translateX(-50%); display: flex; align-items: center; justify-content: center; z-index: 10;"
+				>
+					<SpinButton
+						{controlsPath}
+						{gameScale}
+						{isAutoPlaying}
+						{playButtonGlareActive}
+						onPress={pressSpinButton}
+					/>
+				</div>
+
+				<!-- Oikea puoli (BET mobiili, Autoplay, Spin Speed, WIN, Menu) -->
+				<div
+					style="flex: 1; display: flex; align-items: center; justify-content: space-around; min-width: 0;"
+				>
+					<!-- BET kontrollit (kaikki mobiilitilat) -->
+					{#if deviceType() !== 'desktop'}
+						<MobileControlPanel
+							{controlsPath}
+							{gameScale}
+							{betAmount}
+							onDecreaseBet={decreaseBet}
+							onIncreaseBet={increaseBet}
+						/>
+					{/if}
+
+					<QuickActions
+						{controlsPath}
+						{gameScale}
+						{isAutoPlaying}
+						{spinSpeed}
+						onToggleAutoplayMenu={() => (showAutoPlayMenu = !showAutoPlayMenu)}
+						onStopAutoplay={stopAutoPlay}
+						onCycleSpinSpeed={cycleSpinSpeed}
+					>
+						<img
+							slot="afterAutoplay"
+							class="hide-on-mobile"
+							src="{controlsPath}/Control_divider.png"
+							alt="Divider"
+							style="height: {controlPanelPos.height * 0.8}px; flex-shrink: 0;"
+						/>
+						<img
+							slot="afterSpeed"
+							class="hide-on-mobile"
+							src="{controlsPath}/Control_divider.png"
+							alt="Divider"
+							style="height: {controlPanelPos.height * 0.8}px; flex-shrink: 0;"
+						/>
+					</QuickActions>
+
+					<!-- WIN osio -->
+					<div class="hide-on-mobile">
+						<StatusMeters
+							mode="single"
+							label="WIN"
+							value={lastWin}
+							{balance}
+							{betAmount}
+							{lastWin}
+							{gameScale}
+						/>
+					</div>
+
+					<!-- Divider -->
+					<img
+						class="hide-on-mobile"
+						src="{controlsPath}/Control_divider.png"
+						alt="Divider"
+						style="height: {controlPanelPos.height * 0.8}px; flex-shrink: 0;"
+					/>
+
+					<!-- Menu nappi -->
+					<div
+						class="hide-on-mobile"
+						style="display: flex; align-items: center; justify-content: center;"
+					>
+						<MenuButton
+							{controlsPath}
+							{gameScale}
+							onTogglePaytable={() => (showPaytable = !showPaytable)}
+						/>
+					</div>
+				</div>
+			</ControlPanelFrame>
 			<!-- Suljetaan control panel -->
 		</div>
 		<!-- Suljetaan canvas-kontti -->

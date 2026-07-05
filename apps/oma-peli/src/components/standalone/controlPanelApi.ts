@@ -61,3 +61,9 @@ export interface MenuButtonProps {
 	onTogglePaytable: () => void;
 	className?: string;
 }
+
+export interface ControlPanelFrameProps {
+	controlsPath: string;
+	gameScale: number;
+	controlPanelPos: ControlPanelPosition;
+}
