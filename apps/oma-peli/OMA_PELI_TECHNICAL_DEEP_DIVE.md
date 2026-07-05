@@ -821,7 +821,9 @@ The UI refactor Phase 02 added `src/game-standalone/uiLayout.ts` as the first ty
 
 The UI refactor Phase 03 recomposed phone portrait density without changing math or spin behavior. `uiLayout.ts` now includes portrait stage/status placement tokens, and `HelloPixi.svelte` renders a phone-portrait-only Balance / Bet / Win status strip with stable grid columns, tabular numbers, and ellipsis for long values. Browser checks confirmed top actions, spin, menu, the status strip, paytable/menu modal, and modal close fit at `390x844`, `360x740`, and `430x932`, with visible canvas height around 69-70%.
 
-Recommendation: manually validate desktop resize, mobile portrait, and mobile landscape in a browser before larger mobile UI refactors. The code path is now reactive, shape-aware, partly tokenized, and phone portrait has a dedicated status strip. The old asset-based control panel is still embedded inside `HelloPixi`, and compact landscape/short-height screens remain the next UI risk.
+The UI refactor Phase 04 made compact landscape and short-height desktop windows first-class layouts. `layoutUtils.ts` now routes `900x500` and similar short desktop windows through `desktopShort` before tablet-landscape fallback. `uiLayout.ts` defines short-screen status placement tokens for `phoneLandscapeCompact` and `desktopShort`. `HelloPixi.svelte` reuses the Balance / Bet / Win strip for compact landscape and desktop-short layouts, keeps it clear of the mobile menu, and makes the autoplay picker fixed, internally scrollable, and viewport-bounded on short landscape screens. Browser checks confirmed top actions, spin, menu, status strip, paytable/menu modal, modal close, and autoplay picker fit at `844x390`, `740x360`, and `900x500`.
+
+Recommendation: manually validate desktop resize, mobile portrait, and mobile landscape in a browser before larger mobile UI refactors. The code path is now reactive, shape-aware, partly tokenized, phone portrait has a dedicated status strip, and compact landscape/short screens have bounded status/autoplay behavior. The old asset-based control panel is still embedded inside `HelloPixi`, so extraction remains the next maintainability risk.
 
 ### 9. Final Refactor Status After Phase 10
 
@@ -830,7 +832,7 @@ Phases 00 through 10 are now completed in `OMA_PELI_REFACTOR_PLAN.yaml`. The fir
 Known unresolved items remain:
 
 - A deeper UI refactor is still needed to handle unusual monitor/window shapes, reduce inline layout arithmetic, and extract the remaining control/menu UI from `HelloPixi`; this is planned in `OMA_PELI_UI_REFACTOR_PHASES.md`.
-- UI refactor Phase 04 remains needed to make mobile landscape and short-height screens as intentional as the Phase 03 phone portrait layout.
+- UI refactor Phase 05 remains needed to extract the real control shell and remove duplicated inline desktop/mobile control branches from `HelloPixi`.
 - Real-device mobile validation remains needed; the known phase 06 top-toggle, spin-size, and menu-close viewport failures were fixed and rechecked with browser viewport automation.
 - The deployed route remains local/client-simulated and is not RGS-authoritative.
 - Some simulator/math documents still reflect older math states and should not be treated as runtime truth.

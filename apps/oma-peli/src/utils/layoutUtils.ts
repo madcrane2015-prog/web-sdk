@@ -116,16 +116,16 @@ export function getViewportClass(viewport: {
 		return 'phoneLandscapeCompact';
 	}
 
+	if (usableWidth >= 900 && usableHeight <= 700) {
+		return 'desktopShort';
+	}
+
 	if (usableWidth <= 900 && isPortrait) {
 		return 'tabletPortrait';
 	}
 
 	if (usableWidth <= 1200 && usableHeight <= 900) {
 		return 'tabletLandscape';
-	}
-
-	if (usableWidth > 900 && usableHeight <= 700) {
-		return 'desktopShort';
 	}
 
 	if (aspectRatio >= 2) {

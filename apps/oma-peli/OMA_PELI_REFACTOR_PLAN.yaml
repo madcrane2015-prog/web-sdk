@@ -421,6 +421,22 @@ progress:
         get_errors passed for uiLayout.ts; HelloPixi only reported the known
         editor-only $app/paths diagnostic. pnpm run build --filter=oma-peli
         passed with the known warning set.
+    - date: '2026-07-05'
+      author: 'GitHub Copilot'
+      note: >-
+        Completed OMA_PELI_UI_REFACTOR_PHASES.md Phase 04 for the deployed
+        HelloPixi route. Routed 900x500 and similar short desktop windows
+        through desktopShort in src/utils/layoutUtils.ts, added short-screen
+        status placement tokens in src/game-standalone/uiLayout.ts, reused the
+        Balance / Bet / Win status strip for compact landscape and
+        desktop-short layouts, and made the autoplay picker fixed, scrollable,
+        and viewport-bounded on short landscape screens. Browser checks
+        confirmed top actions, spin, menu, status strip, modal, close, and
+        autoplay picker fit at 844x390, 740x360, and 900x500. Autoplay
+        open/cancel was verified in all three viewports. get_errors passed for
+        layoutUtils.ts and uiLayout.ts; HelloPixi only reported the known
+        editor-only $app/paths diagnostic. pnpm run build --filter=oma-peli
+        passed with the known warning set.
 
 phases:
   - id: 'phase_00_workflow_and_docs'

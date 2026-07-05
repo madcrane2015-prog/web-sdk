@@ -15,7 +15,7 @@ This document is an implementation plan, not a retrospective. It should be follo
 | Phase 01 - Define Responsive Layout Model                                | completed   | 2026-07-05   | Added viewport classes and routed compact/top-action behavior through `ViewportModel`.  |
 | Phase 02 - Establish Layout Tokens And Geometry Rules                    | completed   | 2026-07-05   | Added `uiLayout.ts` tokens and applied first CSS variables to modal/top/spin geometry.  |
 | Phase 03 - Recompose Mobile Portrait For Fullness                        | completed   | 2026-07-05   | Added portrait stage/status tokens and a fixed mobile status strip for Balance/Bet/Win. |
-| Phase 04 - Recompose Mobile Landscape And Short Screens                  | not started | -            | -                                                                                       |
+| Phase 04 - Recompose Mobile Landscape And Short Screens                  | completed   | 2026-07-05   | Added short-screen status strip, desktopShort routing, and fixed autoplay picker.       |
 | Phase 05 - Extract A Real Control Shell                                  | not started | -            | -                                                                                       |
 | Phase 06 - Replace The Menu/Paytable With A Modal System                 | not started | -            | -                                                                                       |
 | Phase 07 - Make The Game Stage Responsive By Composition, Not Only Scale | not started | -            | -                                                                                       |
@@ -342,7 +342,8 @@ Findings to carry into Phase 04:
 
 ## Phase 04 - Recompose Mobile Landscape And Short Screens
 
-Status: not started  
+Status: completed
+
 Target files: `HelloPixi.svelte`, standalone control components, layout token file.
 
 ### Objective
@@ -376,6 +377,32 @@ Make short-height screens robust. Phone landscape, compact desktop windows, and 
 - Browser measurements for `844x390`, `740x360`, and `900x500`.
 - Open/close paytable and autoplay menu in each viewport.
 - `pnpm run build --filter=oma-peli`.
+
+### Completion Notes
+
+Completed on 2026-07-05 for the deployed `HelloPixi` route.
+
+Implemented:
+
+- Routed `900x500` and similar short desktop windows through `desktopShort` before tablet-landscape fallback in `src/utils/layoutUtils.ts`.
+- Added short-screen status placement tokens for `phoneLandscapeCompact` and `desktopShort` in `src/game-standalone/uiLayout.ts`.
+- Reused the Phase 03 Balance / Bet / Win strip for compact landscape and desktop-short layouts.
+- Added a short-screen CSS treatment that keeps the status strip clear of the mobile menu and keeps the spin button at 56x56 px.
+- Added an `autoplay-menu-popover` hook and made the autoplay picker fixed, internally scrollable, and viewport-bounded on short landscape screens.
+
+Validation results:
+
+- `844x390`: top actions 226x40, spin 56x56, menu 56x56, status strip 230x33, modal 824x370, close 64x40, and autoplay picker 360x279 all fully visible; status/menu gap 30 px.
+- `740x360`: top actions 226x40, spin 56x56, menu 56x56, status strip 220x33, modal 720x340, close 64x40, and autoplay picker 360x267 all fully visible; status/menu gap 16 px.
+- `900x500`: now uses the `desktopShort` path; top actions 226x40, spin 56x56, menu 56x56, status strip 230x33, modal 880x480, close 64x40, and autoplay picker 360x308 all fully visible; status/menu gap 8 px.
+- Browser interaction checks verified autoplay open/cancel at `844x390`, `740x360`, and `900x500`.
+- `get_errors` passed for `layoutUtils.ts` and `uiLayout.ts`; `HelloPixi.svelte` only reports the existing editor-only `$app/paths` diagnostic.
+- `pnpm run build --filter=oma-peli` passed with the known warning set.
+
+Findings to carry into Phase 05:
+
+- Compact landscape is now bounded and status-aware, but the control shell remains embedded inside `HelloPixi` with duplicated hidden desktop/mobile branches.
+- Autoplay and menu behavior still depends on inline markup and should be extracted behind a typed control-shell API.
 
 ## Phase 05 - Extract A Real Control Shell
 

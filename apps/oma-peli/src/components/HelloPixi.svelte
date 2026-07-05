@@ -113,6 +113,11 @@
 		viewportModel.viewportClass === 'phonePortrait' ||
 			viewportModel.viewportClass === 'phonePortraitCompact',
 	);
+	const isCompactShortLayout = $derived(
+		viewportModel.viewportClass === 'phoneLandscapeCompact' ||
+			viewportModel.viewportClass === 'desktopShort',
+	);
+	const showsMobileStatusStrip = $derived(isPhonePortraitLayout || isCompactShortLayout);
 
 	// Kiekkojen koko ja sijainti - uudelle 1445x1000 taustalle
 	const SCALE_MULTIPLIER = 1.75; // Symbolien koko kerroin (1.0 = normaali)
@@ -1921,6 +1926,7 @@
 				<!-- Autoplay valikko (näkyy kun showAutoPlayMenu = true) -->
 				{#if showAutoPlayMenu}
 					<div
+						class="autoplay-menu-popover"
 						style="
     position: absolute;
     bottom: {(controlPanelPos.height / gameScale + 20) * gameScale}px;
@@ -2141,7 +2147,7 @@
   v1.2.3: Siirretty canvas-kontin sisään oikean skaalauksen varmistamiseksi
 -->
 				<!-- Vasen pää -->
-				{#if isPhonePortraitLayout}
+				{#if showsMobileStatusStrip}
 					<div class="mobile-status-strip" aria-label="Current game status">
 						<div class="mobile-status-item">
 							<span>Balance</span>
@@ -2909,6 +2915,10 @@
 		border-color: rgba(0, 255, 0, 0.32);
 	}
 
+	.autoplay-menu-popover {
+		box-sizing: border-box;
+	}
+
 	/* Piilota tietyt elementit mobiilissa */
 	.hide-on-mobile {
 		display: flex !important;
@@ -2968,6 +2978,46 @@
 	/* Mobiili landscape-tila - myös yksinkertaistettu layout */
 	/* HUOM: Sijainti tulee nyt layoutConfig.ts:stä - CSS ei enää ylikirjoita */
 	@media (max-width: 900px) and (max-height: 500px) and (orientation: landscape) {
+		.mobile-status-strip {
+			position: fixed;
+			left: max(var(--oma-mobile-status-horizontal-margin), env(safe-area-inset-left));
+			bottom: calc(var(--oma-mobile-status-bottom) + env(safe-area-inset-bottom));
+			display: grid;
+			grid-template-columns: repeat(3, minmax(58px, 1fr));
+			gap: 5px;
+			width: min(230px, calc(100vw - 520px));
+			z-index: 1250;
+			pointer-events: none;
+		}
+
+		.mobile-status-item {
+			padding: 5px 6px;
+			border-radius: 7px;
+		}
+
+		.mobile-status-item span {
+			font-size: 8px;
+		}
+
+		.mobile-status-item strong {
+			font-size: 11px;
+		}
+
+		.autoplay-menu-popover {
+			position: fixed !important;
+			left: 50% !important;
+			top: max(8px, env(safe-area-inset-top)) !important;
+			bottom: auto !important;
+			transform: translateX(-50%) !important;
+			width: min(360px, calc(100vw - 24px)) !important;
+			min-width: 0 !important;
+			max-height: calc(100dvh - 16px) !important;
+			overflow-y: auto !important;
+			padding: 12px !important;
+			border-radius: 10px !important;
+			z-index: 2400 !important;
+		}
+
 		.play-button {
 			width: var(--oma-spin-button-size) !important;
 			height: var(--oma-spin-button-size) !important;
