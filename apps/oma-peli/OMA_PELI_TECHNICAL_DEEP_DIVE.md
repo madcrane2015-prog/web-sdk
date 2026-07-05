@@ -830,6 +830,8 @@ UI refactor Phase 05 completed the standalone control-shell extraction checkpoin
 
 UI refactor Phase 06 completed the modal/menu split checkpoint. `AutoplayMenu.svelte` owns the autoplay round selector popover, including compact-landscape fixed positioning and the eight round options. `HelloPixi.svelte` still owns `startAutoPlay()` and only passes `onSelectRounds` and `onCancel` callbacks. `ModalShell.svelte` owns the paytable/menu modal chrome, tokenized viewport sizing, sticky close header, backdrop close policy, and Escape handling. `PaytableSection.svelte` owns the static 81-ways paytable body. `SettingsSection.svelte` owns the mobile menu autoplay/speed controls while `HelloPixi` keeps autoplay and spin-speed state transitions through callback props.
 
+UI refactor Phase 07 started the stage-composition split. `src/game-standalone/stageComposition.ts` now records the logical canvas bounds, reel frame bounds, and an initial reel viewport bound used as the target board area for later crop/anchor transforms. `HelloPixi.svelte` currently exposes those values as CSS variables on the stage wrapper without changing visual layout.
+
 ### 9. Final Refactor Status After Phase 10
 
 Phases 00 through 10 are now completed in `OMA_PELI_REFACTOR_PLAN.yaml`. The first-pass refactor produced durable documentation, scoped agent rules, modular standalone math/Pixi/assets/state helpers, partial standalone UI extraction, browser validation notes, an explicit standalone-versus-SDK decision, and final validation records.

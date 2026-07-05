@@ -18,7 +18,7 @@ This document is an implementation plan, not a retrospective. It should be follo
 | Phase 04 - Recompose Mobile Landscape And Short Screens                  | completed   | 2026-07-05   | Added short-screen status strip, desktopShort routing, and fixed autoplay picker.       |
 | Phase 05 - Extract A Real Control Shell                                  | completed   | 2026-07-05   | Extracted spin, status, quick actions, menu buttons, and the control panel frame.       |
 | Phase 06 - Replace The Menu/Paytable With A Modal System                 | completed   | 2026-07-05   | Extracted autoplay selector, modal shell, paytable section, and settings section.       |
-| Phase 07 - Make The Game Stage Responsive By Composition, Not Only Scale | not started | -            | -                                                                                       |
+| Phase 07 - Make The Game Stage Responsive By Composition, Not Only Scale | in progress | 2026-07-05   | Added stage composition bounds; visual crop/anchor work remains.                        |
 | Phase 08 - Visual Polish And Density Pass                                | not started | -            | -                                                                                       |
 | Phase 09 - Accessibility And Input Behavior Pass                         | not started | -            | -                                                                                       |
 | Phase 10 - Automated Layout Regression Harness                           | not started | -            | -                                                                                       |
@@ -540,7 +540,7 @@ Completion notes:
 
 ## Phase 07 - Make The Game Stage Responsive By Composition, Not Only Scale
 
-Status: not started  
+Status: in progress
 Target files: `HelloPixi.svelte`, `src/game-standalone/pixiRuntime.ts`, layout utilities.
 
 ### Objective
@@ -569,6 +569,25 @@ Reduce empty space and awkward framing by separating the logical Pixi canvas fro
 - Canvas pixel/nonblank check after load.
 - One spin completion at phone portrait, phone landscape, and desktop.
 - `pnpm run build --filter=oma-peli`.
+
+### Progress Notes
+
+Started on 2026-07-05 for the deployed `HelloPixi` route.
+
+Completed checkpoint:
+
+- Added `src/game-standalone/stageComposition.ts` with explicit logical canvas, reel frame, and reel viewport bounds.
+- Wired stage composition CSS variables into the main `HelloPixi` stage wrapper without changing visual layout yet.
+
+Checkpoint validation:
+
+- `get_errors` passed for `stageComposition.ts`; `HelloPixi.svelte` only reports the existing editor-only `$app/paths` diagnostic.
+- `pnpm run build --filter=oma-peli` passed with the known warning set.
+
+Remaining for this phase:
+
+- Use the reel viewport bounds to compute crop/anchor transforms per viewport class.
+- Validate canvas nonblank and spin completion after visual stage movement.
 
 ## Phase 08 - Visual Polish And Density Pass
 

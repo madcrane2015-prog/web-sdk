@@ -540,6 +540,16 @@ progress:
         and in-bounds at 390x844 and 740x360, hidden on 1440x1000, and mobile
         Start Autoplay closes the modal and opens the autoplay selector. pnpm
         run build --filter=oma-peli passed with the known warning set.
+    - date: '2026-07-05'
+      author: 'GitHub Copilot'
+      note: >-
+        Started OMA_PELI_UI_REFACTOR_PHASES.md Phase 07 for the deployed
+        HelloPixi route. Added stageComposition.ts with logical canvas, reel
+        frame, and reel viewport bounds, then exposed them as CSS variables on
+        the HelloPixi stage wrapper without changing visual layout yet.
+        get_errors passed for stageComposition.ts; HelloPixi only reported the
+        known editor-only $app/paths diagnostic. pnpm run build
+        --filter=oma-peli passed with the known warning set.
 
 phases:
   - id: 'phase_00_workflow_and_docs'

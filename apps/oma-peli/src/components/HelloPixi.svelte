@@ -74,6 +74,10 @@
 	import { Reel as StandaloneReel } from '../game-standalone/reel';
 	import { createInitialStandaloneGameState } from '../game-standalone/state';
 	import {
+		createStageCompositionCssVars,
+		STAGE_COMPOSITION,
+	} from '../game-standalone/stageComposition';
+	import {
 		SYMBOL_KEYS,
 		type SpinSpeed,
 		type SymbolKey,
@@ -751,6 +755,7 @@
 	const usesViewportAnchoredTopActions = $derived(viewportModel.usesViewportAnchoredTopActions);
 	const uiLayoutTokens = $derived(getUILayoutTokens(viewportModel.viewportClass));
 	const uiLayoutCssVars = $derived(createUILayoutCssVars(uiLayoutTokens));
+	const stageCompositionCssVars = $derived(createStageCompositionCssVars(STAGE_COMPOSITION));
 
 	onMount(() => {
 		let destroyed = false;
@@ -1744,6 +1749,7 @@
     height: {CANVAS_HEIGHT * gameScale}px;
 		margin-top: {isPhonePortraitLayout ? uiLayoutTokens.stagePortraitTop : 0}px;
 		{uiLayoutCssVars}
+		{stageCompositionCssVars}
   "
 	>
 		<!-- PixiJS canvas sijoitetaan tähän (container-div) -->
