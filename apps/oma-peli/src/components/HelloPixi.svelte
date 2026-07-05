@@ -16,6 +16,7 @@
 	import DesktopControlPanel from './standalone/DesktopControlPanel.svelte';
 	import FreeSpinsEndPopup from './standalone/FreeSpinsEndPopup.svelte';
 	import MobileControlPanel from './standalone/MobileControlPanel.svelte';
+	import QuickActions from './standalone/QuickActions.svelte';
 	import SpinButton from './standalone/SpinButton.svelte';
 	import StatusMeters from './standalone/StatusMeters.svelte';
 	import TopToggles from './standalone/TopToggles.svelte';
@@ -1530,6 +1531,16 @@
 		spin();
 	}
 
+	function cycleSpinSpeed() {
+		if (spinSpeed === 'slow') {
+			spinSpeed = 'medium';
+		} else if (spinSpeed === 'medium') {
+			spinSpeed = 'fast';
+		} else {
+			spinSpeed = 'slow';
+		}
+	}
+
 	// Suorita yksi autoplay-kierros
 	// Tämä funktio kutsuu itseään rekursiivisesti kunnes kierrokset loppuvat
 	function executeAutoPlay() {
@@ -2301,105 +2312,30 @@
 							/>
 						{/if}
 
-						<!-- Autoplay nappi -->
-						<div
-							class="hide-on-mobile"
-							style="display: flex; flex-direction: column; align-items: center; gap: {5 *
-								gameScale}px;"
+						<QuickActions
+							{controlsPath}
+							{gameScale}
+							{isAutoPlaying}
+							{spinSpeed}
+							onToggleAutoplayMenu={() => (showAutoPlayMenu = !showAutoPlayMenu)}
+							onStopAutoplay={stopAutoPlay}
+							onCycleSpinSpeed={cycleSpinSpeed}
 						>
-							<button
-								onclick={() => {
-									if (isAutoPlaying) {
-										stopAutoPlay();
-									} else {
-										showAutoPlayMenu = !showAutoPlayMenu;
-									}
-								}}
-								style="
-            width: {50 * gameScale}px;
-            height: {50 * gameScale}px;
-            background-image: url('{controlsPath}/{isAutoPlaying
-									? 'Control_autoplay_stop.png'
-									: 'Control_autoplay_select.png'}');
-            background-size: contain;
-            background-repeat: no-repeat;
-            border: none;
-            cursor: pointer;
-            background-color: transparent;
-          "
-								title={isAutoPlaying ? 'Stop Autoplay' : 'Autoplay'}
-								aria-label={isAutoPlaying ? 'Stop autoplay' : 'Open autoplay menu'}
-							></button>
 							<img
-								src="{controlsPath}/{isAutoPlaying
-									? 'Control_bar_select.png'
-									: 'Control_bar_deselect.png'}"
-								alt="Status bar"
-								style="height: {10 * gameScale}px; width: auto; display: block;"
+								slot="afterAutoplay"
+								class="hide-on-mobile"
+								src="{controlsPath}/Control_divider.png"
+								alt="Divider"
+								style="height: {controlPanelPos.height * 0.8}px; flex-shrink: 0;"
 							/>
-						</div>
-
-						<!-- Divider -->
-						<img
-							class="hide-on-mobile"
-							src="{controlsPath}/Control_divider.png"
-							alt="Divider"
-							style="height: {controlPanelPos.height * 0.8}px; flex-shrink: 0;"
-						/>
-
-						<!-- Spin Speed nappi (3 tilaa: slow/medium/fast) -->
-						<div
-							class="hide-on-mobile"
-							style="display: flex; flex-direction: column; align-items: center; gap: {5 *
-								gameScale}px;"
-						>
-							<button
-								onclick={() => {
-									// Sykli: slow -> medium -> fast -> slow...
-									if (spinSpeed === 'slow') {
-										spinSpeed = 'medium';
-									} else if (spinSpeed === 'medium') {
-										spinSpeed = 'fast';
-									} else {
-										spinSpeed = 'slow';
-									}
-								}}
-								style="
-            width: {50 * gameScale}px;
-            height: {50 * gameScale}px;
-            background-image: url('{controlsPath}/Control_fastplay_select.png');
-            background-size: contain;
-            background-repeat: no-repeat;
-            border: none;
-            cursor: pointer;
-            background-color: transparent;
-          "
-								title="Spin Speed: {spinSpeed === 'slow'
-									? 'Slow'
-									: spinSpeed === 'medium'
-										? 'Medium'
-										: 'Fast'}"
-								aria-label="Change spin speed"
-							></button>
-							<!-- Viiva: harmaa = slow, puolikas vihreä = medium, koko vihreä = fast -->
 							<img
-								src="{controlsPath}/{spinSpeed === 'slow'
-									? 'Control_bar_deselect.png'
-									: spinSpeed === 'medium'
-										? 'Control_half_bar_select.png'
-										: 'Control_bar_select.png'}"
-								alt="Speed bar"
-								style="height: {10 * gameScale}px; width: auto; display: block;"
+								slot="afterSpeed"
+								class="hide-on-mobile"
+								src="{controlsPath}/Control_divider.png"
+								alt="Divider"
+								style="height: {controlPanelPos.height * 0.8}px; flex-shrink: 0;"
 							/>
-						</div>
-
-						<!-- Divider -->
-						<img
-							class="hide-on-mobile"
-							src="{controlsPath}/Control_divider.png"
-							alt="Divider"
-							style="height: {controlPanelPos.height * 0.8}px; flex-shrink: 0;"
-						/>
+						</QuickActions>
 
 						<!-- WIN osio -->
 						<div class="hide-on-mobile">
@@ -2432,15 +2368,15 @@
 									showPaytable = !showPaytable;
 								}}
 								style="
-            width: {50 * gameScale}px;
-            height: {50 * gameScale}px;
-            background-image: url('{controlsPath}/Control_menubar.png');
-            background-size: contain;
-            background-repeat: no-repeat;
-            border: none;
-            cursor: pointer;
-            background-color: transparent;
-          "
+									width: {50 * gameScale}px;
+									height: {50 * gameScale}px;
+									background-image: url('{controlsPath}/Control_menubar.png');
+									background-size: contain;
+									background-repeat: no-repeat;
+									border: none;
+									cursor: pointer;
+									background-color: transparent;
+								"
 								title="Menu"
 								aria-label="Toggle menu"
 							></button>

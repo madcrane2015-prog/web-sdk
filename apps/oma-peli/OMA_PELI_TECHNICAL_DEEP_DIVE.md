@@ -825,7 +825,7 @@ The UI refactor Phase 04 made compact landscape and short-height desktop windows
 
 Recommendation: manually validate desktop resize, mobile portrait, and mobile landscape in a browser before larger mobile UI refactors. The code path is now reactive, shape-aware, partly tokenized, phone portrait has a dedicated status strip, and compact landscape/short screens have bounded status/autoplay behavior. The old asset-based control panel is still embedded inside `HelloPixi`, so extraction remains the next maintainability risk.
 
-UI refactor Phase 05 has started. `SpinButton.svelte` now owns the central play/stop button markup, glare styling, responsive spin sizing, and accessible title/label. `StatusMeters.svelte` owns the mobile Balance / Bet / Win status strip and desktop single Balance/Win display markup. `HelloPixi.svelte` still owns the game-state transition callback through `pressSpinButton()`, and the full bottom control frame/autoplay/speed/menu branches remain to be extracted into a later `ControlShell.svelte` checkpoint.
+UI refactor Phase 05 has started. `SpinButton.svelte` now owns the central play/stop button markup, glare styling, responsive spin sizing, and accessible title/label. `StatusMeters.svelte` owns the mobile Balance / Bet / Win status strip and desktop single Balance/Win display markup. `QuickActions.svelte` owns the desktop autoplay and spin-speed controls while receiving callback props from `HelloPixi`. `HelloPixi.svelte` still owns game-state transitions through `pressSpinButton()` and `cycleSpinSpeed()`, and the full bottom control frame plus remaining menu branches still need to be extracted into a later `ControlShell.svelte` checkpoint.
 
 ### 9. Final Refactor Status After Phase 10
 

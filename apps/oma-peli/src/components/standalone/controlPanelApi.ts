@@ -44,3 +44,13 @@ export interface StatusMetersProps {
 	value?: number;
 	accent?: boolean;
 }
+
+export interface QuickActionsProps {
+	controlsPath: string;
+	gameScale: number;
+	isAutoPlaying: boolean;
+	spinSpeed: SpinSpeed;
+	onToggleAutoplayMenu: () => void;
+	onStopAutoplay: () => void;
+	onCycleSpinSpeed: () => void;
+}

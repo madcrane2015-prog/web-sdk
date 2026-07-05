@@ -451,6 +451,20 @@ progress:
         $app/paths diagnostic. pnpm run build --filter=oma-peli passed with
         the known warning set. Phase 05 remains in progress until the full
         ControlShell frame, autoplay, and spin-speed controls are extracted.
+    - date: '2026-07-05'
+      author: 'GitHub Copilot'
+      note: >-
+        Continued OMA_PELI_UI_REFACTOR_PHASES.md Phase 05 for the deployed
+        HelloPixi route. Added QuickActions.svelte for desktop autoplay and
+        spin-speed controls, kept autoplay and speed state transitions owned by
+        HelloPixi callbacks, and restored the original desktop order of
+        autoplay, speed, WIN, and menu after browser smoke caught a menu-order
+        regression. get_errors passed for QuickActions.svelte and
+        controlPanelApi.ts; HelloPixi only reported the known editor-only
+        $app/paths diagnostic. Browser smoke checked compact and desktop
+        visibility, and pnpm run build --filter=oma-peli passed with the known
+        warning set. Phase 05 remains in progress until the frame and remaining
+        menu branches are extracted.
 
 phases:
   - id: 'phase_00_workflow_and_docs'
