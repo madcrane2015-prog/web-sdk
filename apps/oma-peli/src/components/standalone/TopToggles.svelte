@@ -159,19 +159,19 @@
 
 	.mobile-top-actions {
 		position: fixed;
-		top: max(8px, env(safe-area-inset-top));
-		right: max(8px, env(safe-area-inset-right));
+		top: max(var(--oma-top-action-inset, 8px), env(safe-area-inset-top));
+		right: max(var(--oma-top-action-inset, 8px), env(safe-area-inset-right));
 		display: flex;
 		align-items: center;
-		gap: 6px;
+		gap: var(--oma-top-action-gap, 6px);
 		z-index: 4000;
 		pointer-events: auto;
 	}
 
 	.mobile-text {
 		position: static;
-		min-width: 64px;
-		min-height: 40px;
+		min-width: var(--oma-top-action-text-min-width, 64px);
+		min-height: var(--oma-top-action-text-min-height, 40px);
 		padding: 7px 9px;
 		border-width: 1px;
 		border-radius: 7px;
@@ -180,8 +180,8 @@
 	}
 
 	.mobile-icon {
-		width: 40px;
-		height: 40px;
+		width: var(--oma-top-action-icon-size, 40px);
+		height: var(--oma-top-action-icon-size, 40px);
 		flex: 0 0 auto;
 	}
 </style>

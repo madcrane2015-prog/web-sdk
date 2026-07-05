@@ -39,7 +39,17 @@ Password used for the local gate: `slot2024`
 - Density issues: `740x360` bottom panel is visually tiny, `900x500` needs explicit compact-window rules, and `1920x1080` / `2560x1080` need intentional wide-screen composition.
 - Preserved fixes: phone portrait and phone landscape top actions, spin sizing, and menu close visibility remain fixed.
 - Modal status: paytable/menu and close action fit all measured browser viewports; short screens rely on internal modal scrolling.
-- Phase 02 input: centralize viewport geometry values as tokens so compact rows, spin sizes, modal dimensions, and bottom-panel sizing are not scattered through `HelloPixi` and CSS media queries.
+- Phase 02 status: completed. Viewport-class UI layout tokens now drive the first top-action, spin, and paytable/menu modal geometry values.
+
+## Phase 02 Targeted Recheck
+
+| Viewport  | Result | Notes                                                                                                     |
+| --------- | ------ | --------------------------------------------------------------------------------------------------------- |
+| 390x844   | Pass   | Tokenized top actions 226x40, spin 72x72, modal 366x793, and close 64x40 all fully visible.               |
+| 844x390   | Pass   | Tokenized compact top actions 226x40, spin 56x56, modal 824x370, and close 64x40 all fully visible.       |
+| 1024x768  | Pass   | Tokenized compact top actions remain visible; modal 620x645 and close are fully visible.                  |
+| 1366x768  | Pass   | Desktop sizing remains visible; modal 665x614 and close are fully visible.                                |
+| 2560x1080 | Pass   | Desktop-wide top actions, spin, modal 665x864, and close remain visible. Wide-side density issue remains. |
 
 ## Known Console Warning During Run
 
@@ -47,7 +57,7 @@ Password used for the local gate: `slot2024`
 
 ## Recommended Follow-up
 
-- Execute Phase 02 from `OMA_PELI_UI_REFACTOR_PHASES.md`: establish layout tokens and geometry rules.
-- Preserve the Phase 01 fix for viewport-anchored top actions at `1024x768` and `1366x768`.
+- Execute Phase 03 from `OMA_PELI_UI_REFACTOR_PHASES.md`: recompose mobile portrait for fullness.
+- Preserve the tokenized modal/top/spin behavior introduced in Phase 02.
 - Preserve the current fixed mobile wins while improving density and fullness in later phases.
 - Validate on real iOS/Android hardware before production use; current checks are browser viewport automation.

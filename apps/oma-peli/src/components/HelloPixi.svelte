@@ -55,6 +55,7 @@
 		stopAutoPlayState,
 		triggerFreeSpinsState,
 	} from '../game-standalone/actions';
+	import { createUILayoutCssVars, getUILayoutTokens } from '../game-standalone/uiLayout';
 	import {
 		configureLogoTexture,
 		createPixiApplication,
@@ -730,6 +731,8 @@
 	const audioButtonTop = $derived(getSafeTopPosition(10 * gameScale, viewportModel));
 	const audioButtonRight = $derived(getSafeRightPosition(10 * gameScale, viewportModel));
 	const usesViewportAnchoredTopActions = $derived(viewportModel.usesViewportAnchoredTopActions);
+	const uiLayoutTokens = $derived(getUILayoutTokens(viewportModel.viewportClass));
+	const uiLayoutCssVars = $derived(createUILayoutCssVars(uiLayoutTokens));
 
 	onMount(() => {
 		let destroyed = false;
@@ -1623,15 +1626,20 @@
     transform: translate(-50%, -50%);
     background: rgba(0, 0, 0, 0.95);
     color: white;
-    padding: {30 * gameScale}px;
+	padding: {uiLayoutTokens.modalPadding}px;
     border-radius: {15 * gameScale}px;
+	box-sizing: border-box;
     font-family: Arial, sans-serif;
     z-index: 3000;
     border: {3 * gameScale}px solid #ffd700;
-    max-width: {600 * gameScale}px;
-    max-height: {Math.min(CANVAS_HEIGHT * gameScale * 0.8, (80 * window.innerHeight) / 100)}px;
+		width: min(calc(100vw - {uiLayoutTokens.modalViewportMargin *
+			2}px), {uiLayoutTokens.modalMaxWidth}px);
+		max-width: min(calc(100vw - {uiLayoutTokens.modalViewportMargin *
+			2}px), {uiLayoutTokens.modalMaxWidth}px);
+		max-height: min(calc(100dvh - {uiLayoutTokens.modalViewportMargin *
+			2}px), {uiLayoutTokens.modalMaxHeightVh}dvh);
     overflow-y: auto;
-    font-size: {gameScale}em;
+		font-size: {uiLayoutTokens.modalFontScale}em;
   "
 	>
 		<h2 style="margin: 0 0 20px 0; text-align: center; color: #ffd700;">💰 MENU</h2>
@@ -1856,6 +1864,7 @@
     position: relative;
     width: {CANVAS_WIDTH * gameScale}px;
     height: {CANVAS_HEIGHT * gameScale}px;
+		{uiLayoutCssVars}
   "
 	>
 		<!-- PixiJS canvas sijoitetaan tähän (container-div) -->
@@ -2836,20 +2845,11 @@
 	/* Mobiili portrait-tila - pelialue isompi, kontrollit alareunaan */
 	/* HUOM: Sijainti tulee nyt layoutConfig.ts:stä - CSS ei enää ylikirjoita */
 	@media (max-width: 768px) and (orientation: portrait) {
-		.paytable-modal {
-			width: calc(100vw - 24px) !important;
-			max-width: calc(100vw - 24px) !important;
-			max-height: calc(100dvh - 24px) !important;
-			padding: 14px !important;
-			font-size: 0.9em !important;
-			box-sizing: border-box;
-		}
-
 		.play-button {
-			width: 72px !important;
-			height: 72px !important;
-			min-width: 72px;
-			min-height: 72px;
+			width: var(--oma-spin-button-size) !important;
+			height: var(--oma-spin-button-size) !important;
+			min-width: var(--oma-spin-button-size);
+			min-height: var(--oma-spin-button-size);
 		}
 
 		/* Debug-nappi pienemmmäksi ja yläkulmaan */
@@ -2879,20 +2879,11 @@
 	/* Mobiili landscape-tila - myös yksinkertaistettu layout */
 	/* HUOM: Sijainti tulee nyt layoutConfig.ts:stä - CSS ei enää ylikirjoita */
 	@media (max-width: 900px) and (max-height: 500px) and (orientation: landscape) {
-		.paytable-modal {
-			width: calc(100vw - 24px) !important;
-			max-width: calc(100vw - 24px) !important;
-			max-height: calc(100dvh - 20px) !important;
-			padding: 12px !important;
-			font-size: 0.82em !important;
-			box-sizing: border-box;
-		}
-
 		.play-button {
-			width: 56px !important;
-			height: 56px !important;
-			min-width: 56px;
-			min-height: 56px;
+			width: var(--oma-spin-button-size) !important;
+			height: var(--oma-spin-button-size) !important;
+			min-width: var(--oma-spin-button-size);
+			min-height: var(--oma-spin-button-size);
 		}
 
 		.mobile-menu-controls {

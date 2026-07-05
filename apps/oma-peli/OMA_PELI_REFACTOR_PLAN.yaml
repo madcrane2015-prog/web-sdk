@@ -392,6 +392,19 @@ progress:
         $app/paths diagnostic. Browser checks confirmed top actions are now
         visible at 1024x768 and 1366x768, and pnpm run build --filter=oma-peli
         passed with the known warning set.
+    - date: '2026-07-05'
+      author: 'GitHub Copilot'
+      note: >-
+        Completed OMA_PELI_UI_REFACTOR_PHASES.md Phase 02 for the deployed
+        HelloPixi route. Added src/game-standalone/uiLayout.ts with typed
+        viewport-class layout tokens and helpers for CSS variables. HelloPixi
+        now derives uiLayoutTokens/uiLayoutCssVars and uses tokenized modal
+        geometry; TopToggles consumes token CSS variables for compact top-action
+        sizing. get_errors passed for the new module and TopToggles; HelloPixi
+        only reported the known editor-only $app/paths diagnostic. Browser
+        checks confirmed top actions, spin, modal, and close fit at 390x844,
+        844x390, 1024x768, 1366x768, and 2560x1080. pnpm run build
+        --filter=oma-peli passed with the known warning set.
 
 phases:
   - id: 'phase_00_workflow_and_docs'

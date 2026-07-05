@@ -13,8 +13,8 @@ This document is an implementation plan, not a retrospective. It should be follo
 | ------------------------------------------------------------------------ | ----------- | ------------ | -------------------------------------------------------------------------------------- |
 | Phase 00 - Baseline Capture And UI Contract                              | completed   | 2026-07-05   | Expanded viewport matrix recorded in `UI_TEST_MATRIX.md`. No production code changed.  |
 | Phase 01 - Define Responsive Layout Model                                | completed   | 2026-07-05   | Added viewport classes and routed compact/top-action behavior through `ViewportModel`. |
-| Phase 02 - Establish Layout Tokens And Geometry Rules                    | not started | -            | Next implementation phase.                                                             |
-| Phase 03 - Recompose Mobile Portrait For Fullness                        | not started | -            | -                                                                                      |
+| Phase 02 - Establish Layout Tokens And Geometry Rules                    | completed   | 2026-07-05   | Added `uiLayout.ts` tokens and applied first CSS variables to modal/top/spin geometry. |
+| Phase 03 - Recompose Mobile Portrait For Fullness                        | not started | -            | Next implementation phase.                                                             |
 | Phase 04 - Recompose Mobile Landscape And Short Screens                  | not started | -            | -                                                                                      |
 | Phase 05 - Extract A Real Control Shell                                  | not started | -            | -                                                                                      |
 | Phase 06 - Replace The Menu/Paytable With A Modal System                 | not started | -            | -                                                                                      |
@@ -202,7 +202,8 @@ Findings to carry into Phase 02:
 
 ## Phase 02 - Establish Layout Tokens And Geometry Rules
 
-Status: not started  
+Status: completed
+
 Target files: new `src/game-standalone/uiLayout.ts` or `src/game-standalone/layout.ts`, `HelloPixi.svelte`, layout docs.
 
 ### Objective
@@ -243,6 +244,30 @@ Define per viewport class:
 - `get_errors` on touched files.
 - `pnpm run build --filter=oma-peli`.
 - Measure that existing mobile targeted fixes still pass at `390x844` and `844x390`.
+
+### Completion Notes
+
+Completed on 2026-07-05 for the deployed `HelloPixi` route.
+
+Implemented:
+
+- Added `src/game-standalone/uiLayout.ts` with typed `StandaloneUILayoutTokens` keyed by `ViewportClass`.
+- Added layout-token fields for stage bounds, board intent, bottom control height/gap, top action sizing, spin size, modal geometry, background margin, and status display mode.
+- Added `getUILayoutTokens()` and `createUILayoutCssVars()` helpers.
+- Applied the first token-derived CSS variables to the active game wrapper.
+- Moved compact top-action gap/size/inset values in `TopToggles.svelte` to CSS variables.
+- Moved mobile spin sizing and paytable/menu modal sizing away from hard-coded media values and into viewport-class tokens consumed by `HelloPixi`.
+
+Validation results:
+
+- `get_errors` passed for `uiLayout.ts` and `TopToggles.svelte`; `HelloPixi.svelte` only reports the existing editor-only `$app/paths` diagnostic.
+- Browser checks confirmed top actions, spin, paytable/menu modal, and modal close fit at `390x844`, `844x390`, `1024x768`, `1366x768`, and `2560x1080`.
+- `pnpm run build --filter=oma-peli` passed with the known warning set.
+
+Findings to carry into Phase 03:
+
+- Tokens now exist, but the mobile portrait composition still uses the existing asset control strip and canvas-scale placement.
+- Phase 03 should use the tokens to recompose phone portrait around a fuller board and a dedicated thumb-zone control layout.
 
 ## Phase 03 - Recompose Mobile Portrait For Fullness
 
