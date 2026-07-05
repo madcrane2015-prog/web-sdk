@@ -155,6 +155,10 @@ progress:
     - '03.04_extract_random_symbol'
     - '03.05_extract_check_wins'
     - '03.06_update_docs'
+    - '04.01_extract_reel_class'
+    - '04.02_reduce_sprite_churn'
+    - '04.03_extract_pixi_setup'
+    - '04.04_add_cleanup'
   blocked_steps: []
   agent_journal:
     - date: '2026-07-05'
@@ -227,6 +231,20 @@ progress:
         modules. pnpm run build --filter=oma-peli passed with the known warning
         set. A direct tsx fixture smoke command could not run because tsx is not
         installed, so build validation was used as the executable check.
+    - date: '2026-07-05'
+      author: 'GitHub Copilot'
+      note: >-
+        Completed phase_04_extract_pixi_reel_runtime for
+        active_deployed_hellopixi. Moved the Reel class into
+        src/game-standalone/reel.ts with explicit dependencies for symbols,
+        textures, spin speed, and stop audio callbacks. Added
+        src/game-standalone/pixiRuntime.ts for Pixi app creation, reel mask
+        creation, logo texture configuration, and app destruction. Reel drawing
+        now reuses three sprites per reel instead of removing/recreating children
+        each frame. HelloPixi now returns onMount teardown cleanup for resize and
+        keydown listeners, ticker callback, canvas removal, and Pixi app destroy.
+        get_errors and build passed with known warning set. Manual browser
+        load/spin validation remains recommended.
 
 phases:
   - id: 'phase_00_workflow_and_docs'
@@ -459,7 +477,7 @@ phases:
           fixture checks.
 
   - id: 'phase_04_extract_pixi_reel_runtime'
-    status: 'not_started'
+    status: 'completed'
     priority: 4
     goal: 'Move Pixi reel animation and texture drawing concerns out of HelloPixi.'
     why: 'The Reel class currently mixes animation state, random symbol generation, sound triggers, and direct stage drawing.'
@@ -468,25 +486,45 @@ phases:
       - 'src/game-standalone/pixiRuntime.ts'
     steps:
       - id: '04.01_extract_reel_class'
-        status: 'not_started'
+        status: 'completed'
         action: 'Move Reel into reel.ts with constructor dependencies for texture lookup, randomSymbol callback, dimensions, and callbacks for stop events.'
         output: 'Reel no longer closes over HelloPixi state except through callbacks.'
         validation: 'get_errors and one manual spin.'
       - id: '04.02_reduce_sprite_churn'
-        status: 'not_started'
+        status: 'completed'
         action: 'Investigate whether draw() removeChildren/addChild every frame is causing mobile performance issues; if yes, reuse sprites and swap textures.'
         output: 'Mobile frame stability improves or documented reason to defer.'
         validation: 'Manual mobile-emulation spin check and console performance observation.'
       - id: '04.03_extract_pixi_setup'
-        status: 'not_started'
+        status: 'completed'
         action: 'Move Application init, asset loading, masks, frames, logo setup, and cleanup into a runtime helper or Svelte action.'
         output: 'HelloPixi onMount becomes orchestration rather than detailed Pixi construction.'
         validation: 'Build and manual load/spin check.'
       - id: '04.04_add_cleanup'
-        status: 'not_started'
+        status: 'completed'
         action: 'Ensure resize and keydown listeners are removed and Pixi app is destroyed on component teardown.'
         output: 'Hot reload and navigation do not leak listeners/canvases.'
         validation: 'Manual dev-server reload check; no duplicate spin handlers.'
+    phase_notes:
+      - date: '2026-07-05'
+        note: >-
+          Reel no longer closes over HelloPixi state directly. HelloPixi injects
+          getSymbol, setSymbol, randomSymbol, getSpinSpeed, getSymbolTextures,
+          playStopSound, and playDrumHit callbacks when creating each reel.
+      - date: '2026-07-05'
+        note: >-
+          Sprite churn was reduced inside reel.ts by retaining three sprites per
+          reel and updating texture, dimensions, and y positions on draw(). This
+          preserves the existing visual strip behavior while avoiding per-frame
+          removeChildren/new Sprite work.
+      - date: '2026-07-05'
+        note: >-
+          Validation: get_errors passed for HelloPixi.svelte, reel.ts, and
+          pixiRuntime.ts. pnpm run build --filter=oma-peli passed with the known
+          warnings about SvelteKit tsconfig, missing virtual public env exports,
+          and TextStyle import. Manual browser load/spin/reload validation is
+          still flagged for review because no shared browser page was available
+          during this phase.
 
   - id: 'phase_05_mobile_first_ui_refactor'
     status: 'not_started'

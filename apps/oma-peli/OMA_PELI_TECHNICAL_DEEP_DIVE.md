@@ -145,6 +145,13 @@ Phase 03 introduced the standalone runtime math module set:
 
 `HelloPixi` still owns state transitions and side effects: it increments free-spin counters, changes music when free spins start, records stats, highlights wins, and renders Pixi/HTML UI. The math module returns scatter trigger metadata separately from paying wins so those state transitions stay outside the pure calculation.
 
+Phase 04 started the Pixi runtime split:
+
+- `src/game-standalone/reel.ts`: owns the `Reel` class, reel state machine, bounce/slowdown behavior, and symbol sprite drawing. `HelloPixi` injects symbol getters/setters, random symbol generation, current spin speed, textures, and stop-sound callbacks.
+- `src/game-standalone/pixiRuntime.ts`: owns Pixi application creation, reel mask creation, logo texture quality setup, and application destruction.
+
+`HelloPixi` still creates the 13 reel containers and masks because their positions depend on component layout constants. It now returns teardown cleanup from `onMount`, removing resize and keydown listeners, removing the Pixi ticker callback, removing the canvas, and destroying the Pixi application.
+
 ### PixiJS Initialization
 
 On mount, `HelloPixi`:
@@ -158,7 +165,7 @@ On mount, `HelloPixi`:
 7. Registers a spacebar handler for spin or skip-spin behavior.
 8. Loads reel frames, logo, and all symbol textures with `PIXI.Assets.load`.
 9. Creates HTML audio elements for spin, stop, and win effects.
-10. Creates 13 Pixi reel containers, masks, reel frame sprite, and logo sprite.
+10. Creates 13 Pixi reel containers and masks, then instantiates `StandaloneReel` from `src/game-standalone/reel.ts`.
 11. Initializes music with Howler.js after the CDN script is available.
 12. Starts `app.ticker.add(update)`.
 
@@ -187,25 +194,31 @@ The middle reel has special behavior because it represents the single row in the
 
 The active standalone symbol keys are:
 
-| Key         | Meaning          | Asset                                 |
-| ----------- | ---------------- | ------------------------------------- |
-| `a`         | Blue hotrod      | `static/symbols/Blue_hotrod.jpg`      |
-| `b`         | Blue jacket      | `static/symbols/Blue_jacket.jpg`      |
-| `c`         | Blue rollers     | `static/symbols/Blue_rollers.jpg`     |
-| `d`         | Blue speakers    | `static/symbols/Blue_speakers.jpg`    |
-| `e`         | Premium blonde   | `static/symbols/Premium_blonde.jpg`   |
-| `f`         | Premium brunette | `static/symbols/Premium_brunette.jpg` |
-| `g`         | Premium rocker   | `static/symbols/Premium_rocker.jpg`   |
-| `h`         | Wild             | `static/symbols/New_Wild.jpg`         |
-| `i`         | Red burger       | `static/symbols/Red_burger.jpg`       |
-| `j`         | Red fries        | `static/symbols/Red_fries.jpg`        |
-| `k`         | Red milkshake    | `static/symbols/Red_milkshake.jpg`    |
-| `l`         | Scatter          | `static/symbols/Scatter.jpg`          |
-| `emptyslot` | Empty slot       | `static/symbols/Emptyslot.jpg`        |
+| Key | Meaning          | Asset                                 |
+| --- | ---------------- | ------------------------------------- |
+| `a` | Blue hotrod      | `static/symbols/Blue_hotrod.jpg`      |
+| `b` | Blue jacket      | `static/symbols/Blue_jacket.jpg`      |
+| `c` | Blue rollers     | `static/symbols/Blue_rollers.jpg`     |
+| `d` | Blue speakers    | `static/symbols/Blue_speakers.jpg`    |
+| `e` | Premium blonde   | `static/symbols/Premium_blonde.jpg`   |
+| `f` | Premium brunette | `static/symbols/Premium_brunette.jpg` |
+| `g` | Premium rocker   | `static/symbols/Premium_rocker.jpg`   |
+| `h` | Wild             | `static/symbols/New_Wild.jpg`         |
 
-`HelloPixi` detects GitHub Pages by checking `window.location.hostname.includes('github.io')`. On GitHub Pages it hardcodes `/web-sdk/oma-peli/symbols`; otherwise it uses `${base}/symbols`.
+Phase 04 started the Pixi runtime split:
 
-### Symbol Weights
+- `src/game-standalone/reel.ts`: owns the `Reel` class, reel state machine, bounce/slowdown behavior, and symbol sprite drawing. `HelloPixi` injects symbol getters/setters, random symbol generation, current spin speed, textures, and stop-sound callbacks.
+- `src/game-standalone/pixiRuntime.ts`: owns Pixi application creation, reel mask creation, logo texture quality setup, and application destruction.
+
+`HelloPixi` still creates the 13 reel containers and masks because their positions depend on component layout constants. It now returns teardown cleanup from `onMount`, removing resize and keydown listeners, removing the Pixi ticker callback, removing the canvas, and destroying the Pixi application.
+| `i` | Red burger | `static/symbols/Red_burger.jpg` |
+| `j` | Red fries | `static/symbols/Red_fries.jpg` | 10. Creates 13 Pixi reel containers and masks, then instantiates `StandaloneReel` from `src/game-standalone/reel.ts`.
+| `l` | Scatter | `static/symbols/Scatter.jpg` |
+The `Reel` class in `src/game-standalone/reel.ts` models one visible slot position as one independently spinning reel.
+
+The class stores:
+
+Drawing now reuses three `Sprite` instances per reel and swaps texture/position each frame. Before phase 04, drawing removed and recreated children every frame with `container.removeChildren()` and three new `Sprite` instances, which was a likely mobile performance risk.
 
 Runtime weights now live in `src/game-standalone/mathConfig.ts`, which is the source of truth for the deployed local game.
 
@@ -335,7 +348,7 @@ This differs from some older docs that mention `scatterCount + 3`, fixed 10 free
 
 ### Reel Animation
 
-The `Reel` class inside `HelloPixi` models one visible slot position as one independently spinning reel.
+The `Reel` class in `src/game-standalone/reel.ts` models one visible slot position as one independently spinning reel.
 
 State flow:
 
@@ -352,6 +365,8 @@ Each reel:
 - Applies exponential slowdown.
 - Plays stop sound and drum hit when entering bounce.
 - Draws three stacked copies of the current symbol to fake a scrolling strip.
+
+Drawing now reuses three `Sprite` instances per reel and swaps texture/position each frame. Before phase 04, drawing removed and recreated children every frame with `container.removeChildren()` and three new `Sprite` instances, which was a likely mobile performance risk.
 
 Spin speed config:
 
@@ -795,6 +810,7 @@ For math changes:
 | Loading/splash           | `src/components/LoadingScreen.svelte`                                                                            |
 | Standalone win animation | `src/components/VinylWinAnimation.svelte`                                                                        |
 | Standalone math/config   | `src/game-standalone/types.ts`, `src/game-standalone/mathConfig.ts`, `src/game-standalone/math.ts`               |
+| Standalone Pixi runtime  | `src/game-standalone/reel.ts`, `src/game-standalone/pixiRuntime.ts`                                              |
 | Standalone layout config | `src/config/layoutConfig.ts`, `src/utils/layoutUtils.ts`                                                         |
 | SDK shell                | `src/components/Game.svelte`                                                                                     |
 | SDK context              | `src/game/context.ts`                                                                                            |

@@ -31,6 +31,13 @@
 		randomSymbol as getRandomSymbol,
 	} from '../game-standalone/math';
 	import {
+		configureLogoTexture,
+		createPixiApplication,
+		createReelMask,
+		destroyPixiApplication,
+	} from '../game-standalone/pixiRuntime';
+	import { Reel as StandaloneReel } from '../game-standalone/reel';
+	import {
 		SYMBOL_KEYS,
 		type SpinSpeed,
 		type SymbolKey,
@@ -40,7 +47,6 @@
 	// ===== PIXIJS KIRJASTON KOMPONENTIT =====
 	// PixiJS on 2D-grafiikkakirjasto joka käyttää WebGL:ää
 	import {
-		Application, // Pelin pääsovellus - hallitsee rendereriä ja stage-objektia
 		Graphics, // Geometristen muotojen piirtäminen (ympyrät, neliöt, viivat)
 		Container, // Elementtien ryhmittely - toimii kuten HTML div
 		Sprite, // Kuvien (tekstuurien) näyttäminen ruudulla
@@ -698,168 +704,9 @@
 
 	// PixiJS sovelluksen pääkomponentit
 	let container: HTMLDivElement; // HTML-elementti johon peli sijoitetaan
-	let app: Application; // Pelin pääsovellus
-	let reels: Reel[] = []; // Kaikki kiekot (13 kpl)
+	let app: Awaited<ReturnType<typeof createPixiApplication>>; // Pelin pääsovellus
+	let reels: StandaloneReel[] = []; // Kaikki kiekot (13 kpl)
 	let winHighlights: Graphics[] = []; // Voittavien symbolien korostukset
-
-	// ===================================================================
-	// REEL LUOKKA - Yksittäisen kiekon toiminta (yksi ruutu = yksi kiekko)
-	// ===================================================================
-	// Tämä luokka hallinnoi yhden kiekon pyörimistä ja yhden symbolin näyttämistä
-	class Reel {
-		index: number; // Kiekon numero (0-12)
-		container: Container; // PixiJS kontti johon symboli piirretään
-		offset = 0; // Nykyinen scrollaus-offset (0 = normaali asema)
-		speed = 0; // Nykyinen pyörimisnopeus (pikseleitä per frame)
-		targetSpeed = 30; // Tavoitenopeus (saavutetaan kiihdytyksen jälkeen)
-		state: 'idle' | 'spinning' | 'slowing' | 'bouncing' | 'stopped' = 'idle'; // Kiekon tila + bounce
-		stopDelay = 0; // Kuinka monta framea odotetaan ennen hidastusta
-
-		// BOUNCE EFEKTI muuttujat
-		bounceOffset = 0; // Bounce-efektin Y-siirtymä
-		bounceSpeed = 0; // Bounce-efektin nopeus
-		bounceFrames = 0; // Kuinka monta framea bouncessa ollaan
-
-		// Konstruktori: luo uuden kiekon
-		constructor(index: number, container: Container) {
-			this.index = index; // Tallenna kiekon numero (0-12)
-			this.container = container; // Tallenna PixiJS kontti
-		}
-
-		// ===== ALOITA KIEKON PYÖRIMINEN =====
-		// Käynnistää kiekon pyörimisen määritellyllä viiveellä
-		// @param delay - Montako framea odotetaan ennen pysähtymistä (määrittää milloin kiekko pysähtyy)
-		start(delay: number) {
-			this.state = 'spinning'; // Aseta pyörivä tila
-			this.speed = 0; // Aloita nopeudesta 0 (kiihdytetään vähitellen)
-
-			// Pyörimisnopeus on AINA sama (medium), vain pysähtymisviive muuttuu
-			// Tämä luo tasaisen visuaalisen pyörimisnopeuden riippumatta spinSpeed-asetuksesta
-			this.targetSpeed = 35; // Vakio pyörimisnopeus (pikseleitä per frame)
-
-			this.stopDelay = delay; // Aseta pysäytysviive (kiekot pysähtyvät eri aikoina)
-		}
-
-		// ===== BPM-SYNKRONOITU ALOITUS (v1.0.9) =====
-		// Pysäyttää kiekot peräkkäin rytmisesti musiikin tahtiin (130 BPM)
-		// Jokainen kiekko pysähtyy yksi kerrallaan vasemmalta oikealle
-		// @param beatIndex - Kiekon järjestysnumero (0-12)
-		startSynchronized(beatIndex: number) {
-			const framesPerReel = SPIN_SPEED_CONFIG[spinSpeed]; // Käytä konfiguraation arvoa (slow/medium/fast)
-			const delay = 60 + beatIndex * framesPerReel; // 60 base-framea + viive per kiekko
-			this.start(delay);
-		}
-
-		// ===== PÄIVITÄ KIEKON TILA JOKA FRAME =====
-		// Kutsutaan joka frame (60 FPS) pelisilmukasta
-		// Käsittelee kiekon tilan mukaan: spinning → slowing → bouncing → stopped
-		update() {
-			if (this.state === 'idle') return; // Ei tee mitään jos kiekko ei pyöri
-
-			// ===== VAIHE 1: KIIHTYMIS-VAIHE =====
-			// Nopeutetaan kiekkoa kunnes saavutetaan tavoitenopeus
-			if (this.state === 'spinning') {
-				if (this.speed < this.targetSpeed) this.speed += 2; // Kiihdytä +2 pikseliä/frame
-				if (this.stopDelay > 0)
-					this.stopDelay--; // Vähennä viivettä joka frame
-				else this.state = 'slowing'; // Aloita hidastus kun viive = 0
-			}
-
-			// ===== VAIHE 2: HIDASTUS-VAIHE =====
-			// Vähennetään nopeutta eksponentiaalisesti kunnes pysähdytään
-			if (this.state === 'slowing') {
-				// Hidastuskerroin määrää kuinka nopeasti kiekko pysähtyy
-				// Pienempi arvo = nopeampi pysähtyminen (0.88 < 0.92 < 0.95)
-				const slowDownFactor = spinSpeed === 'slow' ? 0.88 : spinSpeed === 'medium' ? 0.92 : 0.95;
-				this.speed *= slowDownFactor; // Kerro nopeus kertoimella (eksponentiaalinen hidastus)
-
-				// Kun nopeus on riittävän pieni, siirrytään bounce-vaiheeseen
-				if (this.speed < 2.5) {
-					this.state = 'bouncing'; // Siirry bouncing-tilaan (pieni pomppuefekti)
-					this.speed = 0; // Pysäytä normaali scrollaus
-					this.offset = 0; // Nollaa scroll-offset
-					this.bounceOffset = 0; // Aloita bounce-offset nollasta
-					this.bounceSpeed = 4; // Pienempi alkuvoima = pehmeämpi bounce (aiemmin 8)
-
-					// Soita "chunk" pysähtymisääni
-					playSound('stop');
-
-					// Soita rumpuisku musiikin tahtiin (v1.0.9 music integration)
-					playDrumHit();
-				}
-			}
-
-			// ===== VAIHE 3: BOUNCE-VAIHE =====
-			// Pieni pomppuefekti pysähdyksen jälkeen (palautettu v1.3.1)
-			// Luo visuaalisen "painon tunteen" kun kiekko pysähtyy
-			if (this.state === 'bouncing') {
-				this.bounceSpeed *= 0.8; // Hitaampi vaimennus = pehmeämpi bounce (aiemmin 0.85)
-				this.bounceOffset += this.bounceSpeed; // Lisää bounce-offset (liikkuu alaspäin)
-
-				// Kun bounce on riittävän pieni, kiekko on lopullisesti pysähtynyt
-				if (Math.abs(this.bounceSpeed) < 0.2) {
-					this.state = 'stopped'; // Lopullinen pysähtynyt tila
-					this.bounceOffset = 0; // Nollaa bounce-offset
-					this.bounceSpeed = 0; // Nollaa bounce-nopeus
-				}
-			}
-
-			// ===== VAIHE 4: LIIKE-LASKENTA =====
-			// Siirrytään alaspäin jos nopeus > 0 (vain spinning/slowing-tiloissa)
-			if (this.speed > 0) {
-				this.offset += this.speed; // Lisätään offsettia (scrollaus alaspäin)
-
-				// Jos offset ylittää yhden symbolin korkeuden, symboli on "scrollannut ulos"
-				// ja tarvitsemme uuden symbolin scrollaamaan sisään ylhäältä
-				if (this.offset >= ROW_HEIGHT) {
-					this.offset = 0; // Nollaa offset (aloitetaan uuden symbolin scrollaus)
-					reelData[this.index] = randomSymbol(this.index); // Aseta uusi satunnainen symboli tälle kiekolle
-					// HUOM: Välitetään kiekon indeksi randomSymbol():lle koska keskikiekko (6) käyttää eri painotuksia (Wild 55%)
-				}
-			}
-		} // update() loppu
-
-		// ===== PIIRRÄ KIEKON SYMBOLI NÄYTÖLLE =====
-		// Kutsutaan joka frame päivitetyn tilan jälkeen
-		// Piirtää 3 symbolia (edellinen, nykyinen, seuraava) jotta näyttää jatkuvalta nauhalta
-		draw() {
-			const stage = this.container; // Kiekon PixiJS Container
-			stage.removeChildren(); // Poista vanhat spritet (estää päällekkäisyydet)
-
-			// Hae tämän kiekon symboli reelData-taulukosta
-			const symbol = reelData[this.index];
-			if (!symbol || !symbolTextures || !symbolTextures[symbol]) return; // Tarkista että symboli on olemassa
-
-			// Laske lopullinen Y-koordinaatti:
-			// - offset: Scrollaus-siirtymä (0-ROW_HEIGHT kun pyörii)
-			// - bounceOffset: Pieni pomppuefekti pysähdyksen jälkeen
-			const y = this.offset + this.bounceOffset;
-
-			// PIIRRETÄÄN 3 SYMBOLIA JATKUVALLE NAUHALLE:
-			// 1) Edellinen symboli (yllä, y - ROW_HEIGHT)
-			// 2) Nykyinen symboli (keskellä, y)
-			// 3) Seuraava symboli (alla, y + ROW_HEIGHT)
-
-			const drawSymbol = (symbolKey: SymbolKey, yPos: number) => {
-				if (!symbolTextures) return;
-				const texture = symbolTextures[symbolKey];
-				if (!texture) return;
-
-				const sprite = new Sprite(texture);
-				sprite.width = symbolWidth;
-				sprite.height = symbolHeight;
-				sprite.x = 0;
-				sprite.y = yPos;
-				stage.addChild(sprite);
-			};
-
-			// Piirrä 3 symbolia (edellinen, nykyinen, seuraava)
-			// Käytä samaa symbolia kaikille (yksinkertainen ratkaisu)
-			drawSymbol(symbol, y - ROW_HEIGHT); // Edellinen (yllä)
-			drawSymbol(symbol, y); // Nykyinen (keskellä)
-			drawSymbol(symbol, y + ROW_HEIGHT); // Seuraava (alla)
-		} // draw() loppu
-	} // Reel luokan loppu
 
 	// ===================================================================
 	// PIXIJS ALUSTUS - Suoritetaan kun komponentti on ladattu
@@ -890,192 +737,199 @@
 	const audioButtonTop = $derived(getSafeTopPosition(10 * gameScale, viewportModel));
 	const audioButtonRight = $derived(getSafeRightPosition(10 * gameScale, viewportModel));
 
-	onMount(async () => {
-		// ===== 1) PIXIJS SOVELLUKSEN LUONTI =====
-		// Luo PixiJS Application joka hallinnoi koko peliä (stage, renderer, ticker)
-		app = new Application();
-		await app.init({
-			width: CANVAS_WIDTH, // Canvas leveys pikseleinä (1445px)
-			height: CANVAS_HEIGHT, // Canvas korkeus pikseleinä (1000px)
-			backgroundAlpha: 0, // Läpinäkyvä tausta (taustakuva asetetaan CSS:llä)
-			antialias: true, // Antialiasing päälle - sileät reunat
-			resolution: window.devicePixelRatio || 1, // Käytä laitteen pixel ratiota (retina-tuki)
-			autoDensity: true, // Automaattinen CSS-skaalaus retina-näytöille
-		});
+	onMount(() => {
+		let destroyed = false;
+		const cleanupCallbacks: Array<() => void> = [];
 
-		// Liitä PixiJS canvas HTML-elementtiin (container-diviin)
-		container.appendChild(app.canvas);
-
-		// ===== 2) RESPONSIIVINEN SKAALAUS =====
-		// Skaalataan peliä ikkunan koon mukaan mutta ei koskaan suuremmaksi kuin 100%
-		const resizeGame = () => {
-			viewportModel = createViewportModel({ width: CANVAS_WIDTH, height: CANVAS_HEIGHT });
-			layoutUpdateTrigger += 1;
-			const newScale = viewportModel.gameScale;
-
-			// Päivitä reactive skaalaus (käytetään UI-elementeissä)
-			gameScale = newScale;
-
-			// Skaalaa PixiJS stage vastaamaan uutta kokoa (kaikki näkyy)
-			app.stage.scale.set(newScale);
-
-			// Renderer pysyy kiinteässä koossa (1445x1000)
-			app.renderer.resize(CANVAS_WIDTH, CANVAS_HEIGHT);
-		};
-
-		// Kutsu heti alussa (aseta oikea skaalaus)
-		resizeGame();
-
-		// Päivitä kun ikkunan kokoa muutetaan
-		window.addEventListener('resize', resizeGame);
-
-		// ===== VÄLILYÖNTI-NÄPPÄIN: SKIP SPIN =====
-		// Jos kiekot pyörivät → pysäytä ne välittömästi
-		// Jos kiekot ovat pysähtyneet → aloita uusi spin
-		const handleKeyPress = (e: KeyboardEvent) => {
-			if (e.code === 'Space' || e.key === ' ') {
-				e.preventDefault(); // Estä sivun scrollaus
-
-				// Tarkista ovatko kiekot pyörimässä
-				const isAnyReelSpinning = reels.some(
-					(r) => r.state === 'spinning' || r.state === 'slowing',
-				);
-
-				if (isAnyReelSpinning) {
-					// Pysäytä kaikki kiekot välittömästi asettamalla stopDelay = 0
-					// Tämä käynnistää hidastuksen välittömästi jokaiselle kiekolle
-					reels.forEach((r) => {
-						if (r.state === 'spinning') {
-							r.stopDelay = 0; // Aloita hidastus heti
-							r.state = 'slowing';
-							r.speed = r.targetSpeed * 0.5; // Puolita nopeus nopeaa pysähtymistä varten
-						} else if (r.state === 'slowing') {
-							r.speed = r.speed * 0.3; // Kiihdytä hidastusta
-						}
-					});
-					console.log('⚡ Skip spin - kiekot pysähtyvät nopeasti');
-				} else {
-					// Aloita uusi spin jos kiekot eivät pyöri
-					spin();
-				}
-			}
-		};
-
-		window.addEventListener('keydown', handleKeyPress);
-
-		// ===== 2) KUVIEN LATAUS JA TEKSTUURIEN LUONTI =====
-		// Käytetään PIXI.Assets.load modernin latauksen takaamiseksi
-		const textures: Record<SymbolKey, Texture> = {} as any;
-
-		try {
-			loadingStatus = 'Loading UI images...';
-			debugInfo.push(`Loading reel frames: ${REEL_FRAMES_URL}`);
-			debugInfo.push(`Loading logo: ${LOGO_URL}`);
-
-			// UI-KUVIEN LATAUS (taustakuva käyttää nyt GameBackground-komponenttia HTML-puolella)
-			await Assets.load([
-				{ alias: 'reelframes', src: REEL_FRAMES_URL },
-				{ alias: 'logo', src: LOGO_URL },
-			]);
-			reelFramesTexture = Texture.from('reelframes');
-			logoTexture = Texture.from('logo');
-
-			// Aseta antialiasing ja korkea laatu UI-tekstuureille
-			if (reelFramesTexture.source) {
-				reelFramesTexture.source.scaleMode = 'linear';
-				// @ts-ignore - PixiJS 8 antialias
-				reelFramesTexture.source.antialias = true;
-				reelFramesTexture.source.autoGenerateMipmaps = true;
-			}
-			if (logoTexture.source) {
-				logoTexture.source.scaleMode = 'linear';
-				// @ts-ignore - PixiJS 8 antialias
-				logoTexture.source.antialias = true;
-				logoTexture.source.autoGenerateMipmaps = true;
-				// Käytä korkeampaa resoluutiota mobiilille
-				if (window.devicePixelRatio > 1) {
-					logoTexture.source.resolution = window.devicePixelRatio;
-				}
-			}
-
-			console.log(
-				'✅ Reel frames texture created:',
-				reelFramesTexture.width,
-				'x',
-				reelFramesTexture.height,
-			);
-			console.log('✅ Logo texture created:', logoTexture.width, 'x', logoTexture.height);
-			debugInfo.push('✅ All UI images loaded');
-
-			loadingStatus = 'Loading symbols...';
-
-			// SYMBOLIEN KUVIEN LATAUS - lataa ensin kaikki Assets.cache:een
-			const assetManifest: Array<{ alias: string; src: string }> = [];
-			for (const key of SYMBOL_KEYS) {
-				assetManifest.push({ alias: key, src: SYMBOL_URLS[key] });
-			}
-			await Assets.load(assetManifest);
-
-			// Luo tekstuurit cache:sta
-			for (const key of SYMBOL_KEYS) {
-				const url = SYMBOL_URLS[key];
-				debugInfo.push(`Loading symbol ${key}: ${url}`);
-
-				try {
-					const texture = Texture.from(key); // Käytä aliasta
-
-					// Aseta antialiasing päälle symbolitekstuureille
-					if (texture.source) {
-						texture.source.scaleMode = 'linear';
-						texture.source.antialias = true;
-					}
-
-					textures[key] = texture;
-					console.log(`✅ Symbol ${key} loaded:`, texture.width, 'x', texture.height);
-					debugInfo.push(`✅ Symbol ${key} loaded`);
-				} catch (error) {
-					const errorMsg = `❌ Failed to load symbol ${key} from ${url}: ${error}`;
-					debugInfo.push(errorMsg);
-					console.error(errorMsg);
-					throw new Error(errorMsg);
-				}
-			}
-
-			// Tallenna ladatut tekstuurit muuttujaan (käytettävissä koko komponentissa)
-			symbolTextures = textures;
-			loadingStatus = 'Assets loaded successfully!';
-		} catch (error) {
-			errorMessage = `Asset loading failed: ${error}`;
-			debugInfo.push(errorMessage);
-			console.error(errorMessage);
-			return; // Lopeta lataus jos virhe
-		}
-
-		// ===== 3) ÄÄNIEN LATAUS =====
-		// Luodaan HTML5 Audio elementit ääniefektejä varten
-		console.log('Ladataan ääniefektit...');
-
-		// Luo Web Audio elementit (placeholder-tiedostoja ei ole vielä olemassa)
-		for (const [key, url] of Object.entries(SOUND_URLS)) {
-			const audio = new Audio();
-			audio.src = url;
-			audio.preload = 'auto';
-			audio.volume = 0.7; // 70% äänenvoimakkuus
-
-			// Yritä esikuormata (ei haittaa jos tiedosto ei ole olemassa)
-			audio.load();
-
-			// Käsittele latausvirheet hiljaa (placeholder-tilanne)
-			audio.addEventListener('error', () => {
-				console.log(`Äänitiedostoa ei löydy: ${url} (käytetään hiljaista placeholderia)`);
+		const initialise = async () => {
+			// ===== 1) PIXIJS SOVELLUKSEN LUONTI =====
+			// Luo PixiJS Application joka hallinnoi koko peliä (stage, renderer, ticker)
+			app = await createPixiApplication({
+				width: CANVAS_WIDTH, // Canvas leveys pikseleinä (1445px)
+				height: CANVAS_HEIGHT, // Canvas korkeus pikseleinä (1000px)
+				resolution: window.devicePixelRatio || 1, // Käytä laitteen pixel ratiota (retina-tuki)
 			});
+			if (destroyed) {
+				destroyPixiApplication(app);
+				return;
+			}
 
-			audioElements[key] = audio;
-		}
-		// ===== 4) TAUSTAKUVAN ASETTELU =====
-		// KOMMENTOITU POIS - Taustakuva ei näy
-		// Lisätään taustakuva ENSIMMÄISENÄ jotta se jää kaiken taakse
-		/*
+			// Liitä PixiJS canvas HTML-elementtiin (container-diviin)
+			container.appendChild(app.canvas);
+			cleanupCallbacks.push(() => app.canvas.remove());
+
+			// ===== 2) RESPONSIIVINEN SKAALAUS =====
+			// Skaalataan peliä ikkunan koon mukaan mutta ei koskaan suuremmaksi kuin 100%
+			const resizeGame = () => {
+				viewportModel = createViewportModel({ width: CANVAS_WIDTH, height: CANVAS_HEIGHT });
+				layoutUpdateTrigger += 1;
+				const newScale = viewportModel.gameScale;
+
+				// Päivitä reactive skaalaus (käytetään UI-elementeissä)
+				gameScale = newScale;
+
+				// Skaalaa PixiJS stage vastaamaan uutta kokoa (kaikki näkyy)
+				app.stage.scale.set(newScale);
+
+				// Renderer pysyy kiinteässä koossa (1445x1000)
+				app.renderer.resize(CANVAS_WIDTH, CANVAS_HEIGHT);
+			};
+
+			// Kutsu heti alussa (aseta oikea skaalaus)
+			resizeGame();
+
+			// Päivitä kun ikkunan kokoa muutetaan
+			window.addEventListener('resize', resizeGame);
+			cleanupCallbacks.push(() => window.removeEventListener('resize', resizeGame));
+
+			// ===== VÄLILYÖNTI-NÄPPÄIN: SKIP SPIN =====
+			// Jos kiekot pyörivät → pysäytä ne välittömästi
+			// Jos kiekot ovat pysähtyneet → aloita uusi spin
+			const handleKeyPress = (e: KeyboardEvent) => {
+				if (e.code === 'Space' || e.key === ' ') {
+					e.preventDefault(); // Estä sivun scrollaus
+
+					// Tarkista ovatko kiekot pyörimässä
+					const isAnyReelSpinning = reels.some(
+						(r) => r.state === 'spinning' || r.state === 'slowing',
+					);
+
+					if (isAnyReelSpinning) {
+						// Pysäytä kaikki kiekot välittömästi asettamalla stopDelay = 0
+						// Tämä käynnistää hidastuksen välittömästi jokaiselle kiekolle
+						reels.forEach((r) => {
+							if (r.state === 'spinning') {
+								r.stopDelay = 0; // Aloita hidastus heti
+								r.state = 'slowing';
+								r.speed = r.targetSpeed * 0.5; // Puolita nopeus nopeaa pysähtymistä varten
+							} else if (r.state === 'slowing') {
+								r.speed = r.speed * 0.3; // Kiihdytä hidastusta
+							}
+						});
+						console.log('⚡ Skip spin - kiekot pysähtyvät nopeasti');
+					} else {
+						// Aloita uusi spin jos kiekot eivät pyöri
+						spin();
+					}
+				}
+			};
+
+			window.addEventListener('keydown', handleKeyPress);
+			cleanupCallbacks.push(() => window.removeEventListener('keydown', handleKeyPress));
+
+			// ===== 2) KUVIEN LATAUS JA TEKSTUURIEN LUONTI =====
+			// Käytetään PIXI.Assets.load modernin latauksen takaamiseksi
+			const textures: Record<SymbolKey, Texture> = {} as any;
+
+			try {
+				loadingStatus = 'Loading UI images...';
+				debugInfo.push(`Loading reel frames: ${REEL_FRAMES_URL}`);
+				debugInfo.push(`Loading logo: ${LOGO_URL}`);
+
+				// UI-KUVIEN LATAUS (taustakuva käyttää nyt GameBackground-komponenttia HTML-puolella)
+				await Assets.load([
+					{ alias: 'reelframes', src: REEL_FRAMES_URL },
+					{ alias: 'logo', src: LOGO_URL },
+				]);
+				reelFramesTexture = Texture.from('reelframes');
+				logoTexture = Texture.from('logo');
+
+				// Aseta antialiasing ja korkea laatu UI-tekstuureille
+				if (reelFramesTexture.source) {
+					reelFramesTexture.source.scaleMode = 'linear';
+					// @ts-ignore - PixiJS 8 antialias
+					reelFramesTexture.source.antialias = true;
+					reelFramesTexture.source.autoGenerateMipmaps = true;
+				}
+				if (logoTexture.source) {
+					logoTexture.source.scaleMode = 'linear';
+					// @ts-ignore - PixiJS 8 antialias
+					logoTexture.source.antialias = true;
+					logoTexture.source.autoGenerateMipmaps = true;
+					// Käytä korkeampaa resoluutiota mobiilille
+					if (window.devicePixelRatio > 1) {
+						logoTexture.source.resolution = window.devicePixelRatio;
+					}
+				}
+
+				console.log(
+					'✅ Reel frames texture created:',
+					reelFramesTexture.width,
+					'x',
+					reelFramesTexture.height,
+				);
+				console.log('✅ Logo texture created:', logoTexture.width, 'x', logoTexture.height);
+				debugInfo.push('✅ All UI images loaded');
+
+				loadingStatus = 'Loading symbols...';
+
+				// SYMBOLIEN KUVIEN LATAUS - lataa ensin kaikki Assets.cache:een
+				const assetManifest: Array<{ alias: string; src: string }> = [];
+				for (const key of SYMBOL_KEYS) {
+					assetManifest.push({ alias: key, src: SYMBOL_URLS[key] });
+				}
+				await Assets.load(assetManifest);
+
+				// Luo tekstuurit cache:sta
+				for (const key of SYMBOL_KEYS) {
+					const url = SYMBOL_URLS[key];
+					debugInfo.push(`Loading symbol ${key}: ${url}`);
+
+					try {
+						const texture = Texture.from(key); // Käytä aliasta
+
+						// Aseta antialiasing päälle symbolitekstuureille
+						if (texture.source) {
+							texture.source.scaleMode = 'linear';
+							texture.source.antialias = true;
+						}
+
+						textures[key] = texture;
+						console.log(`✅ Symbol ${key} loaded:`, texture.width, 'x', texture.height);
+						debugInfo.push(`✅ Symbol ${key} loaded`);
+					} catch (error) {
+						const errorMsg = `❌ Failed to load symbol ${key} from ${url}: ${error}`;
+						debugInfo.push(errorMsg);
+						console.error(errorMsg);
+						throw new Error(errorMsg);
+					}
+				}
+
+				// Tallenna ladatut tekstuurit muuttujaan (käytettävissä koko komponentissa)
+				symbolTextures = textures;
+				loadingStatus = 'Assets loaded successfully!';
+			} catch (error) {
+				errorMessage = `Asset loading failed: ${error}`;
+				debugInfo.push(errorMessage);
+				console.error(errorMessage);
+				return; // Lopeta lataus jos virhe
+			}
+
+			// ===== 3) ÄÄNIEN LATAUS =====
+			// Luodaan HTML5 Audio elementit ääniefektejä varten
+			console.log('Ladataan ääniefektit...');
+
+			// Luo Web Audio elementit (placeholder-tiedostoja ei ole vielä olemassa)
+			for (const [key, url] of Object.entries(SOUND_URLS)) {
+				const audio = new Audio();
+				audio.src = url;
+				audio.preload = 'auto';
+				audio.volume = 0.7; // 70% äänenvoimakkuus
+
+				// Yritä esikuormata (ei haittaa jos tiedosto ei ole olemassa)
+				audio.load();
+
+				// Käsittele latausvirheet hiljaa (placeholder-tilanne)
+				audio.addEventListener('error', () => {
+					console.log(`Äänitiedostoa ei löydy: ${url} (käytetään hiljaista placeholderia)`);
+				});
+
+				audioElements[key] = audio;
+			}
+			// ===== 4) TAUSTAKUVAN ASETTELU =====
+			// KOMMENTOITU POIS - Taustakuva ei näy
+			// Lisätään taustakuva ENSIMMÄISENÄ jotta se jää kaiken taakse
+			/*
     console.log("Taustakuva ladattu, tekstuuri:", backgroundTexture);
 
     if (backgroundTexture) {
@@ -1123,176 +977,191 @@
     }
     */
 
-		// ===== 5) KIEKKOJEN MITAT JA SIJAINNIT =====
-		// Lasketaan kiekkojen mitat taustakuvan mukaan
-		const REEL_WIDTH = symbolWidth; // Kiekon leveys = symbolien leveys
+			// ===== 5) KIEKKOJEN MITAT JA SIJAINNIT =====
+			// Lasketaan kiekkojen mitat taustakuvan mukaan
+			const REEL_WIDTH = symbolWidth; // Kiekon leveys = symbolien leveys
 
-		// Eri korkeudet eri kiekoille - keskimmäinen kiekko on lyhyempi (1 symboli vs 3)
-		const getReelHeight = (reelIndex: number) => {
-			return reelIndex === 2 ? symbolHeight : ROWS * ROW_HEIGHT - gap;
-		};
+			// Eri korkeudet eri kiekoille - keskimmäinen kiekko on lyhyempi (1 symboli vs 3)
+			const getReelHeight = (reelIndex: number) => {
+				return reelIndex === 2 ? symbolHeight : ROWS * ROW_HEIGHT - gap;
+			};
 
-		// Keskimmäisen kiekon Y-korjaus: sijoitetaan samalle korkeudelle muiden kanssa
-		const getAdjustedY = (reelIndex: number, baseY: number) => {
-			if (reelIndex === 2) {
-				// Keskimmäinen kiekko: siirretään ylöspäin niin että sen keskikohta
-				// on samalla tasolla muiden kiekkojen keskikohdan kanssa
-				const otherReelsCenter = (ROWS * ROW_HEIGHT - gap) / 2; // Muiden keskikohta
-				const thisReelCenter = symbolHeight / 2; // Tämän keskikohta
-				return baseY + otherReelsCenter - thisReelCenter; // Korjattu Y-sijainti
-			}
-			return baseY; // Muut kiekot käyttävät alkuperäistä sijaintia
-		};
+			// Keskimmäisen kiekon Y-korjaus: sijoitetaan samalle korkeudelle muiden kanssa
+			const getAdjustedY = (reelIndex: number, baseY: number) => {
+				if (reelIndex === 2) {
+					// Keskimmäinen kiekko: siirretään ylöspäin niin että sen keskikohta
+					// on samalla tasolla muiden kiekkojen keskikohdan kanssa
+					const otherReelsCenter = (ROWS * ROW_HEIGHT - gap) / 2; // Muiden keskikohta
+					const thisReelCenter = symbolHeight / 2; // Tämän keskikohta
+					return baseY + otherReelsCenter - thisReelCenter; // Korjattu Y-sijainti
+				}
+				return baseY; // Muut kiekot käyttävät alkuperäistä sijaintia
+			};
 
-		// Kiekkojen perussijainnit (mitattu taustakuvan kiekkojen kohdilta)
-		const baseReelPositions = [
-			{ x: 70, y: 120 }, // 1. kiekko: vasen (siirretty hieman ulkospäin)
-			{ x: 203, y: 120 }, // 2. kiekko: vasen-keski
-			{ x: 345, y: 120 }, // 3. kiekko: keskimmäinen (pysyy keskellä)
-			{ x: 487, y: 120 }, // 4. kiekko: oikea-keski
-			{ x: 620, y: 120 }, // 5. kiekko: oikea (siirretty hieman ulkospäin)
-		];
+			// Kiekkojen perussijainnit (mitattu taustakuvan kiekkojen kohdilta)
+			const baseReelPositions = [
+				{ x: 70, y: 120 }, // 1. kiekko: vasen (siirretty hieman ulkospäin)
+				{ x: 203, y: 120 }, // 2. kiekko: vasen-keski
+				{ x: 345, y: 120 }, // 3. kiekko: keskimmäinen (pysyy keskellä)
+				{ x: 487, y: 120 }, // 4. kiekko: oikea-keski
+				{ x: 620, y: 120 }, // 5. kiekko: oikea (siirretty hieman ulkospäin)
+			];
 
-		// Lisätään käyttäjän asettamat offset-arvot
-		const reelPositions = baseReelPositions.map((pos) => ({
-			x: pos.x + OFFSET_X, // Lisää X-siirtymä
-			y: pos.y + OFFSET_Y, // Lisää Y-siirtymä
-		}));
+			// Lisätään käyttäjän asettamat offset-arvot
+			const reelPositions = baseReelPositions.map((pos) => ({
+				x: pos.x + OFFSET_X, // Lisää X-siirtymä
+				y: pos.y + OFFSET_Y, // Lisää Y-siirtymä
+			}));
 
-		// ===== 5) KIEKKOJEN LUONTI JA MASKIEN ASETUS =====
-		reels = []; // Tyhjennetään kiekko-array
+			// ===== 5) KIEKKOJEN LUONTI JA MASKIEN ASETUS =====
+			reels = []; // Tyhjennetään kiekko-array
+			const reelDimensions = {
+				symbolWidth,
+				symbolHeight,
+				rowHeight: ROW_HEIGHT,
+			};
+			const reelDependencies = {
+				getSymbol: (reelIndex: number) => reelData[reelIndex],
+				setSymbol: (reelIndex: number, symbol: SymbolKey) => (reelData[reelIndex] = symbol),
+				randomSymbol,
+				getSpinSpeed: () => spinSpeed,
+				getSymbolTextures: () => symbolTextures,
+				playStopSound: () => playSound('stop'),
+				playDrumHit,
+			};
 
-		for (let reelIndex = 0; reelIndex < TOTAL_REELS; reelIndex++) {
-			// Laske tämän kiekon sijainti ruudukossa
-			const position = getReelPosition(reelIndex);
-			const col = position.col;
-			const row = position.row;
+			for (let reelIndex = 0; reelIndex < TOTAL_REELS; reelIndex++) {
+				// Laske tämän kiekon sijainti ruudukossa
+				const position = getReelPosition(reelIndex);
+				const col = position.col;
+				const row = position.row;
 
-			// Laske ruudun sijainti näytöllä - uudet koordinaatit 1445x1000 taustalle
-			const baseX = 300 + col * (symbolWidth + 20); // Keskemmälle uudella taustalla
-			const baseY = 250 + row * (symbolHeight + 15); // Alemmas uudella taustalla
+				// Laske ruudun sijainti näytöllä - uudet koordinaatit 1445x1000 taustalle
+				const baseX = 300 + col * (symbolWidth + 20); // Keskemmälle uudella taustalla
+				const baseY = 250 + row * (symbolHeight + 15); // Alemmas uudella taustalla
 
-			// Keskikiekko (indeksi 6) erikoiskohdistus - käytä parametreja
-			const adjustedX = reelIndex === 6 ? baseX + MIDDLE_REEL_X_OFFSET : baseX;
-			const adjustedY = reelIndex === 6 ? baseY + MIDDLE_REEL_Y_OFFSET : baseY;
+				// Keskikiekko (indeksi 6) erikoiskohdistus - käytä parametreja
+				const adjustedX = reelIndex === 6 ? baseX + MIDDLE_REEL_X_OFFSET : baseX;
+				const adjustedY = reelIndex === 6 ? baseY + MIDDLE_REEL_Y_OFFSET : baseY;
 
-			// Luo PixiJS kontti tälle kiekolle
-			const reelCont = new Container();
-			reelCont.x = adjustedX + OFFSET_X;
-			reelCont.y = adjustedY + OFFSET_Y;
+				// Luo PixiJS kontti tälle kiekolle
+				const reelCont = new Container();
+				reelCont.x = adjustedX + OFFSET_X;
+				reelCont.y = adjustedY + OFFSET_Y;
 
-			// *** POISTETTU: Värillinen tausta ja debug-numerot ***
-			// const colors = [
-			//   0xff0000, 0x00ff00, 0x0000ff,
-			//   0xffff00, 0xff00ff, 0x00ffff,
-			//   0xffa500,
-			//   0x800080, 0x008000, 0x000080,
-			//   0xff8000, 0x8000ff, 0x0080ff
-			// ];
-			// const reelBg = new Graphics()
-			//   .rect(0, 0, symbolWidth, symbolHeight)
-			//   .fill({ color: colors[reelIndex], alpha: 0.3 });
-			// reelBg.x = reelCont.x;
-			// reelBg.y = reelCont.y;
-			// app.stage.addChild(reelBg);
+				// *** POISTETTU: Värillinen tausta ja debug-numerot ***
+				// const colors = [
+				//   0xff0000, 0x00ff00, 0x0000ff,
+				//   0xffff00, 0xff00ff, 0x00ffff,
+				//   0xffa500,
+				//   0x800080, 0x008000, 0x000080,
+				//   0xff8000, 0x8000ff, 0x0080ff
+				// ];
+				// const reelBg = new Graphics()
+				//   .rect(0, 0, symbolWidth, symbolHeight)
+				//   .fill({ color: colors[reelIndex], alpha: 0.3 });
+				// reelBg.x = reelCont.x;
+				// reelBg.y = reelCont.y;
+				// app.stage.addChild(reelBg);
 
-			// const style = new TextStyle({
-			//   fontFamily: 'Arial',
-			//   fontSize: 20,
-			//   fill: 0xffffff,
-			//   fontWeight: 'bold',
-			//   stroke: { color: 0x000000, width: 2 }
-			// });
-			// const reelText = new Text({ text: reelIndex.toString(), style });
-			// reelText.x = reelCont.x + 5;
-			// reelText.y = reelCont.y + 5;
-			// app.stage.addChild(reelText);
+				// const style = new TextStyle({
+				//   fontFamily: 'Arial',
+				//   fontSize: 20,
+				//   fill: 0xffffff,
+				//   fontWeight: 'bold',
+				//   stroke: { color: 0x000000, width: 2 }
+				// });
+				// const reelText = new Text({ text: reelIndex.toString(), style });
+				// reelText.x = reelCont.x + 5;
+				// reelText.y = reelCont.y + 5;
+				// app.stage.addChild(reelText);
 
-			// Luo maski joka rajaa kiekon näkyvän alueen
-			const mask = new Graphics()
-				.rect(0, 0, symbolWidth, symbolHeight) // Yhden symbolin koko
-				.fill(0xffffff); // Valkoinen (maskin väri ei vaikuta)
+				// Luo maski joka rajaa kiekon näkyvän alueen
+				const mask = createReelMask(symbolWidth, symbolHeight);
 
-			mask.x = reelCont.x; // Sama sijainti kuin kiekko
-			mask.y = reelCont.y;
+				mask.x = reelCont.x; // Sama sijainti kuin kiekko
+				mask.y = reelCont.y;
 
-			reelCont.mask = mask; // Aseta maski kiekon kontille
+				reelCont.mask = mask; // Aseta maski kiekon kontille
 
-			// Lisää maski ja kiekko näytölle
-			app.stage.addChild(mask); // Maski ensin
-			app.stage.addChild(reelCont); // Sitten kiekko
+				// Lisää maski ja kiekko näytölle
+				app.stage.addChild(mask); // Maski ensin
+				app.stage.addChild(reelCont); // Sitten kiekko
 
-			// Luo Reel-olio ja lisää listaan
-			reels.push(new Reel(reelIndex, reelCont));
-		}
-
-		// ===== 6) REEL KEHYKSET =====
-		// Lisää kiekkojen kehykset kaikkien kiekkojen päälle
-		if (reelFramesTexture) {
-			const reelFramesSprite = new Sprite(reelFramesTexture);
-
-			// Aseta kehysten koko ja sijainti
-			const framesScale = 1.0; // Säädä tarpeen mukaan
-			reelFramesSprite.scale.set(framesScale);
-
-			// Keskitä kehykset kiekkojen päälle
-			reelFramesSprite.x = 250; // Säädä kiekkojen mukaan
-			reelFramesSprite.y = 200; // Säädä kiekkojen mukaan
-
-			app.stage.addChild(reelFramesSprite);
-			reelFramesSpriteRef = reelFramesSprite; // Tallenna viittaus control panelia varten
-			controlPanelWidth = reelFramesSprite.width; // Päivitä paneelin leveys dynaamisesti
-			console.log(
-				'Reel frames lisätty:',
-				reelFramesSprite.width.toFixed(0),
-				'x',
-				reelFramesSprite.height.toFixed(0),
-			);
-			console.log('Control panel leveys päivitetty:', controlPanelWidth.toFixed(0));
-		}
-
-		// ===== 7) PELIN LOGO (PÄÄLLIMMÄINEN LAYER) =====
-		if (logoTexture) {
-			// Varmista parhaat laatu-asetukset
-			if (logoTexture.source) {
-				logoTexture.source.scaleMode = 'linear';
-				// @ts-ignore - PixiJS 8 antialias
-				logoTexture.source.antialias = true;
-				logoTexture.source.autoGenerateMipmaps = true;
-				// Varmista että tekstuuri päivittyy
-				logoTexture.source.update();
+				// Luo Reel-olio ja lisää listaan
+				reels.push(new StandaloneReel(reelIndex, reelCont, reelDimensions, reelDependencies));
 			}
 
-			const logoSprite = new Sprite(logoTexture);
+			// ===== 6) REEL KEHYKSET =====
+			// Lisää kiekkojen kehykset kaikkien kiekkojen päälle
+			if (reelFramesTexture) {
+				const reelFramesSprite = new Sprite(reelFramesTexture);
 
-			// Sileä skaalautuminen - roundPixels OFF estää pikselöitymisen
-			logoSprite.roundPixels = false;
+				// Aseta kehysten koko ja sijainti
+				const framesScale = 1.0; // Säädä tarpeen mukaan
+				reelFramesSprite.scale.set(framesScale);
 
-			// Parempi tekstuurin suodatus (bilinear interpolation)
-			logoSprite.texture.source.scaleMode = 'linear';
+				// Keskitä kehykset kiekkojen päälle
+				reelFramesSprite.x = 250; // Säädä kiekkojen mukaan
+				reelFramesSprite.y = 200; // Säädä kiekkojen mukaan
 
-			// Käytä määriteltyjä logo-asetuksia
-			logoSprite.scale.set(LOGO_SCALE);
+				app.stage.addChild(reelFramesSprite);
+				reelFramesSpriteRef = reelFramesSprite; // Tallenna viittaus control panelia varten
+				controlPanelWidth = reelFramesSprite.width; // Päivitä paneelin leveys dynaamisesti
+				console.log(
+					'Reel frames lisätty:',
+					reelFramesSprite.width.toFixed(0),
+					'x',
+					reelFramesSprite.height.toFixed(0),
+				);
+				console.log('Control panel leveys päivitetty:', controlPanelWidth.toFixed(0));
+			}
 
-			// Sijoita logo käyttäjän asetusten mukaan
-			logoSprite.x = (app.renderer.width - logoSprite.width) / 2 + LOGO_X; // Keskitetty + X-siirtymä
-			logoSprite.y = LOGO_Y; // Käyttäjän määrittelemä Y-koordinaatti
+			// ===== 7) PELIN LOGO (PÄÄLLIMMÄINEN LAYER) =====
+			if (logoTexture) {
+				// Varmista parhaat laatu-asetukset
+				configureLogoTexture(logoTexture);
 
-			app.stage.addChild(logoSprite); // Päällimmäinen layer
-			console.log(
-				'Logo lisätty päällimmäiseen layeriin:',
-				logoSprite.width.toFixed(0),
-				'x',
-				logoSprite.height.toFixed(0),
-			);
-		}
+				const logoSprite = new Sprite(logoTexture);
 
-		// ===== 7) MUSIIKKIJÄRJESTELMÄN ALUSTUS (v1.0.9) =====
-		initializeMusic();
+				// Sileä skaalautuminen - roundPixels OFF estää pikselöitymisen
+				logoSprite.roundPixels = false;
 
-		// ===== 8) PELISILMUKAN KÄYNNISTYS =====
-		// PixiJS ticker kutsuu update-funktiota joka frame (yleensä 60 FPS)
-		app.ticker.add(update);
+				// Parempi tekstuurin suodatus (bilinear interpolation)
+				logoSprite.texture.source.scaleMode = 'linear';
+
+				// Käytä määriteltyjä logo-asetuksia
+				logoSprite.scale.set(LOGO_SCALE);
+
+				// Sijoita logo käyttäjän asetusten mukaan
+				logoSprite.x = (app.renderer.width - logoSprite.width) / 2 + LOGO_X; // Keskitetty + X-siirtymä
+				logoSprite.y = LOGO_Y; // Käyttäjän määrittelemä Y-koordinaatti
+
+				app.stage.addChild(logoSprite); // Päällimmäinen layer
+				console.log(
+					'Logo lisätty päällimmäiseen layeriin:',
+					logoSprite.width.toFixed(0),
+					'x',
+					logoSprite.height.toFixed(0),
+				);
+			}
+
+			// ===== 7) MUSIIKKIJÄRJESTELMÄN ALUSTUS (v1.0.9) =====
+			initializeMusic();
+
+			// ===== 8) PELISILMUKAN KÄYNNISTYS =====
+			// PixiJS ticker kutsuu update-funktiota joka frame (yleensä 60 FPS)
+			app.ticker.add(update);
+			cleanupCallbacks.push(() => app.ticker.remove(update));
+		};
+
+		void initialise();
+
+		return () => {
+			destroyed = true;
+			cleanupCallbacks.forEach((cleanup) => cleanup());
+			destroyPixiApplication(app);
+		};
 	}); // onMount loppu
 
 	// ===================================================================
@@ -1463,7 +1332,7 @@
 		// Kiekot pysähtyvät rytmisesti musiikin tahtiin
 		// Jokainen ruutu pysähtyy yksi kerrallaan järjestyksessä: 0-1-2-3-4-5-6-7-8-9-10-11-12
 		reels.forEach((r, i) => {
-			r.startSynchronized(i); // Jokainen kiekko pysähtyy eri aikaan (i = beatIndex)
+			r.startSynchronized(i, SPIN_SPEED_CONFIG[spinSpeed]); // Jokainen kiekko pysähtyy eri aikaan (i = beatIndex)
 		});
 
 		// Soita "whirr" SPIN-ääni
