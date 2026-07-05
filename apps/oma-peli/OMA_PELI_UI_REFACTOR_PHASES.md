@@ -9,21 +9,21 @@ This document is an implementation plan, not a retrospective. It should be follo
 
 ## Phase Progress
 
-| Phase                                                                    | Status      | Last Updated | Notes                                                                                    |
-| ------------------------------------------------------------------------ | ----------- | ------------ | ---------------------------------------------------------------------------------------- |
-| Phase 00 - Baseline Capture And UI Contract                              | completed   | 2026-07-05   | Expanded viewport matrix recorded in `UI_TEST_MATRIX.md`. No production code changed.    |
-| Phase 01 - Define Responsive Layout Model                                | completed   | 2026-07-05   | Added viewport classes and routed compact/top-action behavior through `ViewportModel`.   |
-| Phase 02 - Establish Layout Tokens And Geometry Rules                    | completed   | 2026-07-05   | Added `uiLayout.ts` tokens and applied first CSS variables to modal/top/spin geometry.   |
-| Phase 03 - Recompose Mobile Portrait For Fullness                        | completed   | 2026-07-05   | Added portrait stage/status tokens and a fixed mobile status strip for Balance/Bet/Win.  |
-| Phase 04 - Recompose Mobile Landscape And Short Screens                  | completed   | 2026-07-05   | Added short-screen status strip, desktopShort routing, and fixed autoplay picker.        |
-| Phase 05 - Extract A Real Control Shell                                  | completed   | 2026-07-05   | Extracted spin, status, quick actions, menu buttons, and the control panel frame.        |
-| Phase 06 - Replace The Menu/Paytable With A Modal System                 | in progress | 2026-07-05   | Extracted autoplay selector and reusable modal shell; paytable/settings sections remain. |
-| Phase 07 - Make The Game Stage Responsive By Composition, Not Only Scale | not started | -            | -                                                                                        |
-| Phase 08 - Visual Polish And Density Pass                                | not started | -            | -                                                                                        |
-| Phase 09 - Accessibility And Input Behavior Pass                         | not started | -            | -                                                                                        |
-| Phase 10 - Automated Layout Regression Harness                           | not started | -            | -                                                                                        |
-| Phase 11 - Real Device And Browser Compatibility Pass                    | not started | -            | -                                                                                        |
-| Phase 12 - Final UI Acceptance And Cleanup                               | not started | -            | -                                                                                        |
+| Phase                                                                    | Status      | Last Updated | Notes                                                                                   |
+| ------------------------------------------------------------------------ | ----------- | ------------ | --------------------------------------------------------------------------------------- |
+| Phase 00 - Baseline Capture And UI Contract                              | completed   | 2026-07-05   | Expanded viewport matrix recorded in `UI_TEST_MATRIX.md`. No production code changed.   |
+| Phase 01 - Define Responsive Layout Model                                | completed   | 2026-07-05   | Added viewport classes and routed compact/top-action behavior through `ViewportModel`.  |
+| Phase 02 - Establish Layout Tokens And Geometry Rules                    | completed   | 2026-07-05   | Added `uiLayout.ts` tokens and applied first CSS variables to modal/top/spin geometry.  |
+| Phase 03 - Recompose Mobile Portrait For Fullness                        | completed   | 2026-07-05   | Added portrait stage/status tokens and a fixed mobile status strip for Balance/Bet/Win. |
+| Phase 04 - Recompose Mobile Landscape And Short Screens                  | completed   | 2026-07-05   | Added short-screen status strip, desktopShort routing, and fixed autoplay picker.       |
+| Phase 05 - Extract A Real Control Shell                                  | completed   | 2026-07-05   | Extracted spin, status, quick actions, menu buttons, and the control panel frame.       |
+| Phase 06 - Replace The Menu/Paytable With A Modal System                 | in progress | 2026-07-05   | Extracted autoplay selector, modal shell, and paytable section; settings remain.        |
+| Phase 07 - Make The Game Stage Responsive By Composition, Not Only Scale | not started | -            | -                                                                                       |
+| Phase 08 - Visual Polish And Density Pass                                | not started | -            | -                                                                                       |
+| Phase 09 - Accessibility And Input Behavior Pass                         | not started | -            | -                                                                                       |
+| Phase 10 - Automated Layout Regression Harness                           | not started | -            | -                                                                                       |
+| Phase 11 - Real Device And Browser Compatibility Pass                    | not started | -            | -                                                                                       |
+| Phase 12 - Final UI Acceptance And Cleanup                               | not started | -            | -                                                                                       |
 
 ## Product Standard
 
@@ -521,6 +521,7 @@ Completed checkpoint:
 - Replaced eight duplicated inline round buttons with a typed round-option loop and callback props.
 - Moved compact-landscape autoplay popover CSS into the extracted component.
 - Added `ModalShell.svelte` and moved the menu/paytable modal chrome, close button, viewport sizing, sticky header, backdrop close policy, and Escape handling out of `HelloPixi.svelte`.
+- Added `PaytableSection.svelte` and moved the static 81-ways paytable content out of `HelloPixi.svelte`.
 
 Checkpoint validation:
 
@@ -528,11 +529,11 @@ Checkpoint validation:
 - Browser smoke confirmed compact layouts `844x390` and `900x500` keep the desktop autoplay button hidden with no broken popover visible.
 - Browser smoke confirmed desktop `1440x1000` opens the extracted selector, renders eight round buttons and Cancel, fits inside the viewport, and closes through Cancel.
 - Browser smoke confirmed the modal shell fits and scrolls internally at `390x844`, `740x360`, and `1440x1000`, keeps the close action visible, and closes with Escape.
+- Browser smoke confirmed the extracted paytable section renders four symbol groups and stays inside the modal at `390x844`, `740x360`, and `1440x1000`.
 - `pnpm run build --filter=oma-peli` passed with the known warning set.
 
 Remaining for this phase:
 
-- Move paytable content into a `PaytableSection.svelte` component.
 - Move mobile menu controls/settings into a `SettingsSection.svelte` component.
 
 ## Phase 07 - Make The Game Stage Responsive By Composition, Not Only Scale

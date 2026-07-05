@@ -20,6 +20,7 @@
 	import ModalShell from './standalone/ModalShell.svelte';
 	import MenuButton from './standalone/MenuButton.svelte';
 	import MobileControlPanel from './standalone/MobileControlPanel.svelte';
+	import PaytableSection from './standalone/PaytableSection.svelte';
 	import QuickActions from './standalone/QuickActions.svelte';
 	import SpinButton from './standalone/SpinButton.svelte';
 	import StatusMeters from './standalone/StatusMeters.svelte';
@@ -1756,70 +1757,7 @@
 			<div style="border-top: 1px solid #555; margin: 20px 0;"></div>
 		</div>
 
-		<!-- PAYTABLE INFO -->
-		<h3 style="margin: 0 0 15px 0; color: #ffd700; font-size: 1.2em;">💰 PAYTABLE (81 WAYS)</h3>
-
-		<div style="margin-bottom: 15px; text-align: center; color: #aaa;">
-			Voitot muodostuvat 81 ways -järjestelmällä (vasemmalta oikealle)<br />
-			Vähintään 3 symbolia tarvitaan voittoon
-		</div>
-
-		<div style="display: grid; gap: 10px;">
-			<!-- Premium Symbols -->
-			<div
-				style="background: rgba(255, 255, 255, 0.1); padding: 10px; border-radius: 8px; border-left: 4px solid #ffd700;"
-			>
-				<div style="font-size: 1.2em; font-weight: bold; color: #ffd700; margin-bottom: 5px;">
-					👑 PREMIUM SYMBOLS
-				</div>
-				<div style="margin: 5px 0;">Rockabilly: 3x=7.00 | 4x=15.00 | 5x=50.00 🎸</div>
-				<div style="margin: 5px 0;">Blonde: 3x=5.00 | 4x=10.00 | 5x=25.00 👱‍♀️</div>
-				<div style="margin: 5px 0;">Brunette: 3x=3.00 | 4x=8.00 | 5x=20.00 👩‍🦱</div>
-			</div>
-
-			<!-- Blue Symbols -->
-			<div
-				style="background: rgba(255, 255, 255, 0.1); padding: 10px; border-radius: 8px; border-left: 4px solid #00bfff;"
-			>
-				<div style="font-size: 1.2em; font-weight: bold; color: #00bfff; margin-bottom: 5px;">
-					💎 BLUE SYMBOLS
-				</div>
-				<div style="margin: 5px 0;">Hot Rod: 3x=1.50 | 4x=4.00 | 5x=8.00 🚗</div>
-				<div style="margin: 5px 0;">Jacket: 3x=1.50 | 4x=4.00 | 5x=8.00 🧥</div>
-				<div style="margin: 5px 0;">Roller Skates: 3x=0.80 | 4x=2.00 | 5x=5.00 🛼</div>
-				<div style="margin: 5px 0;">Microphone: 3x=0.80 | 4x=2.00 | 5x=5.00 🎤</div>
-			</div>
-
-			<!-- Red Symbols -->
-			<div
-				style="background: rgba(255, 255, 255, 0.1); padding: 10px; border-radius: 8px; border-left: 4px solid #ff6666;"
-			>
-				<div style="font-size: 1.2em; font-weight: bold; color: #ff6666; margin-bottom: 5px;">
-					🎵 RED SYMBOLS
-				</div>
-				<div style="margin: 5px 0;">Burger: 3x=0.40 | 4x=1.00 | 5x=2.50 🍔</div>
-				<div style="margin: 5px 0;">Fries: 3x=0.40 | 4x=1.00 | 5x=2.50 🍟</div>
-				<div style="margin: 5px 0;">Milkshake: 3x=0.20 | 4x=0.60 | 5x=1.50 🥤</div>
-			</div>
-
-			<!-- Special Symbols -->
-			<div
-				style="background: rgba(255, 255, 255, 0.1); padding: 10px; border-radius: 8px; border-left: 4px solid #ff00ff;"
-			>
-				<div style="font-size: 1.2em; font-weight: bold; color: #ff00ff; margin-bottom: 5px;">
-					⭐ SPECIAL SYMBOLS
-				</div>
-				<div style="margin: 5px 0;">
-					WILD 🍬 - Korvaa kaikki muut symbolit (paitsi Scatter). Vain keskikelalla (50%).
-				</div>
-				<div style="margin: 5px 0;">SCATTER 📌 - Triggeröi 5-12 FREE SPINS (5-12 scatteria)</div>
-			</div>
-		</div>
-
-		<div style="margin-top: 20px; text-align: center; font-size: 0.9em; color: #aaa;">
-			Kaikki voitot kerrotaan panoksella (Bet) ja Ways-kertoimella<br />
-			<span style="color: #ffd700;">Ways = Symbolien määrä per kela kerrottuna</span>
-		</div>
+		<PaytableSection />
 
 		<button
 			onclick={() => {
@@ -2372,24 +2310,6 @@
 
 	.mobile-menu-controls {
 		display: none !important;
-	}
-
-	.paytable-close-top {
-		position: sticky;
-		top: 0;
-		float: right;
-		margin-top: -8px;
-		margin-right: -8px;
-		min-width: 64px;
-		min-height: 40px;
-		padding: 8px 12px;
-		background: #ffd700;
-		color: #333;
-		border: none;
-		border-radius: 8px;
-		cursor: pointer;
-		font-weight: bold;
-		z-index: 1;
 	}
 
 	/* Piilota tietyt elementit mobiilissa */
