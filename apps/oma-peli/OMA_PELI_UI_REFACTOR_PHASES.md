@@ -9,21 +9,21 @@ This document is an implementation plan, not a retrospective. It should be follo
 
 ## Phase Progress
 
-| Phase                                                                    | Status      | Last Updated | Notes                                                                                  |
-| ------------------------------------------------------------------------ | ----------- | ------------ | -------------------------------------------------------------------------------------- |
-| Phase 00 - Baseline Capture And UI Contract                              | completed   | 2026-07-05   | Expanded viewport matrix recorded in `UI_TEST_MATRIX.md`. No production code changed.  |
-| Phase 01 - Define Responsive Layout Model                                | completed   | 2026-07-05   | Added viewport classes and routed compact/top-action behavior through `ViewportModel`. |
-| Phase 02 - Establish Layout Tokens And Geometry Rules                    | completed   | 2026-07-05   | Added `uiLayout.ts` tokens and applied first CSS variables to modal/top/spin geometry. |
-| Phase 03 - Recompose Mobile Portrait For Fullness                        | not started | -            | Next implementation phase.                                                             |
-| Phase 04 - Recompose Mobile Landscape And Short Screens                  | not started | -            | -                                                                                      |
-| Phase 05 - Extract A Real Control Shell                                  | not started | -            | -                                                                                      |
-| Phase 06 - Replace The Menu/Paytable With A Modal System                 | not started | -            | -                                                                                      |
-| Phase 07 - Make The Game Stage Responsive By Composition, Not Only Scale | not started | -            | -                                                                                      |
-| Phase 08 - Visual Polish And Density Pass                                | not started | -            | -                                                                                      |
-| Phase 09 - Accessibility And Input Behavior Pass                         | not started | -            | -                                                                                      |
-| Phase 10 - Automated Layout Regression Harness                           | not started | -            | -                                                                                      |
-| Phase 11 - Real Device And Browser Compatibility Pass                    | not started | -            | -                                                                                      |
-| Phase 12 - Final UI Acceptance And Cleanup                               | not started | -            | -                                                                                      |
+| Phase                                                                    | Status      | Last Updated | Notes                                                                                   |
+| ------------------------------------------------------------------------ | ----------- | ------------ | --------------------------------------------------------------------------------------- |
+| Phase 00 - Baseline Capture And UI Contract                              | completed   | 2026-07-05   | Expanded viewport matrix recorded in `UI_TEST_MATRIX.md`. No production code changed.   |
+| Phase 01 - Define Responsive Layout Model                                | completed   | 2026-07-05   | Added viewport classes and routed compact/top-action behavior through `ViewportModel`.  |
+| Phase 02 - Establish Layout Tokens And Geometry Rules                    | completed   | 2026-07-05   | Added `uiLayout.ts` tokens and applied first CSS variables to modal/top/spin geometry.  |
+| Phase 03 - Recompose Mobile Portrait For Fullness                        | completed   | 2026-07-05   | Added portrait stage/status tokens and a fixed mobile status strip for Balance/Bet/Win. |
+| Phase 04 - Recompose Mobile Landscape And Short Screens                  | not started | -            | -                                                                                       |
+| Phase 05 - Extract A Real Control Shell                                  | not started | -            | -                                                                                       |
+| Phase 06 - Replace The Menu/Paytable With A Modal System                 | not started | -            | -                                                                                       |
+| Phase 07 - Make The Game Stage Responsive By Composition, Not Only Scale | not started | -            | -                                                                                       |
+| Phase 08 - Visual Polish And Density Pass                                | not started | -            | -                                                                                       |
+| Phase 09 - Accessibility And Input Behavior Pass                         | not started | -            | -                                                                                       |
+| Phase 10 - Automated Layout Regression Harness                           | not started | -            | -                                                                                       |
+| Phase 11 - Real Device And Browser Compatibility Pass                    | not started | -            | -                                                                                       |
+| Phase 12 - Final UI Acceptance And Cleanup                               | not started | -            | -                                                                                       |
 
 ## Product Standard
 
@@ -93,7 +93,7 @@ For each viewport, record:
 
 ## Phase 00 - Baseline Capture And UI Contract
 
-Status: completed  
+Status: completed
 Target files: `UI_TEST_MATRIX.md`, new screenshots/notes if added, no production code unless required for diagnostics.
 
 ### Objective
@@ -271,7 +271,8 @@ Findings to carry into Phase 03:
 
 ## Phase 03 - Recompose Mobile Portrait For Fullness
 
-Status: not started  
+Status: completed
+
 Target files: `HelloPixi.svelte`, standalone control components, layout token file.
 
 ### Objective
@@ -313,6 +314,31 @@ Make phone portrait feel like a designed mobile game screen rather than a scaled
 - One manual spin and one skipped spin in portrait.
 - Paytable/menu open and close in portrait.
 - `pnpm run build --filter=oma-peli`.
+
+### Completion Notes
+
+Completed on 2026-07-05 for the deployed `HelloPixi` route.
+
+Implemented:
+
+- Added mobile portrait composition tokens to `src/game-standalone/uiLayout.ts` for stage vertical offset and fixed status-strip placement.
+- Added a phone-portrait-only Balance / Bet / Win status strip in `HelloPixi.svelte` using stable grid columns, tabular numbers, and ellipsis for long values.
+- Kept the existing spin, menu, and mobile bet callbacks intact while making the portrait play surface feel fuller.
+- Preserved compact top-action placement from Phase 01 and tokenized geometry from Phase 02.
+
+Validation results:
+
+- `390x844`: top actions 226x40, spin 72x72, menu 72x72, status strip 366x37, modal 366x793, close 64x40 all fully visible; canvas visible height about 69%.
+- `360x740`: top actions 226x40, spin 72x72, menu 72x72, status strip 340x37, modal 336x710, close 64x40 all fully visible; canvas visible height about 70%.
+- `430x932`: top actions 226x40, spin 72x72, menu 72x72, status strip 406x37, modal 406x797, close 64x40 all fully visible; canvas visible height about 69%.
+- Browser interaction check at `390x844` verified spin start, second-click skip path, and menu open/close via DOM-invoked clicks; pointer automation was blocked by the existing audio start overlay.
+- `get_errors` passed for `uiLayout.ts`; `HelloPixi.svelte` only reports the existing editor-only `$app/paths` diagnostic.
+- `pnpm run build --filter=oma-peli` passed with the known warning set.
+
+Findings to carry into Phase 04:
+
+- Phone portrait now has a dedicated status row, but the underlying control panel is still the old asset-based shell and should be extracted in Phase 05.
+- Short landscape and compact desktop remain the next hard UI risk.
 
 ## Phase 04 - Recompose Mobile Landscape And Short Screens
 

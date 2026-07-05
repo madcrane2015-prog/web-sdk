@@ -405,6 +405,22 @@ progress:
         checks confirmed top actions, spin, modal, and close fit at 390x844,
         844x390, 1024x768, 1366x768, and 2560x1080. pnpm run build
         --filter=oma-peli passed with the known warning set.
+    - date: '2026-07-05'
+      author: 'GitHub Copilot'
+      note: >-
+        Completed OMA_PELI_UI_REFACTOR_PHASES.md Phase 03 for the deployed
+        HelloPixi route. Added phone-portrait stage/status placement tokens to
+        src/game-standalone/uiLayout.ts and added a portrait-only Balance / Bet
+        / Win status strip in HelloPixi with stable grid columns, tabular
+        numbers, and ellipsis for long values. Browser checks confirmed top
+        actions, spin, menu, status strip, modal, and close fit at 390x844,
+        360x740, and 430x932, with visible canvas height around 69-70%.
+        Browser interaction checks at 390x844 verified spin start,
+        second-click skip, and menu open/close via DOM-invoked clicks because
+        pointer automation was blocked by the existing audio start overlay.
+        get_errors passed for uiLayout.ts; HelloPixi only reported the known
+        editor-only $app/paths diagnostic. pnpm run build --filter=oma-peli
+        passed with the known warning set.
 
 phases:
   - id: 'phase_00_workflow_and_docs'

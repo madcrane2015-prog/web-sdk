@@ -109,6 +109,10 @@
 	// Canvas-mitat tulevat nyt layout-konfiguraatiosta (layoutConfig.ts)
 	const CANVAS_WIDTH = $derived(currentLayout().gameArea.width);
 	const CANVAS_HEIGHT = $derived(currentLayout().gameArea.height);
+	const isPhonePortraitLayout = $derived(
+		viewportModel.viewportClass === 'phonePortrait' ||
+			viewportModel.viewportClass === 'phonePortraitCompact',
+	);
 
 	// Kiekkojen koko ja sijainti - uudelle 1445x1000 taustalle
 	const SCALE_MULTIPLIER = 1.75; // Symbolien koko kerroin (1.0 = normaali)
@@ -1854,7 +1858,7 @@
   height: 100vh;
   display: flex;
   justify-content: center;
-  align-items: center;
+	align-items: center;
   overflow: hidden;
   background: transparent;
 "
@@ -1864,6 +1868,7 @@
     position: relative;
     width: {CANVAS_WIDTH * gameScale}px;
     height: {CANVAS_HEIGHT * gameScale}px;
+		margin-top: {isPhonePortraitLayout ? uiLayoutTokens.stagePortraitTop : 0}px;
 		{uiLayoutCssVars}
   "
 	>
@@ -2135,6 +2140,34 @@
   v1.1.4: Korjattu käyttämään pikselikoordinaatteja zoomin tukemiseksi
   v1.2.3: Siirretty canvas-kontin sisään oikean skaalauksen varmistamiseksi
 -->
+				<!-- Vasen pää -->
+				{#if isPhonePortraitLayout}
+					<div class="mobile-status-strip" aria-label="Current game status">
+						<div class="mobile-status-item">
+							<span>Balance</span>
+							<strong>
+								{balance.toLocaleString('en-US', {
+									minimumFractionDigits: 2,
+									maximumFractionDigits: 2,
+								})}
+							</strong>
+						</div>
+						<div class="mobile-status-item mobile-status-accent">
+							<span>Bet</span>
+							<strong>{betAmount.toFixed(2)}</strong>
+						</div>
+						<div class="mobile-status-item">
+							<span>Win</span>
+							<strong>
+								{lastWin.toLocaleString('en-US', {
+									minimumFractionDigits: 2,
+									maximumFractionDigits: 2,
+								})}
+							</strong>
+						</div>
+					</div>
+				{/if}
+
 				<!-- Vasen pää -->
 				<img
 					src="{controlsPath}/Control_leftend.png"
@@ -2832,6 +2865,50 @@
 		z-index: 1;
 	}
 
+	.mobile-status-strip {
+		display: none;
+	}
+
+	.mobile-status-item {
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 2px;
+		padding: 6px 8px;
+		border: 1px solid rgba(255, 215, 0, 0.28);
+		border-radius: 8px;
+		background: rgba(0, 0, 0, 0.58);
+		box-shadow: 0 3px 10px rgba(0, 0, 0, 0.32);
+		color: #ffffff;
+		overflow: hidden;
+	}
+
+	.mobile-status-item span {
+		font-size: 9px;
+		line-height: 1;
+		font-weight: 700;
+		text-transform: uppercase;
+		color: #ffd700;
+	}
+
+	.mobile-status-item strong {
+		max-width: 100%;
+		font-family: 'Courier New', monospace;
+		font-size: 12px;
+		line-height: 1;
+		font-weight: 800;
+		font-variant-numeric: tabular-nums;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.mobile-status-accent {
+		border-color: rgba(0, 255, 0, 0.32);
+	}
+
 	/* Piilota tietyt elementit mobiilissa */
 	.hide-on-mobile {
 		display: flex !important;
@@ -2845,6 +2922,18 @@
 	/* Mobiili portrait-tila - pelialue isompi, kontrollit alareunaan */
 	/* HUOM: Sijainti tulee nyt layoutConfig.ts:stä - CSS ei enää ylikirjoita */
 	@media (max-width: 768px) and (orientation: portrait) {
+		.mobile-status-strip {
+			position: fixed;
+			left: max(var(--oma-mobile-status-horizontal-margin), env(safe-area-inset-left));
+			right: max(var(--oma-mobile-status-horizontal-margin), env(safe-area-inset-right));
+			bottom: calc(var(--oma-mobile-status-bottom) + env(safe-area-inset-bottom));
+			display: grid;
+			grid-template-columns: minmax(0, 1fr) minmax(64px, 0.72fr) minmax(0, 1fr);
+			gap: 6px;
+			z-index: 1250;
+			pointer-events: none;
+		}
+
 		.play-button {
 			width: var(--oma-spin-button-size) !important;
 			height: var(--oma-spin-button-size) !important;

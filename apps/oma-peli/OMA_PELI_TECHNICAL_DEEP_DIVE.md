@@ -819,7 +819,9 @@ The UI refactor Phase 01 added a responsive viewport-class model in `src/utils/l
 
 The UI refactor Phase 02 added `src/game-standalone/uiLayout.ts` as the first typed source of truth for standalone UI geometry. It defines `StandaloneUILayoutTokens` per `ViewportClass`, including stage bounds, board intent, bottom control dimensions, top action sizing, spin button size, modal geometry, background margin, and status display mode. `HelloPixi` now derives `uiLayoutTokens` and `uiLayoutCssVars`, applies those CSS variables to the game wrapper, and uses token values for paytable/menu modal sizing. `TopToggles.svelte` consumes the top-action CSS variables. Browser checks confirmed tokenized top actions, spin, paytable/menu modal, and modal close fit at `390x844`, `844x390`, `1024x768`, `1366x768`, and `2560x1080`.
 
-Recommendation: manually validate desktop resize, mobile portrait, and mobile landscape in a browser before larger mobile UI refactors. The code path is now reactive, shape-aware, and partly tokenized, but the mobile portrait composition still uses the existing asset control strip and scaled canvas placement.
+The UI refactor Phase 03 recomposed phone portrait density without changing math or spin behavior. `uiLayout.ts` now includes portrait stage/status placement tokens, and `HelloPixi.svelte` renders a phone-portrait-only Balance / Bet / Win status strip with stable grid columns, tabular numbers, and ellipsis for long values. Browser checks confirmed top actions, spin, menu, the status strip, paytable/menu modal, and modal close fit at `390x844`, `360x740`, and `430x932`, with visible canvas height around 69-70%.
+
+Recommendation: manually validate desktop resize, mobile portrait, and mobile landscape in a browser before larger mobile UI refactors. The code path is now reactive, shape-aware, partly tokenized, and phone portrait has a dedicated status strip. The old asset-based control panel is still embedded inside `HelloPixi`, and compact landscape/short-height screens remain the next UI risk.
 
 ### 9. Final Refactor Status After Phase 10
 
@@ -827,8 +829,8 @@ Phases 00 through 10 are now completed in `OMA_PELI_REFACTOR_PLAN.yaml`. The fir
 
 Known unresolved items remain:
 
-- A deeper UI refactor is still needed to make mobile portrait feel full, handle unusual monitor/window shapes, reduce inline layout arithmetic, and extract the remaining control/menu UI from `HelloPixi`; this is planned in `OMA_PELI_UI_REFACTOR_PHASES.md`.
-- UI refactor Phase 03 remains needed to make mobile portrait feel full and thumb-zone designed; Phase 02 introduced tokens but did not recompose the mobile control shell.
+- A deeper UI refactor is still needed to handle unusual monitor/window shapes, reduce inline layout arithmetic, and extract the remaining control/menu UI from `HelloPixi`; this is planned in `OMA_PELI_UI_REFACTOR_PHASES.md`.
+- UI refactor Phase 04 remains needed to make mobile landscape and short-height screens as intentional as the Phase 03 phone portrait layout.
 - Real-device mobile validation remains needed; the known phase 06 top-toggle, spin-size, and menu-close viewport failures were fixed and rechecked with browser viewport automation.
 - The deployed route remains local/client-simulated and is not RGS-authoritative.
 - Some simulator/math documents still reflect older math states and should not be treated as runtime truth.

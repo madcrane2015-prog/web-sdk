@@ -3,10 +3,13 @@ import type { ViewportClass } from '../utils/layoutUtils';
 export interface StandaloneUILayoutTokens {
 	stageMaxWidth: number;
 	stageMaxHeight: number;
+	stagePortraitTop: number;
 	boardScaleTarget: number;
 	boardVerticalAnchor: 'top' | 'center' | 'compressed';
 	bottomControlHeight: number;
 	bottomSafeAreaGap: number;
+	mobileStatusBottom: number;
+	mobileStatusHorizontalMargin: number;
 	topActionInset: number;
 	topActionGap: number;
 	topActionTextMinWidth: number;
@@ -26,10 +29,13 @@ export interface StandaloneUILayoutTokens {
 const DEFAULT_TOKENS: StandaloneUILayoutTokens = {
 	stageMaxWidth: 1445,
 	stageMaxHeight: 1000,
+	stagePortraitTop: 0,
 	boardScaleTarget: 1,
 	boardVerticalAnchor: 'center',
 	bottomControlHeight: 88,
 	bottomSafeAreaGap: 20,
+	mobileStatusBottom: 104,
+	mobileStatusHorizontalMargin: 12,
 	topActionInset: 10,
 	topActionGap: 10,
 	topActionTextMinWidth: 180,
@@ -49,9 +55,12 @@ const DEFAULT_TOKENS: StandaloneUILayoutTokens = {
 export const UI_LAYOUT_TOKENS: Record<ViewportClass, StandaloneUILayoutTokens> = {
 	phonePortraitCompact: {
 		...DEFAULT_TOKENS,
+		stagePortraitTop: -46,
 		boardVerticalAnchor: 'compressed',
 		bottomControlHeight: 56,
 		bottomSafeAreaGap: 10,
+		mobileStatusBottom: 92,
+		mobileStatusHorizontalMargin: 10,
 		topActionInset: 8,
 		topActionGap: 6,
 		topActionTextMinWidth: 64,
@@ -69,9 +78,12 @@ export const UI_LAYOUT_TOKENS: Record<ViewportClass, StandaloneUILayoutTokens> =
 	},
 	phonePortrait: {
 		...DEFAULT_TOKENS,
+		stagePortraitTop: -58,
 		boardVerticalAnchor: 'compressed',
 		bottomControlHeight: 64,
 		bottomSafeAreaGap: 12,
+		mobileStatusBottom: 104,
+		mobileStatusHorizontalMargin: 12,
 		topActionInset: 8,
 		topActionGap: 6,
 		topActionTextMinWidth: 64,
@@ -175,9 +187,12 @@ export function createUILayoutCssVars(tokens: StandaloneUILayoutTokens): string 
 	return [
 		`--oma-stage-max-width: ${tokens.stageMaxWidth}px`,
 		`--oma-stage-max-height: ${tokens.stageMaxHeight}px`,
+		`--oma-stage-portrait-top: ${tokens.stagePortraitTop}px`,
 		`--oma-board-scale-target: ${tokens.boardScaleTarget}`,
 		`--oma-bottom-control-height: ${tokens.bottomControlHeight}px`,
 		`--oma-bottom-safe-area-gap: ${tokens.bottomSafeAreaGap}px`,
+		`--oma-mobile-status-bottom: ${tokens.mobileStatusBottom}px`,
+		`--oma-mobile-status-horizontal-margin: ${tokens.mobileStatusHorizontalMargin}px`,
 		`--oma-top-action-inset: ${tokens.topActionInset}px`,
 		`--oma-top-action-gap: ${tokens.topActionGap}px`,
 		`--oma-top-action-text-min-width: ${tokens.topActionTextMinWidth}px`,
