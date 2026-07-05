@@ -196,6 +196,13 @@ Phase 08 started the standalone state-flow split:
 - `HelloPixi` still keeps Svelte local `$state` variables and side effects, but those variables are initialized from `createInitialStandaloneGameState()` and several handlers now call named transition helpers instead of open-coding every mutation.
 - `spin()` now explicitly ignores duplicate spin attempts while reels are in active states (`spinning`, `slowing`, or `bouncing`) or autoplay is processing. Fresh `idle` reels and completed `stopped` reels remain allowed.
 
+Post-plan mobile UI follow-up fixed the phase 06 mobile layout failures for the deployed `HelloPixi` route:
+
+- `TopToggles.svelte` now renders a compact viewport-fixed top action bar for mobile/compact viewports, keeping MENU, DEBUG, music, and sound controls visible in portrait and landscape.
+- The paytable/menu overlay is now fixed to the viewport on mobile, constrained to the visible viewport, and has a top close button that remains reachable without scrolling to the bottom.
+- The central spin button has explicit mobile touch sizes: 72x72 px in portrait and 56x56 px in compact landscape.
+- Browser viewport checks confirmed the targeted controls and modal fit at 390x844 and 844x390. Full gameplay smoke was not repeated in that targeted follow-up.
+
 ### PixiJS Initialization
 
 On mount, `HelloPixi`:
@@ -815,11 +822,11 @@ Phases 00 through 10 are now completed in `OMA_PELI_REFACTOR_PLAN.yaml`. The fir
 
 Known unresolved items remain:
 
-- Mobile portrait and mobile landscape layout failures from `UI_TEST_MATRIX.md`: top toggles are offscreen, mobile spin is too small, and the menu/paytable close button can sit below the viewport.
+- Real-device mobile validation remains needed; the known phase 06 top-toggle, spin-size, and menu-close viewport failures were fixed and rechecked with browser viewport automation.
 - The deployed route remains local/client-simulated and is not RGS-authoritative.
 - Some simulator/math documents still reflect older math states and should not be treated as runtime truth.
 - SDK type inconsistencies remain untouched because the final decision keeps the SDK path documented for future work rather than changing it during standalone stabilization.
-- Browser validation was not repeated in phase 10; the final executable validation was the filtered production build.
+- Full browser gameplay validation was not repeated after the targeted mobile layout follow-up; only the previously failing mobile control and modal fit checks were rerun.
 
 ## Practical Change Guide
 

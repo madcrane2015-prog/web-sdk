@@ -16,11 +16,11 @@ Password used for the local gate: `slot2024`
 
 ## Results
 
-| Viewport                 | Result             | Notes                                                                                                                                                                                                                                                                                                         |
-| ------------------------ | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Desktop 1440x1000        | Pass with warnings | Password gate cleared, canvas mounted with WebGL context, paytable opened/closed, music and sound toggles clicked, spin clicked, autoplay menu opened/cancelled, spin speed clicked. No measured button overlaps or offscreen desktop buttons.                                                                |
-| Mobile portrait 390x844  | Fail               | Bottom menu, spin, and bet controls are visible. Top paytable/debug/music/sound controls are offscreen to the right. Spin button measured about 30x30 px, below comfortable touch target size. Paytable/menu opens through bottom menu, but the close button measured below the viewport around y=1038.       |
-| Mobile landscape 844x390 | Fail               | Bottom controls are visible and do not overlap. Top paytable/debug/music/sound controls are offscreen to the right. Spin button measured about 43x43 px, near but under the common 44px touch target. Paytable/menu opens through bottom menu, but the close button measured below the viewport around y=509. |
+| Viewport                 | Result             | Notes                                                                                                                                                                                                                                                                        |
+| ------------------------ | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Desktop 1440x1000        | Pass with warnings | Password gate cleared, canvas mounted with WebGL context, paytable opened/closed, music and sound toggles clicked, spin clicked, autoplay menu opened/cancelled, spin speed clicked. No measured button overlaps or offscreen desktop buttons.                               |
+| Mobile portrait 390x844  | Pass targeted fix  | Follow-up validation confirmed top MENU/DEBUG/music/sound controls are viewport-visible at the top right, spin is 72x72 px, and the paytable/menu modal fits inside the viewport with a visible top close button. Full gameplay smoke was not repeated in this targeted run. |
+| Mobile landscape 844x390 | Pass targeted fix  | Follow-up validation confirmed top MENU/DEBUG/music/sound controls are viewport-visible at the top right, spin is 56x56 px, and the paytable/menu modal fits inside the viewport with a visible top close button. Full gameplay smoke was not repeated in this targeted run. |
 
 ## Known Console Warning During Run
 
@@ -28,7 +28,6 @@ Password used for the local gate: `slot2024`
 
 ## Recommended Follow-up
 
-- Anchor top toggles to the viewport or scaled wrapper consistently on mobile.
-- Make the mobile paytable/menu overlay internally scrollable with the close action always reachable.
-- Increase mobile spin button size to at least 44x44 px, preferably larger for a primary action.
-- Re-run this matrix after phase 07 and any additional mobile layout fixes.
+- Re-run the full desktop, mobile portrait, and mobile landscape smoke flow after larger gameplay or layout changes.
+- Continue checking that mobile overlays remain internally scrollable when paytable/menu content changes.
+- Validate on real iOS/Android hardware before production use; current checks are browser viewport automation.

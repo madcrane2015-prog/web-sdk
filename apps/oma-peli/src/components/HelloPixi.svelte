@@ -729,6 +729,7 @@
 	const debugButtonTop = $derived(getSafeTopPosition(190 * gameScale, viewportModel));
 	const audioButtonTop = $derived(getSafeTopPosition(10 * gameScale, viewportModel));
 	const audioButtonRight = $derived(getSafeRightPosition(10 * gameScale, viewportModel));
+	const isCompactViewport = $derived(viewportModel.isMobile || viewportModel.height <= 500);
 
 	onMount(() => {
 		let destroyed = false;
@@ -1614,8 +1615,9 @@
 <!-- Skaalautuu automaattisesti gameScale-muuttujan mukaan -->
 {#if showPaytable}
 	<div
+		class="paytable-modal"
 		style="
-    position: absolute;
+		position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
@@ -1633,6 +1635,15 @@
   "
 	>
 		<h2 style="margin: 0 0 20px 0; text-align: center; color: #ffd700;">💰 MENU</h2>
+		<button
+			onclick={() => {
+				showPaytable = false;
+			}}
+			class="paytable-close-top"
+			aria-label="Close menu"
+		>
+			Sulje
+		</button>
 
 		<!-- GAME CONTROLS (Mobiilissa) -->
 		<div
@@ -1861,6 +1872,7 @@
 			<TopToggles
 				{controlsPath}
 				{gameScale}
+				isMobile={isCompactViewport}
 				paytableTop={paytableButtonTop}
 				debugTop={debugButtonTop}
 				topRight={topButtonRight}
@@ -2147,6 +2159,7 @@
 								gameScale}px;"
 						>
 							<button
+								class="play-button"
 								onclick={() => {
 									showPaytable = !showPaytable;
 								}}
@@ -2232,6 +2245,7 @@
 					>
 						<div class="play-button-wrapper {playButtonGlareActive ? 'glare-animate' : ''}">
 							<button
+								class="play-button"
 								onclick={() => {
 									if (isAutoPlaying) {
 										stopAutoPlay();
@@ -2791,6 +2805,24 @@
 		display: none !important;
 	}
 
+	.paytable-close-top {
+		position: sticky;
+		top: 0;
+		float: right;
+		margin-top: -8px;
+		margin-right: -8px;
+		min-width: 64px;
+		min-height: 40px;
+		padding: 8px 12px;
+		background: #ffd700;
+		color: #333;
+		border: none;
+		border-radius: 8px;
+		cursor: pointer;
+		font-weight: bold;
+		z-index: 1;
+	}
+
 	/* Piilota tietyt elementit mobiilissa */
 	.hide-on-mobile {
 		display: flex !important;
@@ -2804,6 +2836,22 @@
 	/* Mobiili portrait-tila - pelialue isompi, kontrollit alareunaan */
 	/* HUOM: Sijainti tulee nyt layoutConfig.ts:stä - CSS ei enää ylikirjoita */
 	@media (max-width: 768px) and (orientation: portrait) {
+		.paytable-modal {
+			width: calc(100vw - 24px) !important;
+			max-width: calc(100vw - 24px) !important;
+			max-height: calc(100dvh - 24px) !important;
+			padding: 14px !important;
+			font-size: 0.9em !important;
+			box-sizing: border-box;
+		}
+
+		.play-button {
+			width: 72px !important;
+			height: 72px !important;
+			min-width: 72px;
+			min-height: 72px;
+		}
+
 		/* Debug-nappi pienemmmäksi ja yläkulmaan */
 		button[style*='position: absolute'][style*='z-index: 10000'] {
 			position: fixed !important;
@@ -2830,7 +2878,23 @@
 
 	/* Mobiili landscape-tila - myös yksinkertaistettu layout */
 	/* HUOM: Sijainti tulee nyt layoutConfig.ts:stä - CSS ei enää ylikirjoita */
-	@media (max-width: 768px) and (orientation: landscape) {
+	@media (max-width: 900px) and (max-height: 500px) and (orientation: landscape) {
+		.paytable-modal {
+			width: calc(100vw - 24px) !important;
+			max-width: calc(100vw - 24px) !important;
+			max-height: calc(100dvh - 20px) !important;
+			padding: 12px !important;
+			font-size: 0.82em !important;
+			box-sizing: border-box;
+		}
+
+		.play-button {
+			width: 56px !important;
+			height: 56px !important;
+			min-width: 56px;
+			min-height: 56px;
+		}
+
 		.mobile-menu-controls {
 			display: block !important;
 		}
