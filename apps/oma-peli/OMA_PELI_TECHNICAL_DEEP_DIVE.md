@@ -165,6 +165,16 @@ The surrounding control panel frame, play button, autoplay icon, spin speed icon
 
 Phase 06 created `UI_TEST_MATRIX.md` and ran browser validation against the deployed standalone route at `http://localhost:3010/` after passing the local password gate. Desktop at 1440x1000 passed the smoke flow: canvas mounted, paytable opened/closed, audio toggles clicked, spin clicked, autoplay menu opened/cancelled, and speed clicked. Mobile portrait 390x844 and mobile landscape 844x390 still fail layout validation because the top paytable/debug/music/sound controls are positioned offscreen to the right. The bottom mobile menu, spin, and bet controls are visible, but the primary spin button measured about 30x30 px in portrait and 43x43 px in landscape, and the paytable/menu close button was below the viewport in both mobile checks.
 
+Phase 07 centralized standalone asset and audio URLs in `src/game-standalone/assets.ts`:
+
+- `createStandaloneAssetManifest()` builds symbol, control, sound, and music URLs from SvelteKit `base` while preserving the GitHub Pages `/web-sdk/oma-peli` path behavior.
+- `BACKGROUND_MUSIC_LOOP_IDS` lists the real background loop files present in `static/music` and intentionally excludes missing loop `14`.
+- `chooseBackgroundMusicLoop()` selects from the manifest list and avoids repeating the currently playing loop when possible.
+- `HelloPixi` imports `Howl` from the direct `howler` package dependency instead of injecting Howler from a CDN script tag.
+- HTMLAudioElement effects still handle `spin`, `stop`, and `win` from `static/sounds`; Howler handles background loops, free-spin music, drum hits, and win stingers.
+
+The splash screen click remains the first user gesture. `HelloPixi` initializes Howler objects after Pixi setup, but playback still starts from user actions such as spin or toggling music, which keeps the mobile audio-unlock behavior gesture-driven.
+
 ### PixiJS Initialization
 
 On mount, `HelloPixi`:

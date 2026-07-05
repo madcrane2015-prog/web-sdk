@@ -170,6 +170,10 @@ progress:
     - '06.03_browser_smoke_mobile_portrait'
     - '06.04_browser_smoke_mobile_landscape'
     - '06.05_record_manual_test_matrix'
+    - '07.01_create_asset_manifest'
+    - '07.02_fix_music_loop_manifest'
+    - '07.03_remove_cdn_dependency_decision'
+    - '07.04_mobile_audio_unlock'
   blocked_steps: []
   agent_journal:
     - date: '2026-07-05'
@@ -299,6 +303,27 @@ progress:
         viewport checks. A music decode warning for loop #11 appeared during the
         desktop spin check and should be considered alongside phase_07 audio
         manifest work.
+    - date: '2026-07-05'
+      author: 'GitHub Copilot'
+      note: >-
+        Completed phase_07_assets_and_audio for active_deployed_hellopixi.
+        Added src/game-standalone/assets.ts as the standalone asset manifest for
+        symbol, control, sound, and music URLs. HelloPixi now consumes the
+        manifest instead of building asset paths inline. Background music loops
+        now come from an explicit list of real static/music files, excluding the
+        missing loop 14, and chooseBackgroundMusicLoop avoids repeating the
+        current loop when possible. Added howler and @types/howler as direct
+        oma-peli dependencies and removed the CDN script injection. Mobile audio
+        remains gesture-driven: the splash click reveals the game, and playback
+        starts from spin/toggle user actions rather than automatic page load.
+        Validation: get_errors passed for assets.ts and package.json; HelloPixi
+        still reports the existing editor-only $app/paths module diagnostic.
+        The first build attempt failed before oma-peli because workspace
+        node_modules needed refresh after dependency changes; pnpm install fixed
+        that, and pnpm run build --filter=oma-peli then passed with the known
+        warning set. Browser smoke at http://localhost:3010/ loaded the canvas,
+        completed the splash gate, clicked spin, selected loop #8 from the
+        explicit manifest, selected no loop 14, and reported no failed requests.
 
 phases:
   - id: 'phase_00_workflow_and_docs'
@@ -673,7 +698,7 @@ phases:
           too small, and the paytable/menu close button is below the viewport.
 
   - id: 'phase_07_assets_and_audio'
-    status: 'not_started'
+    status: 'completed'
     priority: 7
     goal: 'Make asset and audio loading deterministic, documented, and mobile-friendly.'
     target_files:
@@ -683,25 +708,37 @@ phases:
       - 'static/symbols'
     steps:
       - id: '07.01_create_asset_manifest'
-        status: 'not_started'
+        status: 'completed'
         action: 'Move symbol, control, sound, and music URL construction into a manifest helper.'
         output: 'No scattered path construction in HelloPixi.'
         validation: 'Manual asset load check.'
       - id: '07.02_fix_music_loop_manifest'
-        status: 'not_started'
+        status: 'completed'
         action: 'Replace hardcoded 1..20 random loop selection with an explicit list of existing loop filenames, or add missing loop 14 if user provides it.'
         output: 'Random music never selects a missing asset.'
         validation: 'Console shows no load warning for missing loop during repeated spins.'
       - id: '07.03_remove_cdn_dependency_decision'
-        status: 'not_started'
+        status: 'completed'
         action: 'Decide whether to install Howler as a dependency or keep CDN. Prefer package dependency for deterministic builds if allowed.'
         output: 'Audio dependency strategy documented.'
         validation: 'Build after dependency change, if any.'
       - id: '07.04_mobile_audio_unlock'
-        status: 'not_started'
+        status: 'completed'
         action: 'Confirm music starts only after user gesture from loading/splash or first spin, especially on iOS.'
         output: 'Mobile audio behavior documented.'
         validation: 'Manual mobile browser check.'
+    phase_notes:
+      - date: '2026-07-05'
+        note: >-
+          Decision: use direct howler dependency instead of CDN for deterministic
+          builds. Existing utils-sound already pinned howler 2.2.4, so oma-peli
+          now declares the same runtime dependency directly.
+      - date: '2026-07-05'
+        note: >-
+          Browser smoke selected loop #8 from the explicit loop manifest and did
+          not select loop 14. No failed asset requests were reported during the
+          smoke. This does not prove every MP3 decodes on every browser; it only
+          verifies the manifest no longer references known missing filenames.
 
   - id: 'phase_08_game_state_flow'
     status: 'not_started'

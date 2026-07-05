@@ -29,6 +29,7 @@
 	"dependencies": {
 		"@lingui/core": "5.2.0",
 		"@sveltejs/kit": "2.17.3",
+		"@types/howler": "2.2.12",
 		"@types/lodash": "4.17.16",
 		"components-layout": "workspace:*",
 		"components-pixi": "workspace:*",
@@ -38,6 +39,7 @@
 		"components-ui-pixi": "workspace:*",
 		"constants-shared": "workspace:*",
 		"envs": "workspace:*",
+		"howler": "2.2.4",
 		"lodash": "4.17.16",
 		"pixi-svelte": "workspace:*",
 		"pixi.js": "8.8.1",

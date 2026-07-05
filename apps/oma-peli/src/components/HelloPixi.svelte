@@ -37,6 +37,12 @@
 		randomSymbol as getRandomSymbol,
 	} from '../game-standalone/math';
 	import {
+		chooseBackgroundMusicLoop,
+		createStandaloneAssetManifest,
+		type BackgroundMusicLoop,
+		type StandaloneAssetManifest,
+	} from '../game-standalone/assets';
+	import {
 		configureLogoTexture,
 		createPixiApplication,
 		createReelMask,
@@ -61,6 +67,7 @@
 		Text, // Tekstin näyttäminen pelissä
 		TextStyle, // Tekstin tyyliasetukset (fontti, koko, väri jne.)
 	} from 'pixi.js';
+	import { Howl } from 'howler';
 
 	// ===== PELIN PERUSKONFIGURAATIO =====
 	// Tämä on WAYS-peli, ei perinteinen paylines-peli!
@@ -125,41 +132,18 @@
 	const gap = 10; // Väli symbolien välillä pikseleinä
 	const ROW_HEIGHT = symbolHeight + gap; // Yhden rivin kokonaiskorkeus (symboli + väli)
 
-	// URL jokaiselle symbolille (static/symbols/...)
-	// GitHub Pages: käytä suoria polkuja, localhost: käytä base-polkuja
-	const isGitHubPages =
-		typeof window !== 'undefined' && window.location.hostname.includes('github.io');
-	const symbolPath = isGitHubPages ? '/web-sdk/oma-peli/symbols' : `${base}/symbols`;
-	const controlsPath = isGitHubPages ? '/web-sdk/oma-peli/controls' : `${base}/controls`;
-
-	const SYMBOL_URLS: Record<SymbolKey, string> = {
-		a: `${symbolPath}/Blue_hotrod.jpg`, // Sininen hotrod
-		b: `${symbolPath}/Blue_jacket.jpg`, // Sininen takki
-		c: `${symbolPath}/Blue_rollers.jpg`, // Siniset rullat
-		d: `${symbolPath}/Blue_speakers.jpg`, // Siniset kaiuttimet
-		e: `${symbolPath}/Premium_blonde.jpg`, // Premium blondi
-		f: `${symbolPath}/Premium_brunette.jpg`, // Premium brunette
-		g: `${symbolPath}/Premium_rocker.jpg`, // Premium rocker
-		h: `${symbolPath}/New_Wild.jpg`, // WILD symbol
-		i: `${symbolPath}/Red_burger.jpg`, // Punainen hampurilainen
-		j: `${symbolPath}/Red_fries.jpg`, // Punaiset ranskalaiset
-		k: `${symbolPath}/Red_milkshake.jpg`, // Punainen milkshake
-		l: `${symbolPath}/Scatter.jpg`, // Scatter symboli
-		emptyslot: `${symbolPath}/Emptyslot.jpg`, // Tyhjä ruutu - VAIN keskikiekolla!
-	};
-
-	// Uudet kuvien URLit
-	const BACKGROUND_URL = `${symbolPath}/bg_base.jpg`; // Uusi taustakuva (1445x1000)
-	const REEL_FRAMES_URL = `${symbolPath}/ReelFrames.png?v=${Date.now()}`; // Kiekkojen kehykset (cache busting)
-	const LOGO_URL = `${symbolPath}/RockABillyReels_logo.png`; // Pelin logo
+	const assetManifest: StandaloneAssetManifest = createStandaloneAssetManifest(base, {
+		hostname: typeof window !== 'undefined' ? window.location.hostname : undefined,
+	});
+	const controlsPath = assetManifest.controlsPath;
+	const SYMBOL_URLS = assetManifest.symbolUrls;
+	const BACKGROUND_URL = assetManifest.backgroundUrl;
+	const REEL_FRAMES_URL = assetManifest.reelFramesUrl;
+	const LOGO_URL = assetManifest.logoUrl;
 
 	// ===== ÄÄNIEFEKTIT =====
 	// Äänitiedostojen URLit
-	const SOUND_URLS = {
-		spin: `${base}/sounds/spin.mp3`, // SPIN-napin ääni (whirr)
-		stop: `${base}/sounds/stop.mp3`, // Kiekon pysähtymisääni (chunk)
-		win: `${base}/sounds/win.mp3`, // Voittoääni (tulevaisuudessa)
-	};
+	const SOUND_URLS = assetManifest.soundUrls;
 
 	// Äänien hallinta
 	let soundEnabled = $state(true); // Voi käyttäjä halutessaan mykistää
@@ -204,35 +188,25 @@
 	let spinSpeed = $state<SpinSpeed>('medium'); // Nykyinen spinninopeus
 	let showSpinSpeedMenu = $state(false); // Näytetäänkö nopeusvalikko
 
-	// Arvo satunnainen loop-tiedosto (1-20) peruspelille
-	let randomLoopNumber = $state(Math.floor(Math.random() * 20) + 1);
-
-	// Musiikkitiedostojen URLit
-	const MUSIC_URLS = {
-		background: () => `${base}/music/rockabilly reels loop ${randomLoopNumber}.mp3`, // Satunnainen loop peruspelille
-		freeSpins: `${base}/music/rockabilly-loop_long.mp3`, // Free spins musiikki
-		drumHit: `${base}/music/drum-hit.mp3`, // Rumpuisku
-		winTheme: `${base}/music/win-stinger.mp3`, // Voittoteema
-	};
+	let currentBackgroundLoop = $state<BackgroundMusicLoop>(
+		chooseBackgroundMusicLoop(assetManifest.musicUrls.backgroundLoops),
+	);
+	const MUSIC_URLS = assetManifest.musicUrls;
 
 	// Alusta musiikkijärjestelmä Howler.js:llä
 	function initializeMusic() {
-		if (typeof window === 'undefined' || !(window as any).Howl) {
-			console.warn('Howler.js not loaded yet, retrying in 500ms...');
-			setTimeout(initializeMusic, 500);
+		if (typeof window === 'undefined') {
 			return;
 		}
-
-		const Howl = (window as any).Howl;
 
 		try {
 			// Taustamusiikki peruspelille (looppaa jatkuvasti)
 			backgroundMusic = new Howl({
-				src: [MUSIC_URLS.background()],
+				src: [currentBackgroundLoop.url],
 				loop: true,
 				volume: 0.3, // 30% volume
 				onload: () => {
-					console.log('✅ Background music loaded (loop #' + randomLoopNumber + ')');
+					console.log('✅ Background music loaded (loop #' + currentBackgroundLoop.id + ')');
 					musicLoaded = true;
 				},
 				onloaderror: (id: any, error: any) => {
@@ -288,17 +262,12 @@
 	function changeBackgroundLoop() {
 		if (isFreeSpinMode) return; // Ei vaihdeta free spins -tilassa
 
-		// Valitse uusi satunnainen loop (1-20)
-		const newLoopNumber = Math.floor(Math.random() * 20) + 1;
+		currentBackgroundLoop = chooseBackgroundMusicLoop(
+			MUSIC_URLS.backgroundLoops,
+			currentBackgroundLoop,
+		);
 
-		// Jos sama kuin edellinen, arvo uusi (vältetään samaa kappaletta peräkkäin)
-		if (newLoopNumber === randomLoopNumber) {
-			randomLoopNumber = (newLoopNumber % 20) + 1;
-		} else {
-			randomLoopNumber = newLoopNumber;
-		}
-
-		console.log('🎵 Changing to loop #' + randomLoopNumber);
+		console.log('🎵 Changing to loop #' + currentBackgroundLoop.id);
 
 		// Pysäytä vanha musiikki (fade out 200ms)
 		if (backgroundMusic) {
@@ -313,29 +282,25 @@
 			}
 		}
 
-		// Lataa uusi loop Howler.js:llä
-		const Howl = (window as any).Howl;
-		if (Howl) {
-			backgroundMusic = new Howl({
-				src: [MUSIC_URLS.background()],
-				loop: true,
-				volume: 0.3,
-				onload: () => {
-					console.log('✅ New background music loop #' + randomLoopNumber + ' loaded');
-					if (musicEnabled && !isFreeSpinMode) {
-						// Käynnistä musiikki heti (300ms viive että fade out ehtii)
-						setTimeout(() => {
-							if (backgroundMusic && !backgroundMusic.playing()) {
-								backgroundMusic.play();
-							}
-						}, 300);
-					}
-				},
-				onloaderror: (id: any, error: any) => {
-					console.warn('⚠️ Failed to load loop #' + randomLoopNumber + ':', error);
-				},
-			});
-		}
+		backgroundMusic = new Howl({
+			src: [currentBackgroundLoop.url],
+			loop: true,
+			volume: 0.3,
+			onload: () => {
+				console.log('✅ New background music loop #' + currentBackgroundLoop.id + ' loaded');
+				if (musicEnabled && !isFreeSpinMode) {
+					// Käynnistä musiikki heti (300ms viive että fade out ehtii)
+					setTimeout(() => {
+						if (backgroundMusic && !backgroundMusic.playing()) {
+							backgroundMusic.play();
+						}
+					}, 300);
+				}
+			},
+			onloaderror: (id: any, error: any) => {
+				console.warn('⚠️ Failed to load loop #' + currentBackgroundLoop.id + ':', error);
+			},
+		});
 	}
 
 	// Pysäytä taustamusiikki
@@ -1524,10 +1489,6 @@
 		}
 	}
 </script>
-
-<svelte:head>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.4/howler.min.js"></script>
-</svelte:head>
 
 <!-- ================================================================ -->
 <!-- HTML TEMPLATE - Pelin visuaalinen rakenne                        -->
