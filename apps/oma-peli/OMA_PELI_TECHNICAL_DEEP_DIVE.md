@@ -781,21 +781,21 @@ Phase 01 baseline hygiene was completed on 2026-07-05 for the deployed `HelloPix
 
 The current build baseline passes with `pnpm run build --filter=oma-peli`. The build still reports existing warnings about `tsconfig.json` not extending SvelteKit's generated config, missing virtual public env exports for `PUBLIC_SITE_MODE`, `PUBLIC_SENTRY_DSN`, and `PUBLIC_CHROMATIC`, plus an unused `TextStyle` import in the bundle graph.
 
-`HelloPixi.svelte` still mixes renderer setup, state transitions, layout, audio, and UI overlays in one file, but phase 03 extracted standalone types, config, random symbol selection, coordinate helpers, multiplier selection, and pure win calculation.
+`HelloPixi.svelte` still mixes renderer setup, state transitions, layout, audio, and UI overlays in one file, but phases 03 through 08 extracted standalone types, config, random symbol selection, coordinate helpers, multiplier selection, pure win calculation, asset manifests, Pixi reel/runtime helpers, UI overlay/control pieces, and typed state/action helpers.
 
-Recommendation: continue splitting it into modules only when making behavior changes. Remaining natural boundaries are `reel.ts`, `audio.ts`, additional layout orchestration, and presentational control components.
+Recommendation: continue splitting it into modules only when making behavior changes. Remaining natural boundaries are `audio.ts`, additional layout orchestration, full paytable/menu extraction, and complete control-panel chrome extraction.
 
 ### 5. Asset Path Special Cases
 
-`HelloPixi` uses both `$app/paths` and a direct GitHub Pages hostname check.
+Phase 07 centralized active standalone asset paths in `src/game-standalone/assets.ts`. The manifest still preserves the GitHub Pages `/web-sdk/oma-peli` hostname behavior, while most paths derive from SvelteKit `base`.
 
-Recommendation: prefer one path strategy based on SvelteKit `base`, unless there is a documented deployment case that requires hostname branching.
+Recommendation: keep asset changes inside the manifest helper. Prefer one path strategy based on SvelteKit `base` unless a documented deployment case requires hostname branching.
 
 ### 6. Missing Music Loop Number
 
-The source randomly selects loop numbers 1 through 20, but `static/music` does not contain loop 14.
+`static/music` does not contain loop 14. Phase 07 fixed the active randomizer by listing real loop files in `BACKGROUND_MUSIC_LOOP_IDS` and excluding loop `14`.
 
-Recommendation: add the missing file, adjust the random set to actual files, or create a manifest.
+Recommendation: add the missing file only if the product wants a loop 14. Otherwise keep random music selection driven by the explicit manifest.
 
 ### 7. SDK Type Inconsistencies
 
@@ -809,6 +809,18 @@ Phase 02 fixed the stale standalone layout trigger. `HelloPixi` now refreshes `v
 
 Recommendation: manually validate desktop resize, mobile portrait, and mobile landscape in a browser before larger mobile UI refactors. The code path is now reactive, but visual fit still depends on the existing layout constants.
 
+### 9. Final Refactor Status After Phase 10
+
+Phases 00 through 10 are now completed in `OMA_PELI_REFACTOR_PLAN.yaml`. The first-pass refactor produced durable documentation, scoped agent rules, modular standalone math/Pixi/assets/state helpers, partial standalone UI extraction, browser validation notes, an explicit standalone-versus-SDK decision, and final validation records.
+
+Known unresolved items remain:
+
+- Mobile portrait and mobile landscape layout failures from `UI_TEST_MATRIX.md`: top toggles are offscreen, mobile spin is too small, and the menu/paytable close button can sit below the viewport.
+- The deployed route remains local/client-simulated and is not RGS-authoritative.
+- Some simulator/math documents still reflect older math states and should not be treated as runtime truth.
+- SDK type inconsistencies remain untouched because the final decision keeps the SDK path documented for future work rather than changing it during standalone stabilization.
+- Browser validation was not repeated in phase 10; the final executable validation was the filtered production build.
+
 ## Practical Change Guide
 
 For deployed-game changes:
@@ -816,7 +828,8 @@ For deployed-game changes:
 1. Start in `src/routes/+page.svelte` and `src/components/HelloPixi.svelte`.
 2. If the change touches assets, inspect `static/symbols`, `static/controls`, `static/music`, or `static/sounds`.
 3. If the change touches layout, inspect `src/config/layoutConfig.ts` and `src/utils/layoutUtils.ts`.
-4. Validate with `pnpm run dev --filter=oma-peli` or `pnpm run build --filter=oma-peli`.
+4. Validate with `get_errors` for touched Svelte/TypeScript files, then `pnpm run build --filter=oma-peli`.
+5. For UI, Pixi, audio, or interaction changes, also validate the deployed route through `pnpm run dev --filter=oma-peli` at `http://localhost:3010/` and use `UI_TEST_MATRIX.md` for desktop/mobile checks.
 
 For SDK/storybook changes:
 
@@ -842,8 +855,12 @@ For math changes:
 | Loading/splash           | `src/components/LoadingScreen.svelte`                                                                            |
 | Standalone win animation | `src/components/VinylWinAnimation.svelte`                                                                        |
 | Standalone math/config   | `src/game-standalone/types.ts`, `src/game-standalone/mathConfig.ts`, `src/game-standalone/math.ts`               |
+| Standalone assets/audio  | `src/game-standalone/assets.ts`, standalone audio setup inside `src/components/HelloPixi.svelte`                 |
+| Standalone state/actions | `src/game-standalone/state.ts`, `src/game-standalone/actions.ts`                                                 |
 | Standalone Pixi runtime  | `src/game-standalone/reel.ts`, `src/game-standalone/pixiRuntime.ts`                                              |
+| Standalone UI pieces     | `src/components/standalone/*`                                                                                    |
 | Standalone layout config | `src/config/layoutConfig.ts`, `src/utils/layoutUtils.ts`                                                         |
+| UI validation matrix     | `UI_TEST_MATRIX.md`                                                                                              |
 | SDK shell                | `src/components/Game.svelte`                                                                                     |
 | SDK context              | `src/game/context.ts`                                                                                            |
 | SDK events               | `src/game/eventEmitter.ts`, `src/game/typesEmitterEvent.ts`                                                      |

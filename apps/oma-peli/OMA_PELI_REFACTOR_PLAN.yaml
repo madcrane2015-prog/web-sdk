@@ -180,6 +180,10 @@ progress:
     - '09.01_write_decision_record'
     - '09.02_if_keep_standalone'
     - '09.03_if_migrate_to_sdk'
+    - '10.01_update_master_document_complete'
+    - '10.02_update_this_plan_complete'
+    - '10.03_update_agents_rules'
+    - '10.04_final_validation'
   blocked_steps: []
   agent_journal:
     - date: '2026-07-05'
@@ -358,6 +362,16 @@ progress:
         implemented because production/RGS migration is deferred into a separate
         future decision/workstream. pnpm run build --filter=oma-peli passed with
         the known warning set.
+    - date: '2026-07-05'
+      author: 'GitHub Copilot'
+      note: >-
+        Completed phase_10_final_cleanup_and_agent_hardening as shared_docs_only.
+        Refreshed the master document final status, quick file map, practical
+        validation guidance, and known unresolved items. Updated AGENTS.md to
+        record that the original phase sequence is completed through phase 10 and
+        that follow-up work should add a new phase or be treated as a targeted
+        task. prettier ran over the phase docs, git diff --check passed, and
+        pnpm run build --filter=oma-peli passed with the known warning set.
 
 phases:
   - id: 'phase_00_workflow_and_docs'
@@ -857,30 +871,43 @@ phases:
           exports, and TextStyle import.
 
   - id: 'phase_10_final_cleanup_and_agent_hardening'
-    status: 'not_started'
+    status: 'completed'
     priority: 10
     goal: 'Leave the project easier for the next agent and safer for future UI changes.'
     steps:
       - id: '10.01_update_master_document_complete'
-        status: 'not_started'
+        status: 'completed'
         action: 'Update OMA_PELI_TECHNICAL_DEEP_DIVE.md to describe final modules, validation commands, known risks, and any deferred decisions.'
         output: 'Master document is current.'
         validation: 'Diff review.'
       - id: '10.02_update_this_plan_complete'
-        status: 'not_started'
+        status: 'completed'
         action: 'Mark completed phases, add remaining blockers, and record validation outcomes.'
         output: 'This YAML is a truthful project state file.'
         validation: 'YAML remains parseable.'
       - id: '10.03_update_agents_rules'
-        status: 'not_started'
+        status: 'completed'
         action: 'Update AGENTS.md with newly discovered commands, pitfalls, and workflows.'
         output: 'Future agents get latest instructions automatically.'
         validation: 'Read AGENTS.md for contradictions with global copilot instructions.'
       - id: '10.04_final_validation'
-        status: 'not_started'
+        status: 'completed'
         action: 'Run pnpm run build --filter=oma-peli and focused manual UI checks. Run lint if time and existing issues permit.'
         output: 'Final status known.'
         validation: 'Command results recorded in this YAML and final response.'
+    phase_notes:
+      - date: '2026-07-05'
+        note: >-
+          Final cleanup documented the completed phase sequence, current module
+          map, remaining risks, and follow-up workflow. No runtime code was
+          changed in phase 10.
+      - date: '2026-07-05'
+        note: >-
+          Validation: prettier ran on AGENTS.md, OMA_PELI_TECHNICAL_DEEP_DIVE.md,
+          and OMA_PELI_REFACTOR_PLAN.yaml; git diff --check passed; pnpm run
+          build --filter=oma-peli passed with the known warnings about SvelteKit
+          tsconfig, missing virtual public env exports, and TextStyle import.
+          Browser/mobile validation was not repeated in this docs-only phase.
 
 review_queue:
   needs_human_decision:

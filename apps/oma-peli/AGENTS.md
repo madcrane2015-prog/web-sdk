@@ -31,6 +31,8 @@ The deployed app path is `src/routes/+page.svelte -> PasswordProtection.svelte -
 
 A phase is not complete if the code changed but the plan and master document are stale.
 
+The original phase sequence in `OMA_PELI_REFACTOR_PLAN.yaml` has now completed through phase 10. For any follow-up work, either add a new phase to the YAML first or treat the request as a new targeted task with its own docs/validation notes.
+
 ## Commands
 
 Run commands from the repository root with Turbo filters:
@@ -106,5 +108,6 @@ When a refactor step changes the project:
 - Storybook uses the SDK shell and can pass while the deployed page remains broken.
 - `HelloPixi` currently has many inline styles and duplicate desktop/mobile controls; avoid broad rewrites without validation between steps.
 - Existing math documents do not all match current runtime constants. Use current source or extracted `mathConfig.ts` as truth.
-- `static/music` is missing loop 14 while current source may choose loop numbers 1 through 20.
-- The current layout trigger pattern must be fixed before trusting live orientation changes.
+- `static/music` is missing loop 14; the active standalone randomizer excludes it through `src/game-standalone/assets.ts`.
+- The layout trigger pattern is now reactive, but mobile visual fit is still known-broken from `UI_TEST_MATRIX.md`.
+- `gh copilot -p` can inspect the repo, but earlier non-interactive edit attempts were unreliable in this workflow. Prefer direct VS Code agent execution for scoped phase work.
