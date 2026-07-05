@@ -132,8 +132,8 @@ target_architecture:
       responsibility: 'Paytable/menu, win popup, free-spin outro, debug panel, and modal overlays.'
 
 progress:
-  active_phase: null
-  active_step: null
+  active_phase: 'ui_phase_08_visual_polish'
+  active_step: '08.01_modal_and_section_density'
   completed_steps:
     - '00.01_read_context'
     - '00.02_set_scope'
@@ -571,6 +571,18 @@ progress:
         1920x1080 / 2560x1080 keep the full canvas visible with bounded,
         centered side margins. No additional wide-stage transform was needed;
         remaining side-area improvements belong to visual polish Phase 08.
+    - date: '2026-07-05'
+      author: 'GitHub Copilot'
+      note: >-
+        Started OMA_PELI_UI_REFACTOR_PHASES.md Phase 08 for the deployed
+        HelloPixi route. Polished ModalShell, PaytableSection, and
+        SettingsSection with denser modal header styling, two-column paytable
+        groups on wider bodies, tabular numeric values, stable active button
+        borders, focus states, touch-sized buttons, and compact short-landscape
+        spacing. get_errors passed for all three components. Browser smoke
+        confirmed modal and settings fit at 390x844, 740x360, and 1440x1000,
+        including tightened short-landscape settings controls. pnpm run build
+        --filter=oma-peli passed with the known warning set.
 
 phases:
   - id: 'phase_00_workflow_and_docs'

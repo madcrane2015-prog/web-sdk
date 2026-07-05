@@ -47,6 +47,7 @@
 		margin: 0 0 15px;
 		color: #ffd700;
 		font-size: 1.2em;
+		letter-spacing: 0;
 	}
 
 	.summary {
@@ -60,11 +61,18 @@
 		gap: 10px;
 	}
 
+	@media (min-width: 620px) {
+		.symbol-groups {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+
 	.symbol-group {
 		background: rgba(255, 255, 255, 0.1);
 		padding: 10px;
 		border-radius: 8px;
 		border-left: 4px solid var(--accent);
+		line-height: 1.32;
 	}
 
 	.symbol-group h4 {
@@ -76,6 +84,7 @@
 
 	.symbol-group p {
 		margin: 5px 0;
+		font-variant-numeric: tabular-nums;
 	}
 
 	.premium {

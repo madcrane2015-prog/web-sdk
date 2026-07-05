@@ -19,7 +19,7 @@ This document is an implementation plan, not a retrospective. It should be follo
 | Phase 05 - Extract A Real Control Shell                                  | completed   | 2026-07-05   | Extracted spin, status, quick actions, menu buttons, and the control panel frame.       |
 | Phase 06 - Replace The Menu/Paytable With A Modal System                 | completed   | 2026-07-05   | Extracted autoplay selector, modal shell, paytable section, and settings section.       |
 | Phase 07 - Make The Game Stage Responsive By Composition, Not Only Scale | completed   | 2026-07-05   | Added stage bounds and phone-portrait Pixi transform; verified short/wide stage fit.    |
-| Phase 08 - Visual Polish And Density Pass                                | not started | -            | -                                                                                       |
+| Phase 08 - Visual Polish And Density Pass                                | in progress | 2026-07-05   | Polished modal density, paytable columns, and settings button focus/fit.                |
 | Phase 09 - Accessibility And Input Behavior Pass                         | not started | -            | -                                                                                       |
 | Phase 10 - Automated Layout Regression Harness                           | not started | -            | -                                                                                       |
 | Phase 11 - Real Device And Browser Compatibility Pass                    | not started | -            | -                                                                                       |
@@ -595,7 +595,7 @@ Completion notes:
 
 ## Phase 08 - Visual Polish And Density Pass
 
-Status: not started  
+Status: in progress
 Target files: component CSS, modal components, control components, maybe `GlobalStyle` only if necessary.
 
 ### Objective
@@ -618,6 +618,28 @@ Make the UI feel finished: less empty, more legible, better hierarchy, stronger 
 - The UI has consistent spacing and button styling across top actions, bottom controls, and modals.
 - Text is readable on mobile without zooming.
 - Empty areas are reduced or intentionally filled by background/art/stage composition.
+
+### Progress Notes
+
+Started on 2026-07-05 for the deployed `HelloPixi` route.
+
+Completed checkpoint:
+
+- Polished `ModalShell.svelte` with a denser header, stronger modal surface treatment, scrollbar color, and close-button focus/hover state.
+- Polished `PaytableSection.svelte` with tabular numeric values, tighter line-height, and two-column symbol groups on wider modal bodies.
+- Polished `SettingsSection.svelte` with stable active button borders, focus states, minimum touch heights, and compact short-landscape spacing.
+
+Checkpoint validation:
+
+- `get_errors` passed for `ModalShell.svelte`, `PaytableSection.svelte`, and `SettingsSection.svelte`.
+- Browser smoke confirmed modal, close button, settings, and paytable groups remain in-bounds at `390x844`, `740x360`, and `1440x1000`.
+- Browser smoke confirmed short-landscape settings controls fit within the modal at `740x360` after spacing was tightened.
+- `pnpm run build --filter=oma-peli` passed with the known warning set.
+
+Remaining for this phase:
+
+- Apply the same visual polish standard to top actions and bottom controls.
+- Recheck text clipping and pressed/active states across the full required viewport matrix.
 - The game still feels like Rockabilly Reels, not a generic dashboard.
 
 ### Validation

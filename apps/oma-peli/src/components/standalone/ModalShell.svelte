@@ -68,13 +68,15 @@
 	}
 
 	.paytable-modal {
-		background: rgba(0, 0, 0, 0.95);
+		background:
+			linear-gradient(180deg, rgba(18, 10, 16, 0.98), rgba(0, 0, 0, 0.96)), rgba(0, 0, 0, 0.95);
 		color: white;
 		box-sizing: border-box;
 		font-family: Arial, sans-serif;
 		border-style: solid;
 		border-color: #ffd700;
 		overflow-y: auto;
+		scrollbar-color: #ffd700 rgba(255, 255, 255, 0.08);
 	}
 
 	.modal-header {
@@ -86,7 +88,9 @@
 		align-items: start;
 		gap: 12px;
 		margin-bottom: 20px;
-		background: rgba(0, 0, 0, 0.95);
+		padding-bottom: 12px;
+		background: linear-gradient(180deg, rgba(18, 10, 16, 0.98), rgba(18, 10, 16, 0.9));
+		border-bottom: 1px solid rgba(255, 215, 0, 0.24);
 	}
 
 	h2 {
@@ -105,5 +109,12 @@
 		border-radius: 8px;
 		cursor: pointer;
 		font-weight: bold;
+	}
+
+	.paytable-close-top:hover,
+	.paytable-close-top:focus-visible {
+		background: #ffe775;
+		outline: 2px solid rgba(255, 255, 255, 0.8);
+		outline-offset: 2px;
 	}
 </style>

@@ -834,6 +834,8 @@ UI refactor Phase 07 started the stage-composition split. `src/game-standalone/s
 
 Phase 07 validation confirmed the stage remains bounded and centered on desktop wide layouts without an extra transform: `1920x1080` and `2560x1080` keep the full canvas visible with equal side margins, while `900x500` keeps spin and bottom controls reachable. The remaining side-area treatment is visual polish rather than functional stage composition.
 
+UI refactor Phase 08 started with modal and section density polish. `ModalShell.svelte` now has a denser sticky header, stronger modal surface treatment, scrollbar color, and close-button focus/hover state. `PaytableSection.svelte` uses tabular numeric values and switches symbol groups to two columns on wider modal bodies. `SettingsSection.svelte` uses stable active button borders, focus states, touch-sized buttons, and compact short-landscape spacing.
+
 ### 9. Final Refactor Status After Phase 10
 
 Phases 00 through 10 are now completed in `OMA_PELI_REFACTOR_PLAN.yaml`. The first-pass refactor produced durable documentation, scoped agent rules, modular standalone math/Pixi/assets/state helpers, partial standalone UI extraction, browser validation notes, an explicit standalone-versus-SDK decision, and final validation records.

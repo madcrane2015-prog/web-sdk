@@ -115,6 +115,7 @@
 	.start-button,
 	.stop-button {
 		width: 100%;
+		min-height: 44px;
 		padding: 12px;
 		color: white;
 		border: none;
@@ -122,6 +123,15 @@
 		cursor: pointer;
 		font-weight: bold;
 		font-size: 1em;
+	}
+
+	.start-button:hover,
+	.stop-button:hover,
+	.start-button:focus-visible,
+	.stop-button:focus-visible,
+	.speed-options button:focus-visible {
+		outline: 2px solid rgba(255, 215, 0, 0.85);
+		outline-offset: 2px;
 	}
 
 	.start-button {
@@ -139,19 +149,22 @@
 
 	.speed-options button {
 		flex: 1;
+		min-width: 0;
+		min-height: 42px;
 		padding: 10px;
 		background: rgba(255, 255, 255, 0.1);
 		color: white;
-		border: 1px solid #555;
+		border: 2px solid transparent;
 		border-radius: 8px;
 		cursor: pointer;
 		font-size: 0.9em;
 		text-transform: capitalize;
+		box-sizing: border-box;
 	}
 
 	.speed-options button.active {
 		background: linear-gradient(135deg, #4488ff 0%, #66aaff 100%);
-		border: 2px solid #ffd700;
+		border-color: #ffd700;
 	}
 
 	.divider {
@@ -163,6 +176,36 @@
 		(max-width: 900px) and (max-height: 500px) and (orientation: landscape) {
 		.mobile-menu-controls {
 			display: block;
+		}
+	}
+
+	@media (max-width: 900px) and (max-height: 500px) and (orientation: landscape) {
+		.mobile-menu-controls {
+			margin-bottom: 14px;
+			padding: 10px;
+		}
+
+		h3 {
+			margin-bottom: 10px;
+		}
+
+		.control-group {
+			margin-bottom: 10px;
+		}
+
+		.start-button,
+		.stop-button {
+			min-height: 40px;
+			padding: 9px;
+		}
+
+		.speed-options button {
+			min-height: 38px;
+			padding: 8px;
+		}
+
+		.divider {
+			margin: 14px 0 6px;
 		}
 	}
 </style>
