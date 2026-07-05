@@ -17,6 +17,7 @@
 	import ControlPanelFrame from './standalone/ControlPanelFrame.svelte';
 	import DesktopControlPanel from './standalone/DesktopControlPanel.svelte';
 	import FreeSpinsEndPopup from './standalone/FreeSpinsEndPopup.svelte';
+	import ModalShell from './standalone/ModalShell.svelte';
 	import MenuButton from './standalone/MenuButton.svelte';
 	import MobileControlPanel from './standalone/MobileControlPanel.svelte';
 	import QuickActions from './standalone/QuickActions.svelte';
@@ -1666,42 +1667,7 @@
 <!-- Avataan "💰 PAYTABLE" -napista, suljetaan "Sulje"-napista -->
 <!-- Skaalautuu automaattisesti gameScale-muuttujan mukaan -->
 {#if showPaytable}
-	<div
-		class="paytable-modal"
-		style="
-		position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(0, 0, 0, 0.95);
-    color: white;
-	padding: {uiLayoutTokens.modalPadding}px;
-    border-radius: {15 * gameScale}px;
-	box-sizing: border-box;
-    font-family: Arial, sans-serif;
-    z-index: 3000;
-    border: {3 * gameScale}px solid #ffd700;
-		width: min(calc(100vw - {uiLayoutTokens.modalViewportMargin *
-			2}px), {uiLayoutTokens.modalMaxWidth}px);
-		max-width: min(calc(100vw - {uiLayoutTokens.modalViewportMargin *
-			2}px), {uiLayoutTokens.modalMaxWidth}px);
-		max-height: min(calc(100dvh - {uiLayoutTokens.modalViewportMargin *
-			2}px), {uiLayoutTokens.modalMaxHeightVh}dvh);
-    overflow-y: auto;
-		font-size: {uiLayoutTokens.modalFontScale}em;
-  "
-	>
-		<h2 style="margin: 0 0 20px 0; text-align: center; color: #ffd700;">💰 MENU</h2>
-		<button
-			onclick={() => {
-				showPaytable = false;
-			}}
-			class="paytable-close-top"
-			aria-label="Close menu"
-		>
-			Sulje
-		</button>
-
+	<ModalShell title="MENU" {gameScale} {uiLayoutTokens} onClose={() => (showPaytable = false)}>
 		<!-- GAME CONTROLS (Mobiilissa) -->
 		<div
 			class="mobile-menu-controls"
@@ -1874,7 +1840,7 @@
 		>
 			Sulje
 		</button>
-	</div>
+	</ModalShell>
 {/if}
 
 <!-- ===== 4) VAPAAERÄ-LOPETUS-POPUP ===== -->

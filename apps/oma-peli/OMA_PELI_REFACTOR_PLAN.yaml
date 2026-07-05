@@ -504,6 +504,19 @@ progress:
         1440x1000 opens the extracted selector, renders eight round buttons
         plus Cancel, fits the viewport, and closes. pnpm run build
         --filter=oma-peli passed with the known warning set.
+    - date: '2026-07-05'
+      author: 'GitHub Copilot'
+      note: >-
+        Continued OMA_PELI_UI_REFACTOR_PHASES.md Phase 06 for the deployed
+        HelloPixi route. Added ModalShell.svelte and moved the menu/paytable
+        modal chrome, tokenized viewport sizing, sticky close header, backdrop
+        close policy, and Escape handling out of HelloPixi while leaving body
+        content inline for the next section extraction. get_errors passed for
+        ModalShell; HelloPixi only reported the known editor-only $app/paths
+        diagnostic. Browser smoke confirmed modal fit, internal scrolling,
+        visible close action, and Escape close at 390x844, 740x360, and
+        1440x1000. pnpm run build --filter=oma-peli passed with the known
+        warning set.
 
 phases:
   - id: 'phase_00_workflow_and_docs'
