@@ -43,12 +43,26 @@
 		type StandaloneAssetManifest,
 	} from '../game-standalone/assets';
 	import {
+		applyWinAccounting,
+		beginAutoPlaySpin,
+		beginSpinAccounting,
+		decreaseBetIndex,
+		grantTestFreeSpins,
+		increaseBetIndex,
+		maxBetIndex,
+		resetSpinResultState,
+		startAutoPlayState,
+		stopAutoPlayState,
+		triggerFreeSpinsState,
+	} from '../game-standalone/actions';
+	import {
 		configureLogoTexture,
 		createPixiApplication,
 		createReelMask,
 		destroyPixiApplication,
 	} from '../game-standalone/pixiRuntime';
 	import { Reel as StandaloneReel } from '../game-standalone/reel';
+	import { createInitialStandaloneGameState } from '../game-standalone/state';
 	import {
 		SYMBOL_KEYS,
 		type SpinSpeed,
@@ -140,13 +154,14 @@
 	const BACKGROUND_URL = assetManifest.backgroundUrl;
 	const REEL_FRAMES_URL = assetManifest.reelFramesUrl;
 	const LOGO_URL = assetManifest.logoUrl;
+	const initialGameState = createInitialStandaloneGameState();
 
 	// ===== ÄÄNIEFEKTIT =====
 	// Äänitiedostojen URLit
 	const SOUND_URLS = assetManifest.soundUrls;
 
 	// Äänien hallinta
-	let soundEnabled = $state(true); // Voi käyttäjä halutessaan mykistää
+	let soundEnabled = $state(initialGameState.soundEnabled); // Voi käyttäjä halutessaan mykistää
 	let audioElements: Record<string, HTMLAudioElement> = {};
 
 	// ===== MUSIIKKIJÄRJESTELMÄ (v1.0.9) =====
@@ -162,7 +177,7 @@
 	const FRAMES_PER_BEAT = Math.round(BEAT_INTERVAL * 60); // Frameja per tahti (60 FPS)
 
 	// Musiikin tilanhallinta
-	let musicEnabled = $state(true); // Musiikin on/off toggle
+	let musicEnabled = $state(initialGameState.musicEnabled); // Musiikin on/off toggle
 	let musicLoaded = $state(false); // Onko musiikki ladattu
 
 	// ===== CONTROL PANEL TILA (v1.1.0) =====
@@ -185,7 +200,7 @@
 		slow: 18, // Slow: ~7 sec (32 frames/kiekko * 13 kiekkoa = 416 frames = ~6.9s @ 60fps)
 	};
 
-	let spinSpeed = $state<SpinSpeed>('medium'); // Nykyinen spinninopeus
+	let spinSpeed = $state<SpinSpeed>(initialGameState.spinSpeed); // Nykyinen spinninopeus
 	let showSpinSpeedMenu = $state(false); // Näytetäänkö nopeusvalikko
 
 	let currentBackgroundLoop = $state<BackgroundMusicLoop>(
@@ -413,31 +428,31 @@
 
 	// ===== CREDIT JÄRJESTELMÄ =====
 	// Pelaajan saldo ja panostus
-	let balance = $state(1000); // Aloitussaldo (voi muuttaa)
+	let balance = $state(initialGameState.balance); // Aloitussaldo (voi muuttaa)
 
 	// Bet levels - ennalta määritellyt panostasot
 	// Pelaaja voi valita näistä + ja - napeilla
-	let currentBetIndex = $state(5); // Aloitetaan indeksistä 5 = 3.0 (default bet)
+	let currentBetIndex = $state(initialGameState.currentBetIndex); // Aloitetaan indeksistä 5 = 3.0 (default bet)
 	let betAmount = $derived(BET_LEVELS[currentBetIndex]); // Panoksen määrä per spin (automaattisesti laskettu)
-	let lastWin = $state(0); // Viimeisin voittosumma (näytetään UI:ssa)
+	let lastWin = $state(initialGameState.lastWin); // Viimeisin voittosumma (näytetään UI:ssa)
 	const MIN_BET = BET_LEVELS[0]; // Pienin mahdollinen panos (0.4)
 	const MAX_BET = BET_LEVELS[BET_LEVELS.length - 1]; // Suurin mahdollinen panos (100)
 
 	// Autoplay-toiminnallisuus
-	let isAutoPlaying = $state(false);
-	let autoPlayRoundsLeft = $state(0);
-	let showAutoPlayMenu = $state(false);
-	let showDebugPanel = $state(false); // Debug-paneelin näkyvyys
+	let isAutoPlaying = $state(initialGameState.isAutoPlaying);
+	let autoPlayRoundsLeft = $state(initialGameState.autoPlayRoundsLeft);
+	let showAutoPlayMenu = $state(initialGameState.showAutoPlayMenu);
+	let showDebugPanel = $state(initialGameState.showDebugPanel); // Debug-paneelin näkyvyys
 	let winPopupShownAt = $state(0); // Timestamp kun popup tuli näkyviin
-	let isProcessingAutoPlay = false; // Lukko estää päällekkäiset kutsut
+	let isProcessingAutoPlay = initialGameState.isProcessingAutoPlay; // Lukko estää päällekkäiset kutsut
 	let autoPlayTimeoutId: number | null = null; // Tallenna timeout ID
-	let winsCheckedForCurrentSpin = false; // Estää voittojen tarkistuksen useaan kertaan
+	let winsCheckedForCurrentSpin = initialGameState.winsCheckedForCurrentSpin; // Estää voittojen tarkistuksen useaan kertaan
 
 	// RTP-seuranta
-	let totalRounds = $state(0);
-	let totalWagered = $state(0);
-	let totalWon = $state(0);
-	let totalWins = $state(0); // Voittojen määrä
+	let totalRounds = $state(initialGameState.totalRounds);
+	let totalWagered = $state(initialGameState.totalWagered);
+	let totalWon = $state(initialGameState.totalWon);
+	let totalWins = $state(initialGameState.totalWins); // Voittojen määrä
 	let currentRTP = $derived(
 		totalWagered > 0 ? ((totalWon / totalWagered) * 100).toFixed(2) : '0.00',
 	);
@@ -446,15 +461,15 @@
 	);
 
 	// Free spins state
-	let isFreeSpinMode = $state(false);
-	let freeSpinsRemaining = $state(0);
-	let freeSpinsTotalWon = $state(0);
-	let freeSpinsTriggerCount = $state(0); // Kuinka monta kertaa vapaapelit alkaneet
-	let freeSpinsPlayedCount = $state(0); // Kuinka monta vapaapelikierrosta yhteensä pelattu
+	let isFreeSpinMode = $state(initialGameState.isFreeSpinMode);
+	let freeSpinsRemaining = $state(initialGameState.freeSpinsRemaining);
+	let freeSpinsTotalWon = $state(initialGameState.freeSpinsTotalWon);
+	let freeSpinsTriggerCount = $state(initialGameState.freeSpinsTriggerCount); // Kuinka monta kertaa vapaapelit alkaneet
+	let freeSpinsPlayedCount = $state(initialGameState.freeSpinsPlayedCount); // Kuinka monta vapaapelikierrosta yhteensä pelattu
 
 	// Emptyslot tracking
-	let totalVisibleSymbols = $state(0); // Kaikki näkyvät symbolit yhteensä
-	let totalEmptySlots = $state(0); // Emptyslot-symbolit yhteensä
+	let totalVisibleSymbols = $state(initialGameState.totalVisibleSymbols); // Kaikki näkyvät symbolit yhteensä
+	let totalEmptySlots = $state(initialGameState.totalEmptySlots); // Emptyslot-symbolit yhteensä
 	let emptySlotPercentage = $derived(
 		totalVisibleSymbols > 0 ? ((totalEmptySlots / totalVisibleSymbols) * 100).toFixed(2) : '0.00',
 	);
@@ -506,11 +521,13 @@
 	// Instantly grants 10 free spins without requiring scatter triggers
 	// Useful for testing free spin mechanics and symbol replacements
 	function triggerTestFreeSpins() {
-		if (!isFreeSpinMode) {
-			isFreeSpinMode = true;
-			freeSpinsRemaining = 10; // Give 10 test spins
-			freeSpinsTotalWon = 0;
-			freeSpinsTriggerCount++;
+		const result = grantTestFreeSpins({ isFreeSpinMode, freeSpinsTriggerCount }, 10);
+
+		if (result.granted) {
+			isFreeSpinMode = result.isFreeSpinMode;
+			freeSpinsRemaining = result.freeSpinsRemaining;
+			freeSpinsTotalWon = result.freeSpinsTotalWon;
+			freeSpinsTriggerCount = result.freeSpinsTriggerCount;
 			console.log('🎰 TEST MODE: Free spins activated! 10 spins granted.');
 
 			// Vaihda musiikkia free spins -musiikiksi
@@ -573,12 +590,17 @@
 
 		if (result.scatterTrigger) {
 			const { scatterPositions, freeSpinsTriggered } = result.scatterTrigger;
-			freeSpinsRemaining += freeSpinsTriggered;
+			const freeSpinState = triggerFreeSpinsState(
+				{ isFreeSpinMode, freeSpinsRemaining, freeSpinsTriggerCount },
+				freeSpinsTriggered,
+			);
 
-			if (!isFreeSpinMode) {
-				isFreeSpinMode = true;
-				freeSpinsTotalWon = 0;
-				freeSpinsTriggerCount++;
+			isFreeSpinMode = freeSpinState.isFreeSpinMode;
+			freeSpinsRemaining = freeSpinState.freeSpinsRemaining;
+			freeSpinsTriggerCount = freeSpinState.freeSpinsTriggerCount;
+
+			if (freeSpinState.isNewTrigger) {
+				freeSpinsTotalWon = freeSpinState.freeSpinsTotalWon ?? freeSpinsTotalWon;
 				console.log(
 					`🎰 FREE SPINS TRIGGERED! ${scatterPositions.length} scatters = ${freeSpinsTriggered} FREE SPINS!`,
 				);
@@ -1245,6 +1267,14 @@
 	// 3) Kiekkojen pyörittämisen (BPM-synkronoitu)
 	// 4) Tilastojen päivittämisen
 	function spin() {
+		if (
+			isProcessingAutoPlay ||
+			reels.some((reel) => reel.state !== 'idle' && reel.state !== 'stopped')
+		) {
+			console.log('Spin ignored: previous spin is still processing');
+			return;
+		}
+
 		// ===== MUSIIKIN KÄYNNISTYS JA VAIHTO =====
 		// Vaihda uusi satunnainen rockabilly loop joka spinissä (1-20)
 		if (!isFreeSpinMode) {
@@ -1255,27 +1285,36 @@
 		triggerPlayButtonGlare();
 
 		// ===== VAPAAERÄT VS PERUSPELI =====
-		if (isFreeSpinMode && freeSpinsRemaining > 0) {
-			// VAPAAERÄT - Ei vähennetä saldoa, vain lasketaan vapaaeriä jäljellä
-			freeSpinsRemaining--; // Vähennä jäljellä olevia vapaaeriä
-			freeSpinsPlayedCount++; // Laske pelattu vapaaerä (tilastoihin)
+		const spinAccounting = beginSpinAccounting(
+			{
+				balance,
+				isFreeSpinMode,
+				freeSpinsRemaining,
+				freeSpinsPlayedCount,
+				totalRounds,
+				totalWagered,
+			},
+			betAmount,
+		);
+
+		if (!spinAccounting.canSpin) {
+			if (spinAccounting.reason === 'insufficient_balance') {
+				alert(`Not enough credits! Balance: ${balance}, Bet: ${betAmount}`);
+			}
+			stopAutoPlay();
+			return;
+		}
+
+		if (spinAccounting.isFreeSpin) {
+			freeSpinsRemaining = spinAccounting.freeSpinsRemaining;
+			freeSpinsPlayedCount = spinAccounting.freeSpinsPlayedCount;
 			console.log(`🎰 FREE SPIN! Remaining: ${freeSpinsRemaining}`);
 
 			// Huom: freeSpinsRemaining tarkistetaan update()-funktiossa spinin jälkeen
-		} else if (!isFreeSpinMode) {
-			// PERUSPELI - Tarkista saldo ja vähennä panos
-			if (balance < betAmount) {
-				alert(`Not enough credits! Balance: ${balance}, Bet: ${betAmount}`);
-				stopAutoPlay(); // Pysäytä autoplay jos ei riitä krediittejä
-				return; // Lopeta funktio (ei pyöritä)
-			}
-
-			// Vähennä panos saldosta
-			balance -= betAmount;
-
-			// Päivitä RTP-tilastot (vain maksetuille kierroksille, ei vapaaerille)
-			totalRounds++; // Kasvata kierrosten määrää
-			totalWagered += betAmount; // Kasvata panostettu määrää
+		} else {
+			balance = spinAccounting.balance;
+			totalRounds = spinAccounting.totalRounds;
+			totalWagered = spinAccounting.totalWagered;
 		}
 
 		// ===== TYHJENNETÄÄN AUTOPLAY TIMEOUT =====
@@ -1287,12 +1326,13 @@
 
 		// ===== NOLLAA VOITTOTIEDOT =====
 		// Poista edellisen kierroksen tiedot
+		const resetSpinState = resetSpinResultState();
 		currentWins = []; // Tyhjennä voittolista
 		totalWin = 0; // Nollaa kokonaisvoitto
-		lastWin = 0; // Nollaa WIN-näyttö control panelissa
+		lastWin = resetSpinState.lastWin; // Nollaa WIN-näyttö control panelissa
 		console.log('🔄 lastWin nollattu: ' + lastWin);
 		isShowingWin = false; // Sulje voitto-popup
-		winsCheckedForCurrentSpin = false; // Salli voittojen tarkistus uudelle spinille
+		winsCheckedForCurrentSpin = resetSpinState.winsCheckedForCurrentSpin; // Salli voittojen tarkistus uudelle spinille
 		clearWinHighlights(); // Poista kultaiset kehykset voittosymboleista
 
 		// ===== LUO UUDET SYMBOLIT =====
@@ -1354,8 +1394,12 @@
 	// Käsittelee voiton lisäämisen saldoon ja tilastoihin
 	// @param winAmount - Voiton määrä pistettä
 	function addWinToBalance(winAmount: number) {
-		balance += winAmount; // Lisää voitto pelaajan saldoon
-		totalWon += winAmount; // Päivitä kokonaisvoitot (RTP-tilastot)
+		const winAccounting = applyWinAccounting(
+			{ balance, totalWon, totalWins, freeSpinsTotalWon, isFreeSpinMode },
+			winAmount,
+		);
+		balance = winAccounting.balance; // Lisää voitto pelaajan saldoon
+		totalWon = winAccounting.totalWon; // Päivitä kokonaisvoitot (RTP-tilastot)
 
 		// Animoi WIN-arvon nouseminen edellisestä arvosta uuteen
 		const previousWin = lastWin;
@@ -1366,12 +1410,10 @@
 		rollupWinAmount(previousWin, winAmount, rollupDuration);
 
 		// Vapaaerille: Seuraa erikseen vapaaeriden yhteisvoittoa
-		if (isFreeSpinMode) {
-			freeSpinsTotalWon += winAmount; // Kumulatiivinen voitto koko vapaaeriäkaudelta
-		}
+		freeSpinsTotalWon = winAccounting.freeSpinsTotalWon; // Kumulatiivinen voitto koko vapaaeriäkaudelta
 
 		if (winAmount > 0) {
-			totalWins++; // Kasvata voittojen määrää (tilastoihin)
+			totalWins = winAccounting.totalWins; // Kasvata voittojen määrää (tilastoihin)
 
 			// ===== VOITTOTEEMAN SOITTO ISOILLE VOITOILLE =====
 			// v1.0.9: Soita voittoteema isoille voitoille (yli 10x panos)
@@ -1405,21 +1447,17 @@
 
 	// Kasvata panosta seuraavaan tasoon (jos mahdollista)
 	function increaseBet() {
-		if (currentBetIndex < BET_LEVELS.length - 1) {
-			currentBetIndex++; // Siirry seuraavaan panokseen (esim. 0.10 → 0.20)
-		}
+		currentBetIndex = increaseBetIndex(currentBetIndex, BET_LEVELS.length); // Siirry seuraavaan panokseen (esim. 0.10 → 0.20)
 	}
 
 	// Vähennä panosta edelliseen tasoon (jos mahdollista)
 	function decreaseBet() {
-		if (currentBetIndex > 0) {
-			currentBetIndex--; // Siirry edelliseen panokseen (esim. 0.20 → 0.10)
-		}
+		currentBetIndex = decreaseBetIndex(currentBetIndex); // Siirry edelliseen panokseen (esim. 0.20 → 0.10)
 	}
 
 	// Aseta panos maksimiin (viimeinen BET_LEVELS-arvo)
 	function maxBet() {
-		currentBetIndex = BET_LEVELS.length - 1; // Hyppää suoraan suurimpaan panokseen
+		currentBetIndex = maxBetIndex(BET_LEVELS.length); // Hyppää suoraan suurimpaan panokseen
 	}
 
 	// ===================================================================
@@ -1432,17 +1470,19 @@
 	// Käynnistä autoplay tietyllä kierrosmäärällä
 	// @param rounds - Kierrosten määrä (esim. 10, 25, 50, 100)
 	function startAutoPlay(rounds: number) {
-		isAutoPlaying = true; // Aktivoi autoplay-tila
-		autoPlayRoundsLeft = rounds; // Aseta kierrosmäärä
-		showAutoPlayMenu = false; // Sulje autoplay-valikko
+		const autoPlayState = startAutoPlayState(rounds);
+		isAutoPlaying = autoPlayState.isAutoPlaying; // Aktivoi autoplay-tila
+		autoPlayRoundsLeft = autoPlayState.autoPlayRoundsLeft; // Aseta kierrosmäärä
+		showAutoPlayMenu = autoPlayState.showAutoPlayMenu; // Sulje autoplay-valikko
 		executeAutoPlay(); // Aloita ensimmäinen kierros
 	}
 
 	// Pysäytä autoplay kesken kaiken
 	function stopAutoPlay() {
-		isAutoPlaying = false; // Deaktivoi autoplay-tila
-		autoPlayRoundsLeft = 0; // Nollaa jäljellä olevat kierrokset
-		isProcessingAutoPlay = false; // Vapauta lukko (estää jumit)
+		const autoPlayState = stopAutoPlayState();
+		isAutoPlaying = autoPlayState.isAutoPlaying; // Deaktivoi autoplay-tila
+		autoPlayRoundsLeft = autoPlayState.autoPlayRoundsLeft; // Nollaa jäljellä olevat kierrokset
+		isProcessingAutoPlay = autoPlayState.isProcessingAutoPlay; // Vapauta lukko (estää jumit)
 
 		// Tyhjennä mahdolliset odottavat ajastimet
 		if (autoPlayTimeoutId !== null) {
@@ -1463,7 +1503,7 @@
 		// Pyöräytä (update()-funktio jatkaa automaattisesti kun voitot on käsitelty)
 		console.log(`Autoplay: Starting spin ${autoPlayRoundsLeft} rounds left`);
 		spin(); // Käynnistä kiekkojen pyöriminen
-		autoPlayRoundsLeft--; // Vähennä jäljellä olevia kierroksia
+		autoPlayRoundsLeft = beginAutoPlaySpin(autoPlayRoundsLeft); // Vähennä jäljellä olevia kierroksia
 
 		// HUOM: ÄLÄ kutsu executeAutoPlay() täällä!
 		// update()-funktio kutsuu sitä automaattisesti kun kaikki kiekot ovat pysähtyneet

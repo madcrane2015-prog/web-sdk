@@ -175,6 +175,13 @@ Phase 07 centralized standalone asset and audio URLs in `src/game-standalone/ass
 
 The splash screen click remains the first user gesture. `HelloPixi` initializes Howler objects after Pixi setup, but playback still starts from user actions such as spin or toggling music, which keeps the mobile audio-unlock behavior gesture-driven.
 
+Phase 08 started the standalone state-flow split:
+
+- `src/game-standalone/state.ts`: defines `StandaloneGameState` and `createInitialStandaloneGameState()` for balance, bet index, free-spin counters, autoplay, stats, audio toggles, debug visibility, and spin speed defaults.
+- `src/game-standalone/actions.ts`: owns small transition helpers for bet index changes, autoplay start/stop/decrement, spin-start accounting, win accounting, free-spin trigger/test grants, and spin result reset state.
+- `HelloPixi` still keeps Svelte local `$state` variables and side effects, but those variables are initialized from `createInitialStandaloneGameState()` and several handlers now call named transition helpers instead of open-coding every mutation.
+- `spin()` now explicitly ignores duplicate spin attempts while reels are in active states (`spinning`, `slowing`, or `bouncing`) or autoplay is processing. Fresh `idle` reels and completed `stopped` reels remain allowed.
+
 ### PixiJS Initialization
 
 On mount, `HelloPixi`:
@@ -189,7 +196,7 @@ On mount, `HelloPixi`:
 8. Loads reel frames, logo, and all symbol textures with `PIXI.Assets.load`.
 9. Creates HTML audio elements for spin, stop, and win effects.
 10. Creates 13 Pixi reel containers and masks, then instantiates `StandaloneReel` from `src/game-standalone/reel.ts`.
-11. Initializes music with Howler.js after the CDN script is available.
+11. Initializes music with Howler.js from the direct `howler` package dependency.
 12. Starts `app.ticker.add(update)`.
 
 The renderer keeps a fixed logical size from layout config, while `app.stage.scale` is changed for responsive display.
@@ -461,11 +468,7 @@ Sound effects use HTML audio elements:
 - `static/sounds/stop.mp3`
 - `static/sounds/win.mp3`
 
-Music uses Howler.js from CDN:
-
-```html
-https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.4/howler.min.js
-```
+Music uses Howler.js from the direct `howler` package dependency declared by `apps/oma-peli/package.json`.
 
 Music assets:
 
@@ -474,7 +477,7 @@ Music assets:
 - Drum hit: `static/music/drum-hit.mp3`.
 - Win stinger: `static/music/win-stinger.mp3`.
 
-Current source expects random base loops numbered 1 through 20. The static folder is missing `rockabilly reels loop 14.mp3`, so random selection of loop 14 will currently produce a load warning.
+Current source selects base loops from the explicit `BACKGROUND_MUSIC_LOOP_IDS` manifest in `src/game-standalone/assets.ts`. The static folder is missing `rockabilly reels loop 14.mp3`, so loop `14` is intentionally excluded from random selection.
 
 Music toggles and sound toggles use control images from `static/controls`.
 

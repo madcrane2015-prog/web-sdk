@@ -174,6 +174,9 @@ progress:
     - '07.02_fix_music_loop_manifest'
     - '07.03_remove_cdn_dependency_decision'
     - '07.04_mobile_audio_unlock'
+    - '08.01_model_state'
+    - '08.02_extract_actions'
+    - '08.03_guard_concurrent_spins'
   blocked_steps: []
   agent_journal:
     - date: '2026-07-05'
@@ -324,6 +327,22 @@ progress:
         warning set. Browser smoke at http://localhost:3010/ loaded the canvas,
         completed the splash gate, clicked spin, selected loop #8 from the
         explicit manifest, selected no loop 14, and reported no failed requests.
+    - date: '2026-07-05'
+      author: 'GitHub Copilot'
+      note: >-
+        Completed phase_08_game_state_flow for active_deployed_hellopixi. Added
+        src/game-standalone/state.ts with a typed StandaloneGameState and
+        default initial state. Added src/game-standalone/actions.ts with named
+        transition helpers for bet changes, autoplay bookkeeping, spin-start
+        accounting, win accounting, spin result reset, and free-spin trigger/test
+        grants. HelloPixi still owns Svelte state and side effects, but now
+        initializes key state from the default state object and delegates the
+        lower-risk transition calculations to action helpers. spin() now ignores
+        duplicate spin attempts while reels are actively spinning/slowing/bouncing
+        or autoplay is processing, while allowing fresh idle and completed stopped
+        reels. get_errors passed for state.ts and actions.ts; HelloPixi only
+        reports the known editor-only $app/paths diagnostic. pnpm run build
+        --filter=oma-peli passed with the known warning set.
 
 phases:
   - id: 'phase_00_workflow_and_docs'
@@ -741,7 +760,7 @@ phases:
           verifies the manifest no longer references known missing filenames.
 
   - id: 'phase_08_game_state_flow'
-    status: 'not_started'
+    status: 'completed'
     priority: 8
     goal: 'Separate game state transitions from rendering and UI handlers.'
     why: 'spin, free-spin state, autoplay, wins, and balance currently mutate many local variables directly.'
@@ -750,20 +769,35 @@ phases:
       - 'src/game-standalone/actions.ts'
     steps:
       - id: '08.01_model_state'
-        status: 'not_started'
+        status: 'completed'
         action: 'Define a StandaloneGameState type covering balance, bet index, free spins, wins, autoplay, stats, audio toggles, and debug visibility.'
         output: 'State shape is explicit and typed.'
         validation: 'get_errors.'
       - id: '08.02_extract_actions'
-        status: 'not_started'
+        status: 'completed'
         action: 'Move pure or mostly-pure transitions into action functions: startSpin, completeSpin, addWin, startAutoPlay, stopAutoPlay, triggerFreeSpins.'
         output: 'UI handlers call named actions instead of mutating many variables.'
         validation: 'Manual spin/autoplay/free-spin checks.'
       - id: '08.03_guard_concurrent_spins'
-        status: 'not_started'
+        status: 'completed'
         action: 'Make spin and skip-spin state explicit so rapid taps cannot start duplicate spins or corrupt autoplay.'
         output: 'Mobile repeated tapping is safe.'
         validation: 'Manual rapid-tap checks.'
+    phase_notes:
+      - date: '2026-07-05'
+        note: >-
+          Phase 08 deliberately kept HelloPixi as the Svelte state owner rather
+          than introducing one large mutable store. This reduced blast radius:
+          state.ts documents the full target state shape and defaults, while
+          actions.ts extracts small transition helpers that can later be composed
+          into a fuller reducer/state module.
+      - date: '2026-07-05'
+        note: >-
+          Validation: get_errors passed for state.ts and actions.ts. HelloPixi
+          reported only the known editor-only $app/paths diagnostic after the
+          local phase edits. pnpm run build --filter=oma-peli passed with the
+          known warnings about SvelteKit tsconfig, missing virtual public env
+          exports, and TextStyle import.
 
   - id: 'phase_09_sdk_or_standalone_decision'
     status: 'not_started'
