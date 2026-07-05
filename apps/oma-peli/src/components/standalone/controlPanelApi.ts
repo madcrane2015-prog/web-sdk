@@ -8,6 +8,7 @@ export interface ControlPanelCallbacks {
 	onToggleAutoplayMenu: () => void;
 	onStopAutoplay: () => void;
 	onSpin: () => void;
+	onPressSpin: () => void;
 	onCycleSpinSpeed: () => void;
 }
 
@@ -23,4 +24,23 @@ export interface ControlPanelVisuals {
 	controlsPath: string;
 	gameScale: number;
 	controlPanelPos: ControlPanelPosition;
+}
+
+export interface SpinButtonProps {
+	controlsPath: string;
+	gameScale: number;
+	isAutoPlaying: boolean;
+	playButtonGlareActive: boolean;
+	onPress: () => void;
+}
+
+export interface StatusMetersProps {
+	balance: number;
+	betAmount: number;
+	lastWin: number;
+	gameScale?: number;
+	mode: 'strip' | 'single';
+	label?: 'BALANCE' | 'BET' | 'WIN';
+	value?: number;
+	accent?: boolean;
 }

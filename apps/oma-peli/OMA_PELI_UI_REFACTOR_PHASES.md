@@ -16,7 +16,7 @@ This document is an implementation plan, not a retrospective. It should be follo
 | Phase 02 - Establish Layout Tokens And Geometry Rules                    | completed   | 2026-07-05   | Added `uiLayout.ts` tokens and applied first CSS variables to modal/top/spin geometry.  |
 | Phase 03 - Recompose Mobile Portrait For Fullness                        | completed   | 2026-07-05   | Added portrait stage/status tokens and a fixed mobile status strip for Balance/Bet/Win. |
 | Phase 04 - Recompose Mobile Landscape And Short Screens                  | completed   | 2026-07-05   | Added short-screen status strip, desktopShort routing, and fixed autoplay picker.       |
-| Phase 05 - Extract A Real Control Shell                                  | not started | -            | -                                                                                       |
+| Phase 05 - Extract A Real Control Shell                                  | in progress | 2026-07-05   | Extracted `SpinButton` and `StatusMeters`; full `ControlShell` extraction remains.      |
 | Phase 06 - Replace The Menu/Paytable With A Modal System                 | not started | -            | -                                                                                       |
 | Phase 07 - Make The Game Stage Responsive By Composition, Not Only Scale | not started | -            | -                                                                                       |
 | Phase 08 - Visual Polish And Density Pass                                | not started | -            | -                                                                                       |
@@ -406,7 +406,8 @@ Findings to carry into Phase 05:
 
 ## Phase 05 - Extract A Real Control Shell
 
-Status: not started  
+Status: in progress
+
 Target files: new or updated `src/components/standalone/ControlShell.svelte`, `ControlPanel.svelte`, `MobileControlPanel.svelte`, `DesktopControlPanel.svelte`, `controlPanelApi.ts`, `HelloPixi.svelte`.
 
 ### Objective
@@ -441,6 +442,29 @@ Move the main control surface out of `HelloPixi` and into typed, viewport-aware 
 - `get_errors` on all touched Svelte/TS files.
 - `pnpm run build --filter=oma-peli`.
 - Browser smoke at desktop, phone portrait, phone landscape, and `900x500`.
+
+### Progress Notes
+
+Started on 2026-07-05 for the deployed `HelloPixi` route.
+
+Completed checkpoint:
+
+- Added `SpinButton.svelte` and moved central play/stop button markup, glare styling, and responsive spin sizing out of `HelloPixi.svelte`.
+- Added `StatusMeters.svelte` and moved the mobile Balance / Bet / Win status strip plus desktop single Balance/Win meters out of `HelloPixi.svelte`.
+- Expanded `controlPanelApi.ts` with typed props for spin and status components.
+- Added `pressSpinButton()` in `HelloPixi.svelte` so game-state transitions remain owned by `HelloPixi` while presentation moves into components.
+
+Checkpoint validation:
+
+- `get_errors` passed for `SpinButton.svelte`, `StatusMeters.svelte`, and `controlPanelApi.ts`; `HelloPixi.svelte` only reports the existing editor-only `$app/paths` diagnostic.
+- Browser smoke confirmed spin/status/menu fit at `390x844`, `844x390`, `900x500`, and `1440x1000`.
+- `pnpm run build --filter=oma-peli` passed with the known warning set.
+
+Remaining for this phase:
+
+- Extract the full bottom control frame/branches into `ControlShell.svelte`.
+- Move autoplay and spin-speed controls behind typed component props.
+- Reduce the remaining duplicated desktop/mobile inline markup in `HelloPixi.svelte`.
 
 ## Phase 06 - Replace The Menu/Paytable With A Modal System
 

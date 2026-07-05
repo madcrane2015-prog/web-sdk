@@ -437,6 +437,20 @@ progress:
         layoutUtils.ts and uiLayout.ts; HelloPixi only reported the known
         editor-only $app/paths diagnostic. pnpm run build --filter=oma-peli
         passed with the known warning set.
+    - date: '2026-07-05'
+      author: 'GitHub Copilot'
+      note: >-
+        Started OMA_PELI_UI_REFACTOR_PHASES.md Phase 05 for the deployed
+        HelloPixi route. Added SpinButton.svelte for the central play/stop
+        button and StatusMeters.svelte for mobile Balance / Bet / Win and
+        desktop Balance/Win displays. Expanded controlPanelApi.ts with typed
+        spin/status props and kept game-state transitions in HelloPixi through
+        pressSpinButton(). Browser smoke confirmed spin/status/menu fit at
+        390x844, 844x390, 900x500, and 1440x1000. get_errors passed for the
+        new components and API; HelloPixi only reported the known editor-only
+        $app/paths diagnostic. pnpm run build --filter=oma-peli passed with
+        the known warning set. Phase 05 remains in progress until the full
+        ControlShell frame, autoplay, and spin-speed controls are extracted.
 
 phases:
   - id: 'phase_00_workflow_and_docs'
