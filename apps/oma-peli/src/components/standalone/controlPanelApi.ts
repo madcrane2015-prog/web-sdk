@@ -54,3 +54,10 @@ export interface QuickActionsProps {
 	onStopAutoplay: () => void;
 	onCycleSpinSpeed: () => void;
 }
+
+export interface MenuButtonProps {
+	controlsPath: string;
+	gameScale: number;
+	onTogglePaytable: () => void;
+	className?: string;
+}

@@ -15,6 +15,7 @@
 	import DebugPanel from './standalone/DebugPanel.svelte';
 	import DesktopControlPanel from './standalone/DesktopControlPanel.svelte';
 	import FreeSpinsEndPopup from './standalone/FreeSpinsEndPopup.svelte';
+	import MenuButton from './standalone/MenuButton.svelte';
 	import MobileControlPanel from './standalone/MobileControlPanel.svelte';
 	import QuickActions from './standalone/QuickActions.svelte';
 	import SpinButton from './standalone/SpinButton.svelte';
@@ -2220,24 +2221,11 @@
 							style="display: none; align-items: center; justify-content: center; margin-right: {10 *
 								gameScale}px;"
 						>
-							<button
-								class="play-button"
-								onclick={() => {
-									showPaytable = !showPaytable;
-								}}
-								style="
-            width: {50 * gameScale}px;
-            height: {50 * gameScale}px;
-            background-image: url('{controlsPath}/Control_menubar.png');
-            background-size: contain;
-            background-repeat: no-repeat;
-            border: none;
-            cursor: pointer;
-            background-color: transparent;
-          "
-								title="Menu"
-								aria-label="Toggle menu"
-							></button>
+							<MenuButton
+								{controlsPath}
+								{gameScale}
+								onTogglePaytable={() => (showPaytable = !showPaytable)}
+							/>
 						</div>
 
 						<!-- BET kontrollit (vain desktop) -->
@@ -2363,23 +2351,11 @@
 							class="hide-on-mobile"
 							style="display: flex; align-items: center; justify-content: center;"
 						>
-							<button
-								onclick={() => {
-									showPaytable = !showPaytable;
-								}}
-								style="
-									width: {50 * gameScale}px;
-									height: {50 * gameScale}px;
-									background-image: url('{controlsPath}/Control_menubar.png');
-									background-size: contain;
-									background-repeat: no-repeat;
-									border: none;
-									cursor: pointer;
-									background-color: transparent;
-								"
-								title="Menu"
-								aria-label="Toggle menu"
-							></button>
+							<MenuButton
+								{controlsPath}
+								{gameScale}
+								onTogglePaytable={() => (showPaytable = !showPaytable)}
+							/>
 						</div>
 					</div>
 				</div>
@@ -2704,13 +2680,6 @@
 	/* Mobiili portrait-tila - pelialue isompi, kontrollit alareunaan */
 	/* HUOM: Sijainti tulee nyt layoutConfig.ts:stä - CSS ei enää ylikirjoita */
 	@media (max-width: 768px) and (orientation: portrait) {
-		.play-button {
-			width: var(--oma-spin-button-size) !important;
-			height: var(--oma-spin-button-size) !important;
-			min-width: var(--oma-spin-button-size);
-			min-height: var(--oma-spin-button-size);
-		}
-
 		/* Debug-nappi pienemmmäksi ja yläkulmaan */
 		button[style*='position: absolute'][style*='z-index: 10000'] {
 			position: fixed !important;
@@ -2751,13 +2720,6 @@
 			padding: 12px !important;
 			border-radius: 10px !important;
 			z-index: 2400 !important;
-		}
-
-		.play-button {
-			width: var(--oma-spin-button-size) !important;
-			height: var(--oma-spin-button-size) !important;
-			min-width: var(--oma-spin-button-size);
-			min-height: var(--oma-spin-button-size);
 		}
 
 		.mobile-menu-controls {

@@ -465,6 +465,19 @@ progress:
         visibility, and pnpm run build --filter=oma-peli passed with the known
         warning set. Phase 05 remains in progress until the frame and remaining
         menu branches are extracted.
+    - date: '2026-07-05'
+      author: 'GitHub Copilot'
+      note: >-
+        Continued OMA_PELI_UI_REFACTOR_PHASES.md Phase 05 for the deployed
+        HelloPixi route. Added MenuButton.svelte and replaced the mobile-left
+        and desktop-right inline menu buttons with typed component usage.
+        Removed stale HelloPixi .play-button media selectors that became unused
+        after extracting button styling. get_errors passed for MenuButton and
+        controlPanelApi; HelloPixi only reported the known editor-only
+        $app/paths diagnostic. Browser smoke confirmed menu buttons remain
+        visible and open the menu at 390x844, 844x390, and 1440x1000. pnpm run
+        build --filter=oma-peli passed with the known warning set. Phase 05
+        remains in progress until the full frame is extracted.
 
 phases:
   - id: 'phase_00_workflow_and_docs'
