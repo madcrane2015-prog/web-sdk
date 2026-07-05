@@ -16,6 +16,20 @@ This document describes how `apps/oma-peli` is actually set up today. The most i
 
 Because of that split, future changes should first decide whether they target the deployed standalone game or the SDK/storybook game shell.
 
+## Architecture Decision: Standalone And SDK Paths
+
+Decision date: 2026-07-05
+
+Current decision: maintain both paths deliberately for now.
+
+- The deployed playable route remains `src/routes/+page.svelte -> PasswordProtection.svelte -> HelloPixi.svelte`.
+- The standalone `HelloPixi` path remains the current demo/playable implementation while stabilization, mobile layout repair, and modularization continue.
+- The SDK/Storybook path in `Game.svelte`, `src/game/*`, and `src/stories/*` is retained and documented. It must not be deleted or treated as dead code without explicit maintainer approval.
+- Storybook remains useful for SDK-shell development, but it still does not validate the deployed `HelloPixi` route.
+- Production/RGS migration is deferred. If oma-peli should become RGS-authoritative, plan that as a separate migration from standalone state/math outputs into BookEvents and EmitterEvents instead of mixing it with UI stabilization.
+
+Rationale: the standalone route is the current user-visible game, while the SDK path is structurally valuable for a possible future RGS migration. Removing either path during the current refactor would create unnecessary risk.
+
 ## Repository Position
 
 `oma-peli` is one app inside the Web SDK TurboRepo monorepo.

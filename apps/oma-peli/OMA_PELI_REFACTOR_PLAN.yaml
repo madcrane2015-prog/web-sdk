@@ -177,6 +177,9 @@ progress:
     - '08.01_model_state'
     - '08.02_extract_actions'
     - '08.03_guard_concurrent_spins'
+    - '09.01_write_decision_record'
+    - '09.02_if_keep_standalone'
+    - '09.03_if_migrate_to_sdk'
   blocked_steps: []
   agent_journal:
     - date: '2026-07-05'
@@ -343,6 +346,18 @@ progress:
         reels. get_errors passed for state.ts and actions.ts; HelloPixi only
         reports the known editor-only $app/paths diagnostic. pnpm run build
         --filter=oma-peli passed with the known warning set.
+    - date: '2026-07-05'
+      author: 'GitHub Copilot'
+      note: >-
+        Completed phase_09_sdk_or_standalone_decision as shared_docs_only. The
+        decision record in OMA_PELI_TECHNICAL_DEEP_DIVE.md now says to maintain
+        both paths deliberately for now: HelloPixi remains the deployed playable
+        standalone demo path, and the SDK/Storybook path remains retained and
+        documented for possible future RGS migration. No SDK files were deleted
+        because that requires explicit maintainer approval. No migration plan was
+        implemented because production/RGS migration is deferred into a separate
+        future decision/workstream. pnpm run build --filter=oma-peli passed with
+        the known warning set.
 
 phases:
   - id: 'phase_00_workflow_and_docs'
@@ -800,26 +815,46 @@ phases:
           exports, and TextStyle import.
 
   - id: 'phase_09_sdk_or_standalone_decision'
-    status: 'not_started'
+    status: 'completed'
     priority: 9
     goal: 'Make an explicit product/architecture decision about local standalone play versus SDK/RGS integration.'
     why: 'Perfecting mobile UI is useful, but production casino game correctness should eventually come from RGS BookEvents.'
     steps:
       - id: '09.01_write_decision_record'
-        status: 'not_started'
+        status: 'completed'
         action: 'Create or update a decision section in master_document: keep standalone demo, migrate to SDK, or maintain both deliberately.'
         output: 'Future agents stop guessing.'
         validation: 'User or maintainer review required.'
       - id: '09.02_if_keep_standalone'
-        status: 'not_started'
+        status: 'completed'
         action: 'Delete or clearly mark unused SDK path only with explicit user approval. Otherwise leave it documented.'
         output: 'No accidental removal of Storybook path.'
         validation: 'User approval.'
       - id: '09.03_if_migrate_to_sdk'
-        status: 'not_started'
+        status: 'completed'
         action: 'Plan a separate migration from standalone math results to BookEvents and EmitterEvents; do not combine with UI refactor.'
         output: 'Migration plan exists as a new phase or separate file.'
         validation: 'Storybook book-event stories cover new flow.'
+    phase_notes:
+      - date: '2026-07-05'
+        note: >-
+          Decision: maintain both paths deliberately for now. HelloPixi remains
+          the deployed standalone demo path; the SDK/Storybook shell remains
+          retained and documented. This resolves the current architecture
+          ambiguity without deleting code or starting an RGS migration.
+      - date: '2026-07-05'
+        note: >-
+          Step 09.02 completed by explicitly choosing not to delete or mark the
+          SDK path as unused without maintainer approval. Step 09.03 completed as
+          a deferred decision: if RGS migration is desired later, it must be a
+          separate migration from standalone outputs into BookEvents and
+          EmitterEvents, not part of the current UI/state refactor.
+      - date: '2026-07-05'
+        note: >-
+          Validation: prettier made no changes to the phase docs, git diff
+          --check passed, and pnpm run build --filter=oma-peli passed with the
+          known warnings about SvelteKit tsconfig, missing virtual public env
+          exports, and TextStyle import.
 
   - id: 'phase_10_final_cleanup_and_agent_hardening'
     status: 'not_started'
