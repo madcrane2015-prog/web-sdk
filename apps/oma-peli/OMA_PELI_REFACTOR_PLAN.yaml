@@ -491,6 +491,19 @@ progress:
         confirmed the extracted frame preserves control placement at 390x844,
         844x390, 900x500, and 1440x1000. pnpm run build --filter=oma-peli
         passed with the known warning set.
+    - date: '2026-07-05'
+      author: 'GitHub Copilot'
+      note: >-
+        Started OMA_PELI_UI_REFACTOR_PHASES.md Phase 06 for the deployed
+        HelloPixi route. Added AutoplayMenu.svelte and moved the autoplay
+        round selector popover out of HelloPixi while preserving startAutoPlay
+        ownership through callback props. get_errors passed for AutoplayMenu;
+        HelloPixi only reported the known editor-only $app/paths diagnostic.
+        Browser smoke confirmed compact layouts 844x390 and 900x500 keep the
+        desktop autoplay button hidden with no broken popover, and desktop
+        1440x1000 opens the extracted selector, renders eight round buttons
+        plus Cancel, fits the viewport, and closes. pnpm run build
+        --filter=oma-peli passed with the known warning set.
 
 phases:
   - id: 'phase_00_workflow_and_docs'

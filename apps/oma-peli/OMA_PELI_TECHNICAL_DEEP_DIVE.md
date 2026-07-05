@@ -828,6 +828,8 @@ Recommendation: manually validate desktop resize, mobile portrait, and mobile la
 
 UI refactor Phase 05 completed the standalone control-shell extraction checkpoint. `SpinButton.svelte` owns the central play/stop button markup, glare styling, responsive spin sizing, and accessible title/label. `StatusMeters.svelte` owns the mobile Balance / Bet / Win status strip and desktop single Balance/Win display markup. `QuickActions.svelte` owns the desktop autoplay and spin-speed controls while receiving callback props from `HelloPixi`. `MenuButton.svelte` owns the mobile-left and desktop-right menu button presentation. `ControlPanelFrame.svelte` owns the asset-based left/center/right bottom frame and named slots for overlay/status/default content. `HelloPixi.svelte` still owns game-state transitions through `pressSpinButton()` and `cycleSpinSpeed()` and preserves the existing branch composition inside the frame slots.
 
+UI refactor Phase 06 started the modal/menu split. `AutoplayMenu.svelte` now owns the autoplay round selector popover, including compact-landscape fixed positioning and the eight round options. `HelloPixi.svelte` still owns `startAutoPlay()` and only passes `onSelectRounds` and `onCancel` callbacks. The larger paytable/menu overlay remains inline and should be extracted into a reusable modal shell and sections next.
+
 ### 9. Final Refactor Status After Phase 10
 
 Phases 00 through 10 are now completed in `OMA_PELI_REFACTOR_PLAN.yaml`. The first-pass refactor produced durable documentation, scoped agent rules, modular standalone math/Pixi/assets/state helpers, partial standalone UI extraction, browser validation notes, an explicit standalone-versus-SDK decision, and final validation records.

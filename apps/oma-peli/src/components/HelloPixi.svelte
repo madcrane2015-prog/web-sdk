@@ -13,6 +13,7 @@
 	// Loading screen component
 	import LoadingScreen from './LoadingScreen.svelte';
 	import DebugPanel from './standalone/DebugPanel.svelte';
+	import AutoplayMenu from './standalone/AutoplayMenu.svelte';
 	import ControlPanelFrame from './standalone/ControlPanelFrame.svelte';
 	import DesktopControlPanel from './standalone/DesktopControlPanel.svelte';
 	import FreeSpinsEndPopup from './standalone/FreeSpinsEndPopup.svelte';
@@ -1951,217 +1952,16 @@
 			<!-- HUOM: Sijainti ja koko tulevat nyt layout-järjestelmästä! -->
 			<ControlPanelFrame {controlsPath} {gameScale} {controlPanelPos}>
 				<div slot="overlay">
-					<!-- Autoplay valikko (näkyy kun showAutoPlayMenu = true) -->
-					{#if showAutoPlayMenu}
-						<div
-							class="autoplay-menu-popover"
-							style="
-    position: absolute;
-    bottom: {(controlPanelPos.height / gameScale + 20) * gameScale}px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0, 0, 0, 0.95);
-    padding: {20 * gameScale}px;
-    border-radius: {15 * gameScale}px;
-    border: {3 * gameScale}px solid #0088ff;
-    box-shadow: 0 {8 * gameScale}px {30 * gameScale}px rgba(0, 136, 255, 0.6);
-    z-index: 2000;
-    min-width: {250 * gameScale}px;
-  "
-						>
-							<div
-								style="color: white; font-weight: bold; margin-bottom: {15 *
-									gameScale}px; text-align: center; font-size: {18 * gameScale}px;"
-							>
-								🔄 Select Rounds
-							</div>
-							<button
-								onclick={() => {
-									startAutoPlay(10);
-									showAutoPlayMenu = false;
-								}}
-								style="
-        width: 100%;
-        padding: {12 * gameScale}px;
-        margin-bottom: {8 * gameScale}px;
-        background: linear-gradient(135deg, #44aa44 0%, #66cc66 100%);
-        color: white;
-        border: none;
-        border-radius: {8 * gameScale}px;
-        cursor: pointer;
-        font-weight: bold;
-        font-size: {16 * gameScale}px;
-        box-shadow: 0 {4 * gameScale}px {10 * gameScale}px rgba(68, 170, 68, 0.4);
-      "
-							>
-								10 Rounds
-							</button>
-							<button
-								onclick={() => {
-									startAutoPlay(25);
-									showAutoPlayMenu = false;
-								}}
-								style="
-        width: 100%;
-        padding: {12 * gameScale}px;
-        margin-bottom: {8 * gameScale}px;
-        background: linear-gradient(135deg, #44aa44 0%, #66cc66 100%);
-        color: white;
-        border: none;
-        border-radius: {8 * gameScale}px;
-        cursor: pointer;
-        font-weight: bold;
-        font-size: {16 * gameScale}px;
-        box-shadow: 0 {4 * gameScale}px {10 * gameScale}px rgba(68, 170, 68, 0.4);
-      "
-							>
-								25 Rounds
-							</button>
-							<button
-								onclick={() => {
-									startAutoPlay(50);
-									showAutoPlayMenu = false;
-								}}
-								style="
-        width: 100%;
-        padding: {12 * gameScale}px;
-        margin-bottom: {8 * gameScale}px;
-        background: linear-gradient(135deg, #44aa44 0%, #66cc66 100%);
-        color: white;
-        border: none;
-        border-radius: {8 * gameScale}px;
-        cursor: pointer;
-        font-weight: bold;
-        font-size: {16 * gameScale}px;
-        box-shadow: 0 {4 * gameScale}px {10 * gameScale}px rgba(68, 170, 68, 0.4);
-      "
-							>
-								50 Rounds
-							</button>
-							<button
-								onclick={() => {
-									startAutoPlay(100);
-									showAutoPlayMenu = false;
-								}}
-								style="
-        width: 100%;
-        padding: {12 * gameScale}px;
-        margin-bottom: {8 * gameScale}px;
-        background: linear-gradient(135deg, #4488ff 0%, #66aaff 100%);
-        color: white;
-        border: none;
-        border-radius: {8 * gameScale}px;
-        cursor: pointer;
-        font-weight: bold;
-        font-size: {16 * gameScale}px;
-        box-shadow: 0 {4 * gameScale}px {10 * gameScale}px rgba(68, 136, 255, 0.4);
-      "
-							>
-								100 Rounds
-							</button>
-							<button
-								onclick={() => {
-									startAutoPlay(200);
-									showAutoPlayMenu = false;
-								}}
-								style="
-        width: 100%;
-        padding: {12 * gameScale}px;
-        margin-bottom: {8 * gameScale}px;
-        background: linear-gradient(135deg, #4488ff 0%, #66aaff 100%);
-        color: white;
-        border: none;
-        border-radius: {8 * gameScale}px;
-        cursor: pointer;
-        font-weight: bold;
-        font-size: {16 * gameScale}px;
-        box-shadow: 0 {4 * gameScale}px {10 * gameScale}px rgba(68, 136, 255, 0.4);
-      "
-							>
-								200 Rounds
-							</button>
-							<button
-								onclick={() => {
-									startAutoPlay(500);
-									showAutoPlayMenu = false;
-								}}
-								style="
-        width: 100%;
-        padding: {12 * gameScale}px;
-        margin-bottom: {8 * gameScale}px;
-        background: linear-gradient(135deg, #ff8844 0%, #ffaa66 100%);
-        color: white;
-        border: none;
-        border-radius: {8 * gameScale}px;
-        cursor: pointer;
-        font-weight: bold;
-        font-size: {16 * gameScale}px;
-        box-shadow: 0 {4 * gameScale}px {10 * gameScale}px rgba(255, 136, 68, 0.4);
-      "
-							>
-								500 Rounds
-							</button>
-							<button
-								onclick={() => {
-									startAutoPlay(1000);
-									showAutoPlayMenu = false;
-								}}
-								style="
-        width: 100%;
-        padding: {12 * gameScale}px;
-        margin-bottom: {8 * gameScale}px;
-        background: linear-gradient(135deg, #ff8844 0%, #ffaa66 100%);
-        color: white;
-        border: none;
-        border-radius: {8 * gameScale}px;
-        cursor: pointer;
-        font-weight: bold;
-        font-size: {16 * gameScale}px;
-        box-shadow: 0 {4 * gameScale}px {10 * gameScale}px rgba(255, 136, 68, 0.4);
-      "
-							>
-								1,000 Rounds
-							</button>
-							<button
-								onclick={() => {
-									startAutoPlay(5000);
-									showAutoPlayMenu = false;
-								}}
-								style="
-        width: 100%;
-        padding: {12 * gameScale}px;
-        margin-bottom: {15 * gameScale}px;
-        background: linear-gradient(135deg, #ff4444 0%, #ff6666 100%);
-        color: white;
-        border: none;
-        border-radius: {8 * gameScale}px;
-        cursor: pointer;
-        font-weight: bold;
-        font-size: {16 * gameScale}px;
-        box-shadow: 0 {4 * gameScale}px {10 * gameScale}px rgba(255, 68, 68, 0.4);
-      "
-							>
-								5,000 Rounds
-							</button>
-							<button
-								onclick={() => {
-									showAutoPlayMenu = false;
-								}}
-								style="
-        width: 100%;
-        padding: {10 * gameScale}px;
-        background: rgba(255, 255, 255, 0.1);
-        color: #aaa;
-        border: {1 * gameScale}px solid #555;
-        border-radius: {8 * gameScale}px;
-        cursor: pointer;
-        font-size: {14 * gameScale}px;
-      "
-							>
-								Cancel
-							</button>
-						</div>
-					{/if}
+					<AutoplayMenu
+						visible={showAutoPlayMenu}
+						{gameScale}
+						{controlPanelPos}
+						onSelectRounds={(rounds) => {
+							startAutoPlay(rounds);
+							showAutoPlayMenu = false;
+						}}
+						onCancel={() => (showAutoPlayMenu = false)}
+					/>
 				</div>
 
 				<!-- ===== CONTROL PANEL (v1.1.0) ===== -->
@@ -2626,10 +2426,6 @@
 		z-index: 1;
 	}
 
-	.autoplay-menu-popover {
-		box-sizing: border-box;
-	}
-
 	/* Piilota tietyt elementit mobiilissa */
 	.hide-on-mobile {
 		display: flex !important;
@@ -2643,15 +2439,6 @@
 	/* Mobiili portrait-tila - pelialue isompi, kontrollit alareunaan */
 	/* HUOM: Sijainti tulee nyt layoutConfig.ts:stä - CSS ei enää ylikirjoita */
 	@media (max-width: 768px) and (orientation: portrait) {
-		/* Debug-nappi pienemmmäksi ja yläkulmaan */
-		button[style*='position: absolute'][style*='z-index: 10000'] {
-			position: fixed !important;
-			top: 5px !important;
-			right: 5px !important;
-			font-size: 10px !important;
-			padding: 4px 8px !important;
-		}
-
 		.mobile-menu-controls {
 			display: block !important;
 		}
@@ -2670,21 +2457,6 @@
 	/* Mobiili landscape-tila - myös yksinkertaistettu layout */
 	/* HUOM: Sijainti tulee nyt layoutConfig.ts:stä - CSS ei enää ylikirjoita */
 	@media (max-width: 900px) and (max-height: 500px) and (orientation: landscape) {
-		.autoplay-menu-popover {
-			position: fixed !important;
-			left: 50% !important;
-			top: max(8px, env(safe-area-inset-top)) !important;
-			bottom: auto !important;
-			transform: translateX(-50%) !important;
-			width: min(360px, calc(100vw - 24px)) !important;
-			min-width: 0 !important;
-			max-height: calc(100dvh - 16px) !important;
-			overflow-y: auto !important;
-			padding: 12px !important;
-			border-radius: 10px !important;
-			z-index: 2400 !important;
-		}
-
 		.mobile-menu-controls {
 			display: block !important;
 		}

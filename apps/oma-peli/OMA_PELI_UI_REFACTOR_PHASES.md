@@ -17,7 +17,7 @@ This document is an implementation plan, not a retrospective. It should be follo
 | Phase 03 - Recompose Mobile Portrait For Fullness                        | completed   | 2026-07-05   | Added portrait stage/status tokens and a fixed mobile status strip for Balance/Bet/Win. |
 | Phase 04 - Recompose Mobile Landscape And Short Screens                  | completed   | 2026-07-05   | Added short-screen status strip, desktopShort routing, and fixed autoplay picker.       |
 | Phase 05 - Extract A Real Control Shell                                  | completed   | 2026-07-05   | Extracted spin, status, quick actions, menu buttons, and the control panel frame.       |
-| Phase 06 - Replace The Menu/Paytable With A Modal System                 | not started | -            | -                                                                                       |
+| Phase 06 - Replace The Menu/Paytable With A Modal System                 | in progress | 2026-07-05   | Extracted autoplay round selector; paytable/menu modal shell remains.                   |
 | Phase 07 - Make The Game Stage Responsive By Composition, Not Only Scale | not started | -            | -                                                                                       |
 | Phase 08 - Visual Polish And Density Pass                                | not started | -            | -                                                                                       |
 | Phase 09 - Accessibility And Input Behavior Pass                         | not started | -            | -                                                                                       |
@@ -474,7 +474,7 @@ Completion notes:
 
 ## Phase 06 - Replace The Menu/Paytable With A Modal System
 
-Status: not started  
+Status: in progress
 Target files: new `src/components/standalone/GameMenuModal.svelte`, `PaytableSection.svelte`, `SettingsSection.svelte`, `AutoplayMenu.svelte`, `HelloPixi.svelte`.
 
 ### Objective
@@ -510,6 +510,29 @@ Turn the current long inline paytable/menu block into a predictable modal system
 - `get_errors` on touched Svelte files.
 - Browser modal fit checks for every required viewport.
 - `pnpm run build --filter=oma-peli`.
+
+### Progress Notes
+
+Started on 2026-07-05 for the deployed `HelloPixi` route.
+
+Completed checkpoint:
+
+- Added `AutoplayMenu.svelte` and moved the autoplay round selector popover out of `HelloPixi.svelte`.
+- Replaced eight duplicated inline round buttons with a typed round-option loop and callback props.
+- Moved compact-landscape autoplay popover CSS into the extracted component.
+
+Checkpoint validation:
+
+- `get_errors` passed for `AutoplayMenu.svelte`; `HelloPixi.svelte` only reports the existing editor-only `$app/paths` diagnostic.
+- Browser smoke confirmed compact layouts `844x390` and `900x500` keep the desktop autoplay button hidden with no broken popover visible.
+- Browser smoke confirmed desktop `1440x1000` opens the extracted selector, renders eight round buttons and Cancel, fits inside the viewport, and closes through Cancel.
+- `pnpm run build --filter=oma-peli` passed with the known warning set.
+
+Remaining for this phase:
+
+- Extract a reusable modal shell for the paytable/menu overlay.
+- Move paytable content into a `PaytableSection.svelte` component.
+- Move mobile menu controls/settings into a `SettingsSection.svelte` component.
 
 ## Phase 07 - Make The Game Stage Responsive By Composition, Not Only Scale
 
