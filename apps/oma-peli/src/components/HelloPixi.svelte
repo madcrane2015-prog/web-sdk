@@ -12,6 +12,12 @@
 
 	// Loading screen component
 	import LoadingScreen from './LoadingScreen.svelte';
+	import DebugPanel from './standalone/DebugPanel.svelte';
+	import DesktopControlPanel from './standalone/DesktopControlPanel.svelte';
+	import FreeSpinsEndPopup from './standalone/FreeSpinsEndPopup.svelte';
+	import MobileControlPanel from './standalone/MobileControlPanel.svelte';
+	import TopToggles from './standalone/TopToggles.svelte';
+	import WinPopup from './standalone/WinPopup.svelte';
 
 	// Layout system - NEW!
 	import {
@@ -1589,66 +1595,16 @@
 <!-- Näyttää voiton määrän, voittoyhdistelmät ja mahdollisen kertoimet -->
 <!-- Sulkeutuu automaattisesti autoplayn aikana (1.5s) tai manuaalisesti -->
 {#if totalWin > 0 && isShowingWin}
-	<div
-		style="
-    position: fixed;
-    top: 50%;
-    right: 30px;
-    transform: translateY(-50%);
-    background: linear-gradient(45deg, #ffd700, #ffed4a);
-    color: #333;
-    padding: 20px;
-    border-radius: 15px;
-    font-family: Arial, sans-serif;
-    text-align: center;
-    z-index: 3000;
-    border: 3px solid #ffb700;
-    box-shadow: 0 0 30px rgba(255, 215, 0, 0.8);
-    animation: winPulse 2s infinite;
-    max-width: 350px;
-  "
-	>
-		<h2 style="margin: 0 0 10px 0; font-size: 2em;">🎉 VOITTO! 🎉</h2>
-		<div style="font-size: 1.5em; font-weight: bold; margin: 10px 0;">
-			{totalWin.toFixed(2)} pistettä
-		</div>
-
-		{#each currentWins as win}
-			<div style="margin: 5px 0; font-size: 1.1em;">
-				{win.count} × {SYMBOL_NAMES[win.symbol]} = {win.payout.toFixed(2)} pistettä
-			</div>
-		{/each}
-
-		{#if currentWins.length > 0 && currentWins[0].multiplier > 1}
-			<div
-				style="margin: 10px 0; padding: 8px; background: rgba(255, 0, 255, 0.2); border-radius: 8px; border: 2px solid #ff00ff;"
-			>
-				<span style="font-size: 1.3em; font-weight: bold; color: #ff00ff;">
-					✨ {currentWins[0].multiplier}x WIN MULTIPLIER! ✨
-				</span>
-			</div>
-		{/if}
-
-		<button
-			onclick={() => {
-				isShowingWin = false;
-				clearWinHighlights();
-				console.log('Win popup closed, ready for next spin');
-			}}
-			style="
-        margin-top: 15px;
-        padding: 8px 16px;
-        background: #333;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        font-size: 1em;
-      "
-		>
-			Jatka pelaamista
-		</button>
-	</div>
+	<WinPopup
+		{totalWin}
+		wins={currentWins}
+		symbolNames={SYMBOL_NAMES}
+		onClose={() => {
+			isShowingWin = false;
+			clearWinHighlights();
+			console.log('Win popup closed, ready for next spin');
+		}}
+	/>
 {/if}
 
 <!-- ===== 3) PAYTABLE-POPUP ===== -->
@@ -1857,102 +1813,16 @@
 <!-- Näyttää vapaaerän aikana voitetun kokonaissumman -->
 <!-- "JATKA PERUSPELIIN" -nappi palauttaa peruspelitilaan ja vaihtaa musiikin -->
 {#if showFreeSpinsEndPopup}
-	<div
-		style="
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.8);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 5000;
-  "
-	>
-		<div
-			style="
-      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-      color: white;
-      padding: 40px;
-      border-radius: 20px;
-      text-align: center;
-      border: 3px solid #ffd700;
-      box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
-      max-width: 500px;
-      font-family: Arial, sans-serif;
-    "
-		>
-			<h1
-				style="
-        margin: 0 0 20px 0;
-        font-size: 2.5em;
-        color: #ffd700;
-        text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
-      "
-			>
-				🎰 VAPAAPELIT PÄÄTTYIVÄT! 🎰
-			</h1>
-
-			<div
-				style="
-        font-size: 1.2em;
-        margin: 20px 0;
-        color: #aaa;
-      "
-			>
-				Voitit yhteensä:
-			</div>
-
-			<div
-				style="
-        font-size: 3em;
-        font-weight: bold;
-        color: #00ff00;
-        text-shadow: 0 0 15px rgba(0, 255, 0, 0.8);
-        margin: 20px 0;
-      "
-			>
-				{freeSpinsEndAmount.toFixed(2)}
-			</div>
-
-			<button
-				onclick={() => {
-					showFreeSpinsEndPopup = false;
-					isFreeSpinMode = false;
-					freeSpinsTotalWon = 0;
-					freeSpinsEndAmount = 0;
-
-					// Palauta peruspelin musiikki
-					switchMusic();
-				}}
-				onmouseenter={(e) => {
-					e.currentTarget.style.transform = 'scale(1.05)';
-					e.currentTarget.style.boxShadow = '0 6px 20px rgba(255, 215, 0, 0.6)';
-				}}
-				onmouseleave={(e) => {
-					e.currentTarget.style.transform = 'scale(1)';
-					e.currentTarget.style.boxShadow = '0 4px 15px rgba(255, 215, 0, 0.4)';
-				}}
-				style="
-          margin-top: 30px;
-          padding: 15px 40px;
-          background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
-          color: #000;
-          border: none;
-          border-radius: 10px;
-          cursor: pointer;
-          font-size: 1.3em;
-          font-weight: bold;
-          box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
-          transition: transform 0.2s, box-shadow 0.2s;
-        "
-			>
-				JATKA PERUSPELIIN
-			</button>
-		</div>
-	</div>
+	<FreeSpinsEndPopup
+		amount={freeSpinsEndAmount}
+		onContinue={() => {
+			showFreeSpinsEndPopup = false;
+			isFreeSpinMode = false;
+			freeSpinsTotalWon = 0;
+			freeSpinsEndAmount = 0;
+			switchMusic();
+		}}
+	/>
 {/if}
 
 <!-- ===== 5) PÄÄKONTTI ===== -->
@@ -1987,30 +1857,22 @@
         height: {CANVAS_HEIGHT}px;
       "
 		>
-			<!-- Paytable-nappi oikeassa reunassa -->
-			<button
-				onclick={() => {
-					showPaytable = !showPaytable;
-				}}
-				style="
-          position: absolute;
-						top: {paytableButtonTop}px;
-						right: {topButtonRight}px;
-          padding: {10 * gameScale}px {15 * gameScale}px;
-          background-color: rgba(255, 215, 0, 0.3);
-          border: {2 * gameScale}px solid rgba(255, 215, 0, 0.7);
-          border-radius: {8 * gameScale}px;
-          cursor: pointer;
-          font-weight: bold;
-          font-size: {16 * gameScale}px;
-          color: white;
-          text-shadow: 0 0 {5 * gameScale}px rgba(0,0,0,0.8);
-          z-index: 1000;
-          min-width: {180 * gameScale}px;
-        "
-			>
-				💰 PAYTABLE
-			</button>
+			<TopToggles
+				{controlsPath}
+				{gameScale}
+				paytableTop={paytableButtonTop}
+				debugTop={debugButtonTop}
+				topRight={topButtonRight}
+				audioTop={audioButtonTop}
+				audioRight={audioButtonRight}
+				{musicEnabled}
+				{soundEnabled}
+				gameVersion={GAME_VERSION}
+				onTogglePaytable={() => (showPaytable = !showPaytable)}
+				onToggleDebug={() => (showDebugPanel = !showDebugPanel)}
+				onToggleMusic={toggleMusic}
+				onToggleSound={toggleSound}
+			/>
 
 			<!-- ===== 6) CONTROL PANEL (LAYOUT SYSTEM) ===== -->
 			<!-- Pelin pääkontrollit näytön alareunassa -->
@@ -2304,63 +2166,13 @@
 
 						<!-- BET kontrollit (vain desktop) -->
 						{#if deviceType() === 'desktop'}
-							<div style="display: flex; flex-direction: column; align-items: center;">
-								<div
-									style="color: #00ff00; font-size: {12 *
-										gameScale}px; font-weight: bold; line-height: 1; height: {16 *
-										gameScale}px; display: flex; align-items: flex-end; padding-bottom: {2 *
-										gameScale}px;"
-								>
-									BET
-								</div>
-								<div
-									style="display: flex; gap: {5 * gameScale}px; align-items: center; height: {44 *
-										gameScale}px;"
-								>
-									<button
-										onclick={decreaseBet}
-										style="
-              width: {40 * gameScale}px;
-              height: {40 * gameScale}px;
-              background-image: url('{controlsPath}/Control_lowerbet_select.png');
-              background-size: contain;
-              background-repeat: no-repeat;
-              border: none;
-              cursor: pointer;
-              background-color: transparent;
-            "
-										title="Decrease Bet"
-										aria-label="Decrease bet"
-									></button>
-									<div
-										style="
-            color: #fff;
-            font-size: {18 * gameScale}px;
-            font-weight: bold;
-            min-width: {80 * gameScale}px;
-            text-align: center;
-            font-family: 'Courier New', monospace;
-          "
-									>
-										{betAmount.toFixed(2)}
-									</div>
-									<button
-										onclick={increaseBet}
-										style="
-              width: {40 * gameScale}px;
-              height: {40 * gameScale}px;
-              background-image: url('{controlsPath}/Control_upperbet_select.png');
-              background-size: contain;
-              background-repeat: no-repeat;
-              border: none;
-              cursor: pointer;
-              background-color: transparent;
-            "
-										title="Increase Bet"
-										aria-label="Increase bet"
-									></button>
-								</div>
-							</div>
+							<DesktopControlPanel
+								{controlsPath}
+								{gameScale}
+								{betAmount}
+								onDecreaseBet={decreaseBet}
+								onIncreaseBet={increaseBet}
+							/>
 						{/if}
 
 						<!-- Divider -->
@@ -2474,63 +2286,13 @@
 					>
 						<!-- BET kontrollit (kaikki mobiilitilat) -->
 						{#if deviceType() !== 'desktop'}
-							<div style="display: flex; flex-direction: column; align-items: center;">
-								<div
-									style="color: #00ff00; font-size: {12 *
-										gameScale}px; font-weight: bold; line-height: 1; height: {16 *
-										gameScale}px; display: flex; align-items: flex-end; padding-bottom: {2 *
-										gameScale}px;"
-								>
-									BET
-								</div>
-								<div
-									style="display: flex; gap: {5 * gameScale}px; align-items: center; height: {44 *
-										gameScale}px;"
-								>
-									<button
-										onclick={decreaseBet}
-										style="
-              width: {40 * gameScale}px;
-              height: {40 * gameScale}px;
-              background-image: url('{controlsPath}/Control_lowerbet_select.png');
-              background-size: contain;
-              background-repeat: no-repeat;
-              border: none;
-              cursor: pointer;
-              background-color: transparent;
-            "
-										title="Decrease Bet"
-										aria-label="Decrease bet"
-									></button>
-									<div
-										style="
-            color: #fff;
-            font-size: {18 * gameScale}px;
-            font-weight: bold;
-            min-width: {80 * gameScale}px;
-            text-align: center;
-            font-family: 'Courier New', monospace;
-          "
-									>
-										{betAmount.toFixed(2)}
-									</div>
-									<button
-										onclick={increaseBet}
-										style="
-              width: {40 * gameScale}px;
-              height: {40 * gameScale}px;
-              background-image: url('{controlsPath}/Control_upperbet_select.png');
-              background-size: contain;
-              background-repeat: no-repeat;
-              border: none;
-              cursor: pointer;
-              background-color: transparent;
-            "
-										title="Increase Bet"
-										aria-label="Increase bet"
-									></button>
-								</div>
-							</div>
+							<MobileControlPanel
+								{controlsPath}
+								{gameScale}
+								{betAmount}
+								onDecreaseBet={decreaseBet}
+								onIncreaseBet={increaseBet}
+							/>
 						{/if}
 
 						<!-- Autoplay nappi -->
@@ -2708,32 +2470,6 @@
 		</div>
 		<!-- Suljetaan canvas-kontti -->
 
-		<!-- Debug-nappi (ulomman wrapper-divin sisällä, canvas-kontin ulkopuolella) -->
-		<button
-			onclick={() => {
-				showDebugPanel = !showDebugPanel;
-			}}
-			style="
-    position: absolute;
-	top: {debugButtonTop}px;
-	right: {topButtonRight}px;
-    padding: {10 * gameScale}px {15 * gameScale}px;
-    background-color: rgba(0, 255, 0, 0.3);
-    border: {2 * gameScale}px solid rgba(0, 255, 0, 0.7);
-    border-radius: {8 * gameScale}px;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: {16 * gameScale}px;
-    color: white;
-    text-shadow: 0 0 {5 * gameScale}px rgba(0,0,0,0.8);
-    z-index: 10000;
-    min-width: {180 * gameScale}px;
-    pointer-events: auto;
-  "
-		>
-			🛠️ DEBUG v{GAME_VERSION}
-		</button>
-
 		<!-- VinylWinAnimation - Näyttää äänilevyt ja tähdet isojen voittojen yhteydessä -->
 		<VinylWinAnimation
 			bind:this={vinylWinAnimationRef}
@@ -2748,256 +2484,24 @@
 			sparkleScale={vinylAnimationConfig.sparkleScale}
 		/>
 
-		<!-- ===== 7) DEBUG & TILASTOPANEELI ===== -->
-		<!-- RTP-seuranta, tilastot, testaustyökalut -->
-		<!-- Näkyy kun showDebugPanel === true (toglataan "🛠️ DEBUG" -napista) -->
-		<!-- Näyttää: RTP%, hit frequency, vapaaperät, empty slot %, voittoloki -->
-		<!-- RTP MONITOR (vasemmassa yläkulmassa) -->
-		<div
-			class="debug-panel"
-			style="
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  display: {showDebugPanel ? 'block' : 'none'};
-  background: rgba(0, 0, 0, 0.9);
-  color: #00ff00;
-  padding: 15px 20px;
-  border-radius: 10px;
-  font-family: 'Courier New', monospace;
-  font-size: 14px;
-  border: 2px solid #00ff00;
-  box-shadow: 0 4px 15px rgba(0, 255, 0, 0.3);
-  z-index: 1500;
-  min-width: 200px;
-"
-		>
-			<div
-				style="font-weight: bold; font-size: 16px; margin-bottom: 5px; color: #ffd700; text-align: center;"
-			>
-				📊 RTP MONITOR
-			</div>
-			<div
-				style="font-size: 14px; font-weight: bold; margin-bottom: 10px; color: #ffd700; text-align: center;"
-			>
-				v{GAME_VERSION}
-			</div>
-			<div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-				<span style="color: #aaa;">Rounds:</span>
-				<span style="color: #fff;">{totalRounds.toLocaleString()}</span>
-			</div>
-			<div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-				<span style="color: #aaa;">Wagered:</span>
-				<span style="color: #ff6666;">{totalWagered.toLocaleString()}</span>
-			</div>
-			<div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-				<span style="color: #aaa;">Won:</span>
-				<span style="color: #66ff66;">{totalWon.toLocaleString()}</span>
-			</div>
-			<div
-				style="
-    display: flex;
-    justify-content: space-between;
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px solid #555;
-    font-weight: bold;
-    font-size: 18px;
-  "
-			>
-				<span style="color: #ffd700;">RTP:</span>
-				<span
-					style="color: {parseFloat(currentRTP) >= 95
-						? '#00ff00'
-						: parseFloat(currentRTP) >= 85
-							? '#ffff00'
-							: '#ff6666'};"
-				>
-					{currentRTP}%
-				</span>
-			</div>
-			<div
-				style="
-    display: flex;
-    justify-content: space-between;
-    margin-top: 8px;
-    font-weight: bold;
-    font-size: 16px;
-  "
-			>
-				<span style="color: #aaa;">Hit Freq:</span>
-				<span
-					style="color: {parseFloat(hitFrequency) >= 30
-						? '#00ff00'
-						: parseFloat(hitFrequency) >= 20
-							? '#ffff00'
-							: '#ff6666'};"
-				>
-					{hitFrequency}%
-				</span>
-			</div>
-			<div
-				style="
-    display: flex;
-    justify-content: space-between;
-    margin-top: 8px;
-    font-size: 14px;
-  "
-			>
-				<span style="color: #aaa;">Free Spins Triggered:</span>
-				<span style="color: #66ccff;">{freeSpinsTriggerCount}</span>
-			</div>
-			<div
-				style="
-    display: flex;
-    justify-content: space-between;
-    margin-top: 4px;
-    font-size: 14px;
-  "
-			>
-				<span style="color: #aaa;">Free Spins Played:</span>
-				<span style="color: #66ccff;">{freeSpinsPlayedCount}</span>
-			</div>
-			<div
-				style="
-    display: flex;
-    justify-content: space-between;
-    margin-top: 8px;
-    padding-top: 8px;
-    border-top: 1px solid #555;
-    font-size: 14px;
-  "
-			>
-				<span style="color: #aaa;">Empty Slots:</span>
-				<span style="color: #ff9900;">{emptySlotPercentage}%</span>
-			</div>
-			<button
-				onclick={resetStats}
-				style="
-      margin-top: 10px;
-      width: 100%;
-      padding: 5px;
-      background: rgba(255, 100, 100, 0.3);
-      color: #fff;
-      border: 1px solid #ff6666;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 11px;
-    "
-			>
-				Reset Stats
-			</button>
-
-			<!-- Win Log Controls -->
-			<div
-				style="
-    margin-top: 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-  "
-			>
-				<button
-					onclick={downloadWinLog}
-					disabled={winLog.length === 0}
-					style="
-        width: 100%;
-        padding: 5px;
-        background: {winLog.length > 0 ? 'rgba(100, 255, 100, 0.3)' : 'rgba(100, 100, 100, 0.3)'};
-        color: #fff;
-        border: 1px solid {winLog.length > 0 ? '#66ff66' : '#666'};
-        border-radius: 5px;
-        cursor: {winLog.length > 0 ? 'pointer' : 'not-allowed'};
-        font-size: 11px;
-        opacity: {winLog.length > 0 ? '1' : '0.5'};
-      "
-				>
-					Download Win Log ({winLog.length})
-				</button>
-
-				<button
-					onclick={clearWinLog}
-					disabled={winLog.length === 0}
-					style="
-        width: 100%;
-        padding: 5px;
-        background: rgba(255, 150, 100, 0.3);
-        color: #fff;
-        border: 1px solid #ff9966;
-        border-radius: 5px;
-        cursor: {winLog.length > 0 ? 'pointer' : 'not-allowed'};
-        font-size: 11px;
-        opacity: {winLog.length > 0 ? '1' : '0.5'};
-      "
-				>
-					Clear Win Log
-				</button>
-
-				<button
-					onclick={triggerTestFreeSpins}
-					disabled={isFreeSpinMode}
-					style="
-        width: 100%;
-        padding: 5px;
-        background: {isFreeSpinMode ? 'rgba(100, 100, 100, 0.3)' : 'rgba(100, 150, 255, 0.3)'};
-        color: #fff;
-        border: 1px solid {isFreeSpinMode ? '#666' : '#66aaff'};
-        border-radius: 5px;
-        cursor: {isFreeSpinMode ? 'not-allowed' : 'pointer'};
-        font-size: 11px;
-        opacity: {isFreeSpinMode ? '0.5' : '1'};
-      "
-				>
-					🎰 Test Free Spins
-				</button>
-			</div>
-		</div>
-
-		<!-- Music and Sound buttons in top-right corner -->
-		<div
-			style="
-  position: absolute;
-	top: {audioButtonTop}px;
-	right: {audioButtonRight}px;
-  display: flex;
-  gap: {10 * gameScale}px;
-  z-index: 1001;
-"
-		>
-			<!-- Music toggle button -->
-			<button
-				onclick={toggleMusic}
-				style="
-      width: {50 * gameScale}px;
-      height: {50 * gameScale}px;
-      background-image: url('{controlsPath}/{musicEnabled ? 'music_on.png' : 'music_off.png'}');
-      background-size: contain;
-      background-repeat: no-repeat;
-      border: none;
-      cursor: pointer;
-      background-color: transparent;
-    "
-				title={musicEnabled ? 'Music: ON' : 'Music: OFF'}
-				aria-label="Toggle music"
-			></button>
-
-			<!-- Sound effects toggle button -->
-			<button
-				onclick={toggleSound}
-				style="
-      width: {50 * gameScale}px;
-      height: {50 * gameScale}px;
-      background-image: url('{controlsPath}/{soundEnabled ? 'sounds_on.png' : 'sounds_off.png'}');
-      background-size: contain;
-      background-repeat: no-repeat;
-      border: none;
-      cursor: pointer;
-      background-color: transparent;
-    "
-				title={soundEnabled ? 'Sound: ON' : 'Sound: OFF'}
-				aria-label="Toggle sound"
-			></button>
-		</div>
+		<DebugPanel
+			visible={showDebugPanel}
+			gameVersion={GAME_VERSION}
+			{totalRounds}
+			{totalWagered}
+			{totalWon}
+			{currentRTP}
+			{hitFrequency}
+			{freeSpinsTriggerCount}
+			{freeSpinsPlayedCount}
+			{emptySlotPercentage}
+			winLogCount={winLog.length}
+			{isFreeSpinMode}
+			onResetStats={resetStats}
+			onDownloadWinLog={downloadWinLog}
+			onClearWinLog={clearWinLog}
+			onTriggerTestFreeSpins={triggerTestFreeSpins}
+		/>
 	</div>
 	<!-- Päätä skaalautuva wrapper -->
 </div>

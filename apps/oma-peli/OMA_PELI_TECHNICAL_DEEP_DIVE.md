@@ -152,6 +152,16 @@ Phase 04 started the Pixi runtime split:
 
 `HelloPixi` still creates the 13 reel containers and masks because their positions depend on component layout constants. It now returns teardown cleanup from `onMount`, removing resize and keydown listeners, removing the Pixi ticker callback, removing the canvas, and destroying the Pixi application.
 
+Phase 05 started the standalone HTML UI split:
+
+- `src/components/standalone/TopToggles.svelte`: owns the top paytable/debug/music/sound buttons and receives only display positions, asset path, toggle state, and callbacks from `HelloPixi`.
+- `src/components/standalone/WinPopup.svelte` and `FreeSpinsEndPopup.svelte`: own the win and free-spin-end overlay markup while `HelloPixi` keeps payout/free-spin state transitions.
+- `src/components/standalone/DebugPanel.svelte`: owns the RTP/statistics/debug monitor markup while `HelloPixi` keeps the counters and test actions.
+- `src/components/standalone/BetControls.svelte`, `DesktopControlPanel.svelte`, and `MobileControlPanel.svelte`: remove duplicated bet-control markup for desktop and mobile branches without changing the surrounding control-panel chrome.
+- `src/components/standalone/controlPanelApi.ts`: documents the intended control-panel state, visual, and callback API for later deeper extraction.
+
+The surrounding control panel frame, play button, autoplay icon, spin speed icon, balance, win display, paytable menu content, and mobile menu content still live in `HelloPixi`; phase 05 only began componentizing the highest-duplication and overlay portions.
+
 ### PixiJS Initialization
 
 On mount, `HelloPixi`:
@@ -194,31 +204,23 @@ The middle reel has special behavior because it represents the single row in the
 
 The active standalone symbol keys are:
 
-| Key | Meaning          | Asset                                 |
-| --- | ---------------- | ------------------------------------- |
-| `a` | Blue hotrod      | `static/symbols/Blue_hotrod.jpg`      |
-| `b` | Blue jacket      | `static/symbols/Blue_jacket.jpg`      |
-| `c` | Blue rollers     | `static/symbols/Blue_rollers.jpg`     |
-| `d` | Blue speakers    | `static/symbols/Blue_speakers.jpg`    |
-| `e` | Premium blonde   | `static/symbols/Premium_blonde.jpg`   |
-| `f` | Premium brunette | `static/symbols/Premium_brunette.jpg` |
-| `g` | Premium rocker   | `static/symbols/Premium_rocker.jpg`   |
-| `h` | Wild             | `static/symbols/New_Wild.jpg`         |
+| Key         | Meaning          | Asset                                 |
+| ----------- | ---------------- | ------------------------------------- |
+| `a`         | Blue hotrod      | `static/symbols/Blue_hotrod.jpg`      |
+| `b`         | Blue jacket      | `static/symbols/Blue_jacket.jpg`      |
+| `c`         | Blue rollers     | `static/symbols/Blue_rollers.jpg`     |
+| `d`         | Blue speakers    | `static/symbols/Blue_speakers.jpg`    |
+| `e`         | Premium blonde   | `static/symbols/Premium_blonde.jpg`   |
+| `f`         | Premium brunette | `static/symbols/Premium_brunette.jpg` |
+| `g`         | Premium rocker   | `static/symbols/Premium_rocker.jpg`   |
+| `h`         | Wild             | `static/symbols/New_Wild.jpg`         |
+| `i`         | Red burger       | `static/symbols/Red_burger.jpg`       |
+| `j`         | Red fries        | `static/symbols/Red_fries.jpg`        |
+| `k`         | Red milkshake    | `static/symbols/Red_milkshake.jpg`    |
+| `l`         | Scatter          | `static/symbols/Scatter.jpg`          |
+| `emptyslot` | Empty slot       | `static/symbols/Emptyslot.jpg`        |
 
-Phase 04 started the Pixi runtime split:
-
-- `src/game-standalone/reel.ts`: owns the `Reel` class, reel state machine, bounce/slowdown behavior, and symbol sprite drawing. `HelloPixi` injects symbol getters/setters, random symbol generation, current spin speed, textures, and stop-sound callbacks.
-- `src/game-standalone/pixiRuntime.ts`: owns Pixi application creation, reel mask creation, logo texture quality setup, and application destruction.
-
-`HelloPixi` still creates the 13 reel containers and masks because their positions depend on component layout constants. It now returns teardown cleanup from `onMount`, removing resize and keydown listeners, removing the Pixi ticker callback, removing the canvas, and destroying the Pixi application.
-| `i` | Red burger | `static/symbols/Red_burger.jpg` |
-| `j` | Red fries | `static/symbols/Red_fries.jpg` | 10. Creates 13 Pixi reel containers and masks, then instantiates `StandaloneReel` from `src/game-standalone/reel.ts`.
-| `l` | Scatter | `static/symbols/Scatter.jpg` |
-The `Reel` class in `src/game-standalone/reel.ts` models one visible slot position as one independently spinning reel.
-
-The class stores:
-
-Drawing now reuses three `Sprite` instances per reel and swaps texture/position each frame. Before phase 04, drawing removed and recreated children every frame with `container.removeChildren()` and three new `Sprite` instances, which was a likely mobile performance risk.
+The `Reel` class in `src/game-standalone/reel.ts` models one visible slot position as one independently spinning reel. Drawing now reuses three `Sprite` instances per reel and swaps texture/position each frame. Before phase 04, drawing removed and recreated children every frame with `container.removeChildren()` and three new `Sprite` instances, which was a likely mobile performance risk.
 
 Runtime weights now live in `src/game-standalone/mathConfig.ts`, which is the source of truth for the deployed local game.
 

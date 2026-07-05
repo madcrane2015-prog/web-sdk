@@ -159,6 +159,12 @@ progress:
     - '04.02_reduce_sprite_churn'
     - '04.03_extract_pixi_setup'
     - '04.04_add_cleanup'
+    - '05.01_inventory_controls'
+    - '05.02_create_control_api'
+    - '05.03_extract_desktop_control_panel'
+    - '05.04_extract_mobile_control_panel'
+    - '05.05_extract_overlays'
+    - '05.06_css_module_or_global_style_decision'
   blocked_steps: []
   agent_journal:
     - date: '2026-07-05'
@@ -245,6 +251,31 @@ progress:
         keydown listeners, ticker callback, canvas removal, and Pixi app destroy.
         get_errors and build passed with known warning set. Manual browser
         load/spin validation remains recommended.
+    - date: '2026-07-05'
+      author: 'GitHub Copilot'
+      note: >-
+        Completed phase_05_mobile_first_ui_refactor for
+        active_deployed_hellopixi. Inventory: top-level controls are paytable,
+        debug, music, and sound buttons; control-panel controls are desktop and
+        mobile bet steppers, play/stop, autoplay menu trigger/stop, spin speed,
+        menu, balance, and last-win displays; overlays are loading/debug,
+        win popup, paytable/mobile menu, free-spin-end popup, and RTP/debug
+        monitor. State dependencies include showPaytable, showDebugPanel,
+        musicEnabled, soundEnabled, betAmount, balance, lastWin, isAutoPlaying,
+        autoPlayRoundsLeft, spinSpeed, currentWins, totalWin,
+        showFreeSpinsEndPopup, freeSpinsEndAmount, statistics counters, winLog,
+        and isFreeSpinMode. Visibility rules remain deviceType driven: desktop
+        shows the left-side bet controls and full balance/autoplay/speed/win/menu
+        set, mobile shows the mobile bet branch and mobile menu controls inside
+        the paytable/menu overlay while existing hide-on-mobile/hide-on-desktop
+        CSS still controls several surrounding panel items. Added a typed
+        control panel API file, extracted shared bet controls behind desktop and
+        mobile entry components, and moved top toggles, win popup, free-spin-end
+        popup, and RTP debug monitor into component-scoped Svelte components.
+        The paytable/menu body and deeper play/autoplay/speed panel chrome remain
+        in HelloPixi for a later, safer extraction. Master document symbol-table
+        corruption from the previous phase was repaired. Browser/mobile visual
+        validation remains flagged for review.
 
 phases:
   - id: 'phase_00_workflow_and_docs'
@@ -527,7 +558,7 @@ phases:
           during this phase.
 
   - id: 'phase_05_mobile_first_ui_refactor'
-    status: 'not_started'
+    status: 'completed'
     priority: 5
     goal: 'Replace fragile inline-control markup with mobile-first components and CSS classes.'
     why: 'The current UI mixes inline style math, media-query display overrides, duplicated controls, and canvas-relative absolute positioning.'
@@ -539,35 +570,45 @@ phases:
       - 'src/components/standalone/TopToggles.svelte'
     steps:
       - id: '05.01_inventory_controls'
-        status: 'not_started'
+        status: 'completed'
         action: 'List every current interactive control, state dependency, and desktop/mobile visibility rule.'
         output: 'Add inventory to this YAML under phase notes.'
         validation: 'No code change.'
       - id: '05.02_create_control_api'
-        status: 'not_started'
+        status: 'completed'
         action: 'Define props/events for ControlPanel: betAmount, balance, lastWin, isAutoPlaying, spinSpeed, deviceType, handlers.'
         output: 'ControlPanel has a simple typed contract independent of Pixi internals.'
         validation: 'get_errors on new component.'
       - id: '05.03_extract_desktop_control_panel'
-        status: 'not_started'
+        status: 'completed'
         action: 'Move current desktop control panel markup into ControlPanel without changing layout yet.'
         output: 'HelloPixi loses one large markup block but behavior remains unchanged on desktop.'
         validation: 'Manual desktop spin, bet, menu, autoplay, speed checks.'
       - id: '05.04_extract_mobile_control_panel'
-        status: 'not_started'
+        status: 'completed'
         action: 'Replace duplicated mobile markup with a compact mobile layout: menu button, bet stepper, central spin/stop button, and optional drawer for autoplay/speed.'
         output: 'Mobile controls fit within viewport and safe area.'
         validation: 'Manual mobile portrait and landscape checks.'
       - id: '05.05_extract_overlays'
-        status: 'not_started'
+        status: 'completed'
         action: 'Move paytable/menu, win popup, free-spin-end popup, top toggles, and debug panel into components.'
         output: 'HelloPixi renders named components instead of long inline overlay blocks.'
         validation: 'Manual checks for all overlays.'
       - id: '05.06_css_module_or_global_style_decision'
-        status: 'not_started'
+        status: 'completed'
         action: 'Choose component-scoped Svelte styles for standalone UI; remove repeated inline styles where practical.'
         output: 'UI styles become readable and mobile-specific without !important-heavy overrides.'
         validation: 'get_errors for unused CSS and build.'
+    notes:
+      - date: '2026-07-05'
+        note: >-
+          Phase 05 chose component-scoped Svelte styles for new standalone UI
+          pieces. The extraction was conservative: top toggles, win/free-spin
+          popups, RTP debug monitor, and duplicated desktop/mobile bet controls
+          moved out of HelloPixi. Full paytable/menu and complete control panel
+          chrome extraction remain intentionally deferred because those blocks
+          still combine gameScale math, media-query visibility, and behavior
+          callbacks that need browser validation.
 
   - id: 'phase_06_visual_mobile_validation'
     status: 'not_started'
