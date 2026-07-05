@@ -5,6 +5,7 @@ Last investigated: 2026-07-05
 Related agent/refactor documents:
 
 - `OMA_PELI_REFACTOR_PLAN.yaml`: parseable step-by-step refactor plan for stabilizing and modularizing oma-peli.
+- `OMA_PELI_UI_REFACTOR_PHASES.md`: detailed phase plan for the next deployed-route UI refactor, with mobile fullness, unusual-monitor behavior, modal fit, control extraction, and validation requirements.
 - `AGENTS.md`: app-scoped coding-agent rules for future work inside `apps/oma-peli`.
 - `UI_TEST_MATRIX.md`: repeatable deployed-route browser checks for desktop, mobile portrait, and mobile landscape.
 - `agentic-refactor/`: guarded Copilot CLI runner and phase prompt template for executing the refactor plan one phase at a time.
@@ -754,7 +755,7 @@ Those appear to be build/deploy artifacts or copied static outputs. The maintain
 
 ### Agentic Refactor Tracking
 
-Future agents should treat this document as the factual master document and `OMA_PELI_REFACTOR_PLAN.yaml` as the operational plan. When code changes reveal new facts or invalidate old notes, update this document in the same change. When a refactor step is started, completed, blocked, or re-scoped, update the YAML plan. App-specific agent rules live in `AGENTS.md`.
+Future agents should treat this document as the factual master document and `OMA_PELI_REFACTOR_PLAN.yaml` as the completed first-pass operational plan. For dedicated deployed-route UI polish and responsive layout work, use `OMA_PELI_UI_REFACTOR_PHASES.md` as the active phase guide. When code changes reveal new facts or invalidate old notes, update this document in the same change. App-specific agent rules live in `AGENTS.md`.
 
 The initial refactor plan was created from this investigation, direct `HelloPixi.svelte` UI inspection, current Svelte diagnostics, and online guidance from VS Code Copilot customization docs, GitHub Copilot custom instructions docs, and the AGENTS.md convention.
 
@@ -822,6 +823,7 @@ Phases 00 through 10 are now completed in `OMA_PELI_REFACTOR_PLAN.yaml`. The fir
 
 Known unresolved items remain:
 
+- A deeper UI refactor is still needed to make mobile portrait feel full, handle unusual monitor/window shapes, reduce inline layout arithmetic, and extract the remaining control/menu UI from `HelloPixi`; this is planned in `OMA_PELI_UI_REFACTOR_PHASES.md`.
 - Real-device mobile validation remains needed; the known phase 06 top-toggle, spin-size, and menu-close viewport failures were fixed and rechecked with browser viewport automation.
 - The deployed route remains local/client-simulated and is not RGS-authoritative.
 - Some simulator/math documents still reflect older math states and should not be treated as runtime truth.
@@ -867,6 +869,7 @@ For math changes:
 | Standalone Pixi runtime  | `src/game-standalone/reel.ts`, `src/game-standalone/pixiRuntime.ts`                                              |
 | Standalone UI pieces     | `src/components/standalone/*`                                                                                    |
 | Standalone layout config | `src/config/layoutConfig.ts`, `src/utils/layoutUtils.ts`                                                         |
+| UI refactor plan         | `OMA_PELI_UI_REFACTOR_PHASES.md`                                                                                 |
 | UI validation matrix     | `UI_TEST_MATRIX.md`                                                                                              |
 | SDK shell                | `src/components/Game.svelte`                                                                                     |
 | SDK context              | `src/game/context.ts`                                                                                            |

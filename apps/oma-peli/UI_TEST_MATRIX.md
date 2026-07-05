@@ -4,6 +4,8 @@ Last run: 2026-07-05
 
 This matrix validates the deployed standalone route: `src/routes/+page.svelte -> PasswordProtection.svelte -> HelloPixi.svelte`. Storybook is not a substitute for these checks.
 
+The 2026-07-05 Phase 00 UI refactor baseline expanded the matrix from the original desktop/mobile trio to include small phones, tablets, compact desktop windows, and ultrawide monitors. It records hard fit failures separately from density/composition notes.
+
 ## Command
 
 ```bash
@@ -16,11 +18,28 @@ Password used for the local gate: `slot2024`
 
 ## Results
 
-| Viewport                 | Result             | Notes                                                                                                                                                                                                                                                                        |
-| ------------------------ | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Desktop 1440x1000        | Pass with warnings | Password gate cleared, canvas mounted with WebGL context, paytable opened/closed, music and sound toggles clicked, spin clicked, autoplay menu opened/cancelled, spin speed clicked. No measured button overlaps or offscreen desktop buttons.                               |
-| Mobile portrait 390x844  | Pass targeted fix  | Follow-up validation confirmed top MENU/DEBUG/music/sound controls are viewport-visible at the top right, spin is 72x72 px, and the paytable/menu modal fits inside the viewport with a visible top close button. Full gameplay smoke was not repeated in this targeted run. |
-| Mobile landscape 844x390 | Pass targeted fix  | Follow-up validation confirmed top MENU/DEBUG/music/sound controls are viewport-visible at the top right, spin is 56x56 px, and the paytable/menu modal fits inside the viewport with a visible top close button. Full gameplay smoke was not repeated in this targeted run. |
+| Viewport  | Result                  | Measured Controls And Modal                                                                                                                    | Density / Follow-up Notes                                                                                                   |
+| --------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| 390x844   | Pass                    | Top actions 226x40 visible, spin 72x72 visible, bottom panel 252x16 visible, menu modal 366x797 and close 64x40 visible.                       | Current targeted mobile fix holds. Canvas visible area fills full width and about 66% of height.                            |
+| 360x740   | Pass                    | Top actions 226x40 visible, spin 72x72 visible, bottom panel 233x15 visible, menu modal 336x716 and close 64x40 visible.                       | Small phone remains usable. Bottom panel is visually very shallow and should be recomposed in later mobile fullness phases. |
+| 430x932   | Pass                    | Top actions 226x40 visible, spin 72x72 visible, bottom panel 278x18 visible, menu modal 406x797 and close 64x40 visible.                       | Large phone has no hard fit failure. Later pass should make the screen feel fuller rather than merely fitted.               |
+| 844x390   | Pass                    | Top actions 226x40 visible, spin 56x56 visible, bottom panel 429x34 visible, menu modal 820x370 and close 64x40 visible.                       | Compact landscape baseline holds. Modal scroll region measured 369/1018.                                                    |
+| 740x360   | Pass with density notes | Top actions 226x40 visible, spin 56x56 visible, bottom panel 301x18 visible, menu modal 716x340 and close 64x40 visible.                       | Short landscape technically fits, but the bottom panel is visually tiny. Needs compact landscape composition work.          |
+| 768x1024  | Pass                    | Top actions 226x40 visible, spin 72x72 visible, bottom panel 497x32 visible, menu modal 744x1000 and close 64x40 visible.                      | Tablet portrait fits. Modal is nearly full height, so later modal extraction should keep sticky header/close behavior.      |
+| 1024x768  | Fail                    | Spin 78x78 visible, bottom panel 780x62 visible, menu modal 471x613 and close 64x40 visible. Top actions measured at x=1360 and are offscreen. | Confirms normal desktop positioning fails on tablet landscape/small desktop. Phase 01 should classify this explicitly.      |
+| 1366x768  | Fail                    | Spin 84x84 visible, bottom panel 845x68 visible, menu modal 510x664 and close 64x40 visible. Top actions measured at x=1481 and are offscreen. | Common laptop height/scale combination still pushes top actions offscreen. This is a high-priority layout-model input.      |
+| 1440x1000 | Pass                    | Top actions 110x50 visible, spin 110x110 visible, bottom panel 1096x88 visible, menu modal 662x862 and close 64x40 visible.                    | Existing desktop baseline still fits.                                                                                       |
+| 1920x1080 | Pass with density notes | Top actions 110x50 visible, spin 110x110 visible, bottom panel 1100x88 visible, menu modal 665x865 and close 64x40 visible.                    | Hard fit passes, but canvas uses about 75% of viewport width; wide screens need intentional side treatment.                 |
+| 2560x1080 | Pass with density notes | Top actions 110x50 visible, spin 110x110 visible, bottom panel 1100x88 visible, menu modal 665x865 and close 64x40 visible.                    | Hard fit passes, but canvas uses about 56% of viewport width; ultrawide currently feels empty at the sides.                 |
+| 900x500   | Pass with density notes | Top actions 226x40 visible, spin 56x56 visible, bottom panel 550x44 visible, menu modal 876x480 and close 64x40 visible.                       | Compact window fits, but it behaves like compact mobile in some control sizing. Needs explicit viewport class.              |
+
+## Phase 00 Baseline Summary
+
+- Hard failures: top actions are offscreen at `1024x768` and `1366x768`.
+- Density issues: `740x360` bottom panel is visually tiny, `900x500` needs explicit compact-window rules, and `1920x1080` / `2560x1080` need intentional wide-screen composition.
+- Preserved fixes: phone portrait and phone landscape top actions, spin sizing, and menu close visibility remain fixed.
+- Modal status: paytable/menu and close action fit all measured browser viewports; short screens rely on internal modal scrolling.
+- Phase 01 input: replace width-only/mobile-ish checks with viewport classes for tablet landscape, common laptop, short landscape, compact desktop, and ultrawide.
 
 ## Known Console Warning During Run
 
@@ -28,6 +47,7 @@ Password used for the local gate: `slot2024`
 
 ## Recommended Follow-up
 
-- Re-run the full desktop, mobile portrait, and mobile landscape smoke flow after larger gameplay or layout changes.
-- Continue checking that mobile overlays remain internally scrollable when paytable/menu content changes.
+- Execute Phase 01 from `OMA_PELI_UI_REFACTOR_PHASES.md`: define responsive viewport classes and stop relying on width-only UI decisions.
+- Prioritize top action placement for `1024x768` and `1366x768`; these are the only hard failures in the expanded baseline.
+- Preserve the current fixed mobile wins while improving density and fullness in later phases.
 - Validate on real iOS/Android hardware before production use; current checks are browser viewport automation.

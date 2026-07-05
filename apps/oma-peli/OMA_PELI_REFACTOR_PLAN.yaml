@@ -372,6 +372,15 @@ progress:
         that follow-up work should add a new phase or be treated as a targeted
         task. prettier ran over the phase docs, git diff --check passed, and
         pnpm run build --filter=oma-peli passed with the known warning set.
+    - date: '2026-07-05'
+      author: 'GitHub Copilot'
+      note: >-
+        Completed OMA_PELI_UI_REFACTOR_PHASES.md Phase 00 as a targeted
+        deployed-route UI baseline task. Browser automation measured the
+        expanded viewport matrix at localhost:3010 and recorded hard failures,
+        density notes, control rectangles, and modal fit in UI_TEST_MATRIX.md.
+        No production code was changed. Next UI phase is Phase 01: define a
+        responsive viewport-class model.
 
 phases:
   - id: 'phase_00_workflow_and_docs'
