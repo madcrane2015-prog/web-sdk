@@ -6,6 +6,7 @@ Related agent/refactor documents:
 
 - `OMA_PELI_REFACTOR_PLAN.yaml`: parseable step-by-step refactor plan for stabilizing and modularizing oma-peli.
 - `AGENTS.md`: app-scoped coding-agent rules for future work inside `apps/oma-peli`.
+- `UI_TEST_MATRIX.md`: repeatable deployed-route browser checks for desktop, mobile portrait, and mobile landscape.
 - `agentic-refactor/`: guarded Copilot CLI runner and phase prompt template for executing the refactor plan one phase at a time.
 
 This document describes how `apps/oma-peli` is actually set up today. The most important architectural fact is that the app contains two different implementation tracks:
@@ -161,6 +162,8 @@ Phase 05 started the standalone HTML UI split:
 - `src/components/standalone/controlPanelApi.ts`: documents the intended control-panel state, visual, and callback API for later deeper extraction.
 
 The surrounding control panel frame, play button, autoplay icon, spin speed icon, balance, win display, paytable menu content, and mobile menu content still live in `HelloPixi`; phase 05 only began componentizing the highest-duplication and overlay portions.
+
+Phase 06 created `UI_TEST_MATRIX.md` and ran browser validation against the deployed standalone route at `http://localhost:3010/` after passing the local password gate. Desktop at 1440x1000 passed the smoke flow: canvas mounted, paytable opened/closed, audio toggles clicked, spin clicked, autoplay menu opened/cancelled, and speed clicked. Mobile portrait 390x844 and mobile landscape 844x390 still fail layout validation because the top paytable/debug/music/sound controls are positioned offscreen to the right. The bottom mobile menu, spin, and bet controls are visible, but the primary spin button measured about 30x30 px in portrait and 43x43 px in landscape, and the paytable/menu close button was below the viewport in both mobile checks.
 
 ### PixiJS Initialization
 

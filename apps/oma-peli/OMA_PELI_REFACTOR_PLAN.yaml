@@ -165,6 +165,11 @@ progress:
     - '05.04_extract_mobile_control_panel'
     - '05.05_extract_overlays'
     - '05.06_css_module_or_global_style_decision'
+    - '06.01_start_dev_server'
+    - '06.02_browser_smoke_desktop'
+    - '06.03_browser_smoke_mobile_portrait'
+    - '06.04_browser_smoke_mobile_landscape'
+    - '06.05_record_manual_test_matrix'
   blocked_steps: []
   agent_journal:
     - date: '2026-07-05'
@@ -276,6 +281,24 @@ progress:
         in HelloPixi for a later, safer extraction. Master document symbol-table
         corruption from the previous phase was repaired. Browser/mobile visual
         validation remains flagged for review.
+    - date: '2026-07-05'
+      author: 'GitHub Copilot'
+      note: >-
+        Completed phase_06_visual_mobile_validation for
+        active_deployed_hellopixi. Started pnpm run dev --filter=oma-peli at
+        http://localhost:3010/, passed the PasswordProtection gate with the
+        local demo password, and validated desktop 1440x1000, mobile portrait
+        390x844, and mobile landscape 844x390 with browser automation. Desktop
+        smoke passed: canvas mounted, paytable opened/closed, music and sound
+        toggles clicked, spin clicked, autoplay menu opened/cancelled, and spin
+        speed clicked. Mobile portrait and landscape failed layout validation:
+        top paytable/debug/music/sound controls are offscreen to the right, the
+        mobile spin button measured about 30x30 px in portrait and 43x43 px in
+        landscape, and the paytable/menu close button is below the viewport in
+        both mobile menu checks. Created UI_TEST_MATRIX.md with repeatable
+        viewport checks. A music decode warning for loop #11 appeared during the
+        desktop spin check and should be considered alongside phase_07 audio
+        manifest work.
 
 phases:
   - id: 'phase_00_workflow_and_docs'
@@ -611,36 +634,43 @@ phases:
           callbacks that need browser validation.
 
   - id: 'phase_06_visual_mobile_validation'
-    status: 'not_started'
+    status: 'completed'
     priority: 6
     goal: 'Create repeatable validation for desktop and mobile layout.'
     why: 'The user specifically identified UI and mobile bugs; future agents need concrete checks.'
     steps:
       - id: '06.01_start_dev_server'
-        status: 'not_started'
+        status: 'completed'
         action: 'Run pnpm run dev --filter=oma-peli, keeping the dev server available for browser checks.'
         output: 'Local URL is known, usually http://localhost:3010.'
         validation: 'Server starts without fatal errors.'
       - id: '06.02_browser_smoke_desktop'
-        status: 'not_started'
+        status: 'completed'
         action: 'Open app, pass password gate, complete loading/splash, run one spin, open menu, toggle sound/music.'
         output: 'Desktop behavior notes recorded in this YAML.'
         validation: 'No blank canvas, no obvious console errors, controls clickable.'
       - id: '06.03_browser_smoke_mobile_portrait'
-        status: 'not_started'
+        status: 'completed'
         action: 'Use browser viewport around 390x844 or similar. Check safe area, spin button, bet controls, menu drawer, paytable scroll, win popup.'
         output: 'Mobile portrait notes and screenshots if tooling available.'
         validation: 'No text/control overlap; spin is reachable; menu fits.'
       - id: '06.04_browser_smoke_mobile_landscape'
-        status: 'not_started'
+        status: 'completed'
         action: 'Use browser viewport around 844x390. Check canvas scale, controls, top toggles, debug button, and overlays.'
         output: 'Mobile landscape notes and screenshots if tooling available.'
         validation: 'No critical controls offscreen.'
       - id: '06.05_record_manual_test_matrix'
-        status: 'not_started'
+        status: 'completed'
         action: 'Add a test matrix to master_document or a new UI_TEST_MATRIX.md if it grows too large.'
         output: 'Future agents have exact viewport checks.'
         validation: 'Docs updated.'
+    phase_notes:
+      - date: '2026-07-05'
+        note: >-
+          Validation results are recorded in UI_TEST_MATRIX.md. Desktop passed
+          the interaction smoke. Mobile portrait and landscape are documented as
+          failing because top toggles are offscreen, the mobile spin button is
+          too small, and the paytable/menu close button is below the viewport.
 
   - id: 'phase_07_assets_and_audio'
     status: 'not_started'
