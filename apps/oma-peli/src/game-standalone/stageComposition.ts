@@ -1,3 +1,5 @@
+import type { ViewportModel } from '../utils/layoutUtils';
+
 export interface StageRect {
 	x: number;
 	y: number;
@@ -9,6 +11,12 @@ export interface StageComposition {
 	logicalCanvas: StageRect;
 	reelFrame: StageRect;
 	reelViewport: StageRect;
+}
+
+export interface PixiStageTransform {
+	scale: number;
+	x: number;
+	y: number;
 }
 
 export const STAGE_COMPOSITION: StageComposition = {
@@ -45,4 +53,34 @@ export function createStageCompositionCssVars(composition: StageComposition): st
 		`--oma-reel-viewport-width: ${composition.reelViewport.width}px`,
 		`--oma-reel-viewport-height: ${composition.reelViewport.height}px`,
 	].join('; ');
+}
+
+export function createPixiStageTransform(
+	viewportModel: Pick<ViewportModel, 'usableWidth' | 'usableHeight' | 'viewportClass'>,
+	baseScale: number,
+	composition: StageComposition = STAGE_COMPOSITION,
+): PixiStageTransform {
+	if (
+		viewportModel.viewportClass !== 'phonePortrait' &&
+		viewportModel.viewportClass !== 'phonePortraitCompact'
+	) {
+		return { scale: baseScale, x: 0, y: 0 };
+	}
+
+	const viewportMargin = viewportModel.viewportClass === 'phonePortraitCompact' ? 10 : 12;
+	const targetWidth = Math.max(0, viewportModel.usableWidth - viewportMargin * 2);
+	const targetHeight = Math.max(0, viewportModel.usableHeight * 0.62);
+	const widthScale = targetWidth / composition.reelViewport.width;
+	const heightScale = targetHeight / composition.reelViewport.height;
+	const scale = Math.min(widthScale, heightScale, baseScale * 1.22);
+	const visibleStageWidth = composition.logicalCanvas.width * baseScale;
+	const reelViewportWidth = composition.reelViewport.width * scale;
+	const reelViewportTop = composition.reelViewport.y * scale;
+	const targetReelTop = viewportModel.viewportClass === 'phonePortraitCompact' ? 48 : 54;
+
+	return {
+		scale,
+		x: (visibleStageWidth - reelViewportWidth) / 2 - composition.reelViewport.x * scale,
+		y: Math.min(0, targetReelTop - reelViewportTop),
+	};
 }

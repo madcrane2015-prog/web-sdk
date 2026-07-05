@@ -74,6 +74,7 @@
 	import { Reel as StandaloneReel } from '../game-standalone/reel';
 	import { createInitialStandaloneGameState } from '../game-standalone/state';
 	import {
+		createPixiStageTransform,
 		createStageCompositionCssVars,
 		STAGE_COMPOSITION,
 	} from '../game-standalone/stageComposition';
@@ -788,8 +789,14 @@
 				// Päivitä reactive skaalaus (käytetään UI-elementeissä)
 				gameScale = newScale;
 
-				// Skaalaa PixiJS stage vastaamaan uutta kokoa (kaikki näkyy)
-				app.stage.scale.set(newScale);
+				// Compose the Pixi stage around the reel viewport while HTML controls keep base scale.
+				const pixiStageTransform = createPixiStageTransform(
+					viewportModel,
+					newScale,
+					STAGE_COMPOSITION,
+				);
+				app.stage.scale.set(pixiStageTransform.scale);
+				app.stage.position.set(pixiStageTransform.x, pixiStageTransform.y);
 
 				// Renderer pysyy kiinteässä koossa (1445x1000)
 				app.renderer.resize(CANVAS_WIDTH, CANVAS_HEIGHT);

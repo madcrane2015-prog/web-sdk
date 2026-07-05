@@ -18,7 +18,7 @@ This document is an implementation plan, not a retrospective. It should be follo
 | Phase 04 - Recompose Mobile Landscape And Short Screens                  | completed   | 2026-07-05   | Added short-screen status strip, desktopShort routing, and fixed autoplay picker.       |
 | Phase 05 - Extract A Real Control Shell                                  | completed   | 2026-07-05   | Extracted spin, status, quick actions, menu buttons, and the control panel frame.       |
 | Phase 06 - Replace The Menu/Paytable With A Modal System                 | completed   | 2026-07-05   | Extracted autoplay selector, modal shell, paytable section, and settings section.       |
-| Phase 07 - Make The Game Stage Responsive By Composition, Not Only Scale | in progress | 2026-07-05   | Added stage composition bounds; visual crop/anchor work remains.                        |
+| Phase 07 - Make The Game Stage Responsive By Composition, Not Only Scale | in progress | 2026-07-05   | Added stage bounds and phone-portrait Pixi transform; wide-stage work remains.          |
 | Phase 08 - Visual Polish And Density Pass                                | not started | -            | -                                                                                       |
 | Phase 09 - Accessibility And Input Behavior Pass                         | not started | -            | -                                                                                       |
 | Phase 10 - Automated Layout Regression Harness                           | not started | -            | -                                                                                       |
@@ -578,16 +578,19 @@ Completed checkpoint:
 
 - Added `src/game-standalone/stageComposition.ts` with explicit logical canvas, reel frame, and reel viewport bounds.
 - Wired stage composition CSS variables into the main `HelloPixi` stage wrapper without changing visual layout yet.
+- Added a pure Pixi stage transform that enlarges and centers the Pixi stage around the reel viewport for phone portrait layouts while keeping HTML controls on the existing base `gameScale`.
 
 Checkpoint validation:
 
 - `get_errors` passed for `stageComposition.ts`; `HelloPixi.svelte` only reports the existing editor-only `$app/paths` diagnostic.
+- Browser smoke confirmed controls remain in-bounds at `390x844`, `360x740`, `844x390`, and `1440x1000` after applying the Pixi stage transform.
+- Browser smoke confirmed one spin returns to the Spin-ready state at `390x844`, `844x390`, and `1440x1000`.
 - `pnpm run build --filter=oma-peli` passed with the known warning set.
 
 Remaining for this phase:
 
-- Use the reel viewport bounds to compute crop/anchor transforms per viewport class.
-- Validate canvas nonblank and spin completion after visual stage movement.
+- Add desktop-wide and short-screen stage composition rules.
+- Validate canvas nonblank and spin completion after any additional visual stage movement.
 
 ## Phase 08 - Visual Polish And Density Pass
 

@@ -132,8 +132,8 @@ target_architecture:
       responsibility: 'Paytable/menu, win popup, free-spin outro, debug panel, and modal overlays.'
 
 progress:
-  active_phase: null
-  active_step: null
+  active_phase: 'ui_phase_07_stage_composition'
+  active_step: '07.03_phone_portrait_stage_transform'
   completed_steps:
     - '00.01_read_context'
     - '00.02_set_scope'
@@ -550,6 +550,19 @@ progress:
         get_errors passed for stageComposition.ts; HelloPixi only reported the
         known editor-only $app/paths diagnostic. pnpm run build
         --filter=oma-peli passed with the known warning set.
+    - date: '2026-07-05'
+      author: 'GitHub Copilot'
+      note: >-
+        Continued OMA_PELI_UI_REFACTOR_PHASES.md Phase 07 for the deployed
+        HelloPixi route. Added createPixiStageTransform() in
+        stageComposition.ts and applied it from HelloPixi resizeGame() so phone
+        portrait Pixi rendering is enlarged and centered around the reel
+        viewport while HTML controls keep the base gameScale. get_errors passed
+        for stageComposition.ts; HelloPixi only reported the known editor-only
+        $app/paths diagnostic. Browser smoke confirmed controls remain
+        in-bounds at 390x844, 360x740, 844x390, and 1440x1000, and one spin
+        returns to Spin-ready state at 390x844, 844x390, and 1440x1000. pnpm
+        run build --filter=oma-peli passed with the known warning set.
 
 phases:
   - id: 'phase_00_workflow_and_docs'
