@@ -720,6 +720,10 @@ Recommendation: move active symbol weights, paytable, free-spin rules, and multi
 
 ### 4. Large Monolithic Component
 
+Phase 01 baseline hygiene was completed on 2026-07-05 for the deployed `HelloPixi` path. The phase converted remaining Svelte event directives in `HelloPixi.svelte` and `LoadingScreen.svelte` to Svelte 5 event attributes, added accessible labels to icon-only controls, fixed the mobile autoplay status display to use `autoPlayRoundsLeft`, and resolved local nullability and unused CSS diagnostics without changing game math.
+
+The current build baseline passes with `pnpm run build --filter=oma-peli`. The build still reports existing warnings about `tsconfig.json` not extending SvelteKit's generated config, missing virtual public env exports for `PUBLIC_SITE_MODE`, `PUBLIC_SENTRY_DSN`, and `PUBLIC_CHROMATIC`, plus an unused `TextStyle` import in the bundle graph.
+
 `HelloPixi.svelte` mixes renderer setup, math, state, layout, audio, and UI overlays in one file.
 
 Recommendation: split it into modules only when making behavior changes. Natural boundaries are `math.ts`, `reel.ts`, `audio.ts`, `layout.ts`, and presentational control components.

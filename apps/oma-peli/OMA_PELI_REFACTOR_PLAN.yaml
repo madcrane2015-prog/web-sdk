@@ -138,6 +138,12 @@ progress:
     - '00.01_read_context'
     - '00.02_set_scope'
     - '00.03_update_docs_contract'
+    - '01.01_capture_baseline_errors'
+    - '01.02_fix_svelte_event_directives'
+    - '01.03_add_accessible_labels'
+    - '01.04_fix_obvious_identifier_bug'
+    - '01.05_remove_or_reconnect_unused_css'
+    - '01.06_build_baseline'
   blocked_steps: []
   agent_journal:
     - date: '2026-07-05'
@@ -176,6 +182,18 @@ progress:
         confirmed for subsequent phases. A live gh copilot -p attempt showed that
         this CLI mode is not reliable for headless repo file edits in this VS
         Code workflow; execute phases directly through the VS Code agent instead.
+    - date: '2026-07-05'
+      author: 'GitHub Copilot'
+      note: >-
+        Completed phase_01_baseline_and_compile_hygiene for
+        active_deployed_hellopixi. Converted HelloPixi and LoadingScreen event
+        directives to Svelte 5 event attributes, added aria labels to icon-only
+        controls, fixed the mobile autoplay status variable, guarded local
+        nullable DOM/texture references, and resolved reported unused CSS
+        diagnostics while preserving dynamically applied win animation classes.
+        get_errors passed for all phase target files. pnpm run build
+        --filter=oma-peli passed with existing warnings about SvelteKit tsconfig,
+        virtual public env exports, and an unused TextStyle import.
 
 phases:
   - id: 'phase_00_workflow_and_docs'
@@ -215,7 +233,7 @@ phases:
           allowance. Use this VS Code agent workflow for queued phase execution.
 
   - id: 'phase_01_baseline_and_compile_hygiene'
-    status: 'not_started'
+    status: 'completed'
     priority: 1
     goal: 'Make the current HelloPixi file cleaner to compile and easier to refactor without changing behavior.'
     why: 'Current diagnostics create noise that will obscure real refactor regressions.'
@@ -225,12 +243,12 @@ phases:
       - 'src/components/LoadingScreen.svelte'
     steps:
       - id: '01.01_capture_baseline_errors'
-        status: 'not_started'
+        status: 'completed'
         action: 'Run get_errors on HelloPixi.svelte, layoutConfig.ts, layoutUtils.ts, PasswordProtection.svelte, and LoadingScreen.svelte.'
         output: 'List of current compile/a11y warnings is recorded in this YAML under current_findings or a phase note.'
         validation: 'No edits yet.'
       - id: '01.02_fix_svelte_event_directives'
-        status: 'not_started'
+        status: 'completed'
         action: 'Convert deprecated on:click, on:mouseenter, on:mouseleave, and on:keydown in HelloPixi-facing components to Svelte 5 event attributes.'
         details:
           - 'Use onclick={handler} instead of on:click={handler}.'
@@ -239,7 +257,7 @@ phases:
         output: 'Deprecated event directive diagnostics are gone or materially reduced.'
         validation: 'Run get_errors on touched files.'
       - id: '01.03_add_accessible_labels'
-        status: 'not_started'
+        status: 'completed'
         action: 'Add aria-label to icon-only buttons in HelloPixi controls and audio toggles.'
         details:
           - 'Keep existing title attributes if present.'
@@ -247,21 +265,37 @@ phases:
         output: 'a11y_consider_explicit_label diagnostics are gone or materially reduced.'
         validation: 'Run get_errors on HelloPixi.svelte.'
       - id: '01.04_fix_obvious_identifier_bug'
-        status: 'not_started'
+        status: 'completed'
         action: 'Replace mobile menu reference to autoPlayRounds with autoPlayRoundsLeft.'
         output: 'Mobile autoplay status displays the correct state variable.'
         validation: 'Run get_errors on HelloPixi.svelte.'
       - id: '01.05_remove_or_reconnect_unused_css'
-        status: 'not_started'
+        status: 'completed'
         action: 'Remove unused .win3d CSS selectors or reconnect them if they are meant to style the current win label.'
         decision_rule: 'Prefer removal unless a visible current element uses the class after a small local read.'
         output: 'Unused CSS warnings shrink.'
         validation: 'Run get_errors on HelloPixi.svelte.'
       - id: '01.06_build_baseline'
-        status: 'not_started'
+        status: 'completed'
         action: 'Run pnpm run build --filter=oma-peli.'
         output: 'Known build status is recorded in this YAML.'
         validation: 'Build succeeds, or failure is logged with exact error and next local step.'
+    phase_notes:
+      - date: '2026-07-05'
+        note: >-
+          Baseline get_errors initially reported the planned mobile autoplay
+          identifier issue, icon-only button labels, unused CSS selectors, and
+          two local nullability errors in HelloPixi. After the phase edits,
+          get_errors reported no errors for HelloPixi.svelte,
+          LoadingScreen.svelte, PasswordProtection.svelte, layoutConfig.ts, and
+          layoutUtils.ts.
+      - date: '2026-07-05'
+        note: >-
+          Build validation passed with pnpm run build --filter=oma-peli. Existing
+          warnings remain: tsconfig should extend ./.svelte-kit/tsconfig.json,
+          PUBLIC_SITE_MODE/PUBLIC_SENTRY_DSN/PUBLIC_CHROMATIC are not exported
+          by virtual:env/static/public, and TextStyle is imported but unused in
+          the bundle graph.
     documentation_required:
       - 'Update master_document Risks And Maintenance Notes if diagnostics reveal new categories.'
       - 'Update this phase status and agent_journal.'

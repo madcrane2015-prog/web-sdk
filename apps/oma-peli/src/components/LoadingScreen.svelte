@@ -13,21 +13,21 @@
 	let showSplashScreen = $state(false);
 	let canStartGame = $state(false);
 	let loadingProgress = $state(0);
-	
+
 	// Kun komponentti mountataan, aloita lataus-simulaatio
 	onMount(() => {
 		// Simuloi latauspalkin eteneminen 3 sekunnin aikana
 		const loadingInterval = setInterval(() => {
 			loadingProgress += 2; // 2% per 60ms = ~3 sekuntia 100%:iin
-			
+
 			if (loadingProgress >= 100) {
 				clearInterval(loadingInterval);
 				loadingProgress = 100;
-				
+
 				// Vaihda splash screeniin
 				setTimeout(() => {
 					showSplashScreen = true;
-					
+
 					// Anna splash screenin näkyä 3 sekuntia ennen kuin voi klikata
 					setTimeout(() => {
 						canStartGame = true;
@@ -35,7 +35,7 @@
 				}, 500);
 			}
 		}, 60); // Päivitä 60ms välein
-		
+
 		return () => clearInterval(loadingInterval);
 	});
 
@@ -51,7 +51,8 @@
 <!-- Oma-peli loading screen -->
 {#if !showSplashScreen}
 	<!-- LATAUSRUUTU: Logo + loading bar -->
-	<div style="
+	<div
+		style="
 		position: fixed;
 		top: 0;
 		left: 0;
@@ -63,10 +64,11 @@
 		align-items: center;
 		justify-content: center;
 		z-index: 10000;
-	">
+	"
+	>
 		<!-- MadCrane Logo -->
-		<img 
-			src="{base}/loading_screen/madcrane_loader.png" 
+		<img
+			src="{base}/loading_screen/madcrane_loader.png"
 			alt="MadCrane Logo"
 			style="
 				max-width: 400px;
@@ -75,9 +77,10 @@
 				margin-bottom: 40px;
 			"
 		/>
-		
+
 		<!-- Loading Bar Container -->
-		<div style="
+		<div
+			style="
 			width: 400px;
 			max-width: 80%;
 			height: 20px; //muutettu 03032026
@@ -85,31 +88,36 @@
 			border-radius: 10px; //muutettu 03032026
 			overflow: hidden;
 			border: 1px solid #444; //muutettu 03032026
-		">
+		"
+		>
 			<!-- Loading Bar Progress -->
-			<div style="
+			<div
+				style="
 				width: {loadingProgress}%;
 				height: 100%;
 				background: linear-gradient(90deg, #aaaaaa, #cccccc);
 				transition: width 0.3s ease;
-			"></div>
+			"
+			></div>
 		</div>
-		
+
 		<!-- Loading percentage text -->
-		<div style="
+		<div
+			style="
 			color: #fff;
 			font-family: Arial, sans-serif;
 			font-size: 18px;
 			margin-top: 20px;
-		">
+		"
+		>
 			Loading... {Math.round(loadingProgress)}%
 		</div>
 	</div>
 {:else if showSplashScreen && !gameStarted}
 	<!-- SPLASH SCREEN: Koko ruutu, klikkaa missä tahansa aloittaaksesi -->
-	<div 
-		on:click={startGame}
-		on:keydown={(e) => e.key === 'Enter' && startGame()}
+	<div
+		onclick={startGame}
+		onkeydown={(e) => e.key === 'Enter' && startGame()}
 		role="button"
 		tabindex="0"
 		style="
@@ -128,10 +136,11 @@
 	>
 		<!-- Piilotettu teksti accessibility-syistä -->
 		<span style="position: absolute; left: -9999px;">Click anywhere to continue</span>
-		
+
 		<!-- Näytä "Loading..." jos ei voi vielä klikata -->
 		{#if !canStartGame}
-			<div style="
+			<div
+				style="
 				position: absolute;
 				bottom: 40px;
 				left: 50%;
@@ -140,7 +149,8 @@
 				font-family: Arial, sans-serif;
 				font-size: 20px;
 				text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
-			">
+			"
+			>
 				Please wait...
 			</div>
 		{/if}
