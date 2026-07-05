@@ -828,7 +828,7 @@ Recommendation: manually validate desktop resize, mobile portrait, and mobile la
 
 UI refactor Phase 05 completed the standalone control-shell extraction checkpoint. `SpinButton.svelte` owns the central play/stop button markup, glare styling, responsive spin sizing, and accessible title/label. `StatusMeters.svelte` owns the mobile Balance / Bet / Win status strip and desktop single Balance/Win display markup. `QuickActions.svelte` owns the desktop autoplay and spin-speed controls while receiving callback props from `HelloPixi`. `MenuButton.svelte` owns the mobile-left and desktop-right menu button presentation. `ControlPanelFrame.svelte` owns the asset-based left/center/right bottom frame and named slots for overlay/status/default content. `HelloPixi.svelte` still owns game-state transitions through `pressSpinButton()` and `cycleSpinSpeed()` and preserves the existing branch composition inside the frame slots.
 
-UI refactor Phase 06 started the modal/menu split. `AutoplayMenu.svelte` now owns the autoplay round selector popover, including compact-landscape fixed positioning and the eight round options. `HelloPixi.svelte` still owns `startAutoPlay()` and only passes `onSelectRounds` and `onCancel` callbacks. `ModalShell.svelte` now owns the paytable/menu modal chrome, tokenized viewport sizing, sticky close header, backdrop close policy, and Escape handling. `PaytableSection.svelte` owns the static 81-ways paytable body. The mobile settings controls remain inline and should be extracted into a section next.
+UI refactor Phase 06 completed the modal/menu split checkpoint. `AutoplayMenu.svelte` owns the autoplay round selector popover, including compact-landscape fixed positioning and the eight round options. `HelloPixi.svelte` still owns `startAutoPlay()` and only passes `onSelectRounds` and `onCancel` callbacks. `ModalShell.svelte` owns the paytable/menu modal chrome, tokenized viewport sizing, sticky close header, backdrop close policy, and Escape handling. `PaytableSection.svelte` owns the static 81-ways paytable body. `SettingsSection.svelte` owns the mobile menu autoplay/speed controls while `HelloPixi` keeps autoplay and spin-speed state transitions through callback props.
 
 ### 9. Final Refactor Status After Phase 10
 
@@ -837,7 +837,7 @@ Phases 00 through 10 are now completed in `OMA_PELI_REFACTOR_PLAN.yaml`. The fir
 Known unresolved items remain:
 
 - A deeper UI refactor is still needed to handle unusual monitor/window shapes, reduce inline layout arithmetic, and extract the remaining control/menu UI from `HelloPixi`; this is planned in `OMA_PELI_UI_REFACTOR_PHASES.md`.
-- UI refactor Phase 06 remains needed to extract the inline paytable/menu/autoplay modal content from `HelloPixi` into a real modal system.
+- UI refactor Phase 07 remains needed to make the Pixi stage responsive by composition rather than only by scaling the full logical canvas.
 - Real-device mobile validation remains needed; the known phase 06 top-toggle, spin-size, and menu-close viewport failures were fixed and rechecked with browser viewport automation.
 - The deployed route remains local/client-simulated and is not RGS-authoritative.
 - Some simulator/math documents still reflect older math states and should not be treated as runtime truth.

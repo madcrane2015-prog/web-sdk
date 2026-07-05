@@ -22,6 +22,7 @@
 	import MobileControlPanel from './standalone/MobileControlPanel.svelte';
 	import PaytableSection from './standalone/PaytableSection.svelte';
 	import QuickActions from './standalone/QuickActions.svelte';
+	import SettingsSection from './standalone/SettingsSection.svelte';
 	import SpinButton from './standalone/SpinButton.svelte';
 	import StatusMeters from './standalone/StatusMeters.svelte';
 	import TopToggles from './standalone/TopToggles.svelte';
@@ -1669,93 +1670,17 @@
 <!-- Skaalautuu automaattisesti gameScale-muuttujan mukaan -->
 {#if showPaytable}
 	<ModalShell title="MENU" {gameScale} {uiLayoutTokens} onClose={() => (showPaytable = false)}>
-		<!-- GAME CONTROLS (Mobiilissa) -->
-		<div
-			class="mobile-menu-controls"
-			style="display: none; margin-bottom: 20px; padding: 15px; background: rgba(255, 255, 255, 0.05); border-radius: 10px;"
-		>
-			<h3 style="margin: 0 0 15px 0; color: #ffd700; font-size: 1.2em;">🎮 GAME CONTROLS</h3>
-
-			<!-- Autoplay -->
-			<div style="margin-bottom: 15px;">
-				<div
-					style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;"
-				>
-					<span style="font-size: 1.1em;">🔄 Autoplay:</span>
-					<span style="color: {isAutoPlaying ? '#00ff00' : '#ff6666'}; font-weight: bold;">
-						{isAutoPlaying ? `ON (${autoPlayRoundsLeft} left)` : 'OFF'}
-					</span>
-				</div>
-				{#if isAutoPlaying}
-					<button
-						onclick={stopAutoPlay}
-						style="width: 100%; padding: 12px; background: linear-gradient(135deg, #ff4444 0%, #ff6666 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1em;"
-					>
-						🛑 STOP AUTOPLAY
-					</button>
-				{:else}
-					<button
-						onclick={() => {
-							showAutoPlayMenu = true;
-							showPaytable = false;
-						}}
-						style="width: 100%; padding: 12px; background: linear-gradient(135deg, #44aa44 0%, #66cc66 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1em;"
-					>
-						▶️ START AUTOPLAY
-					</button>
-				{/if}
-			</div>
-
-			<!-- Spin Speed -->
-			<div style="margin-bottom: 10px;">
-				<div style="margin-bottom: 10px;">
-					<span style="font-size: 1.1em;">⚡ Spin Speed:</span>
-					<span style="color: #ffd700; font-weight: bold; margin-left: 10px;">
-						{spinSpeed === 'slow' ? '🐌 SLOW' : spinSpeed === 'medium' ? '🏃 MEDIUM' : '⚡ FAST'}
-					</span>
-				</div>
-				<div style="display: flex; gap: 10px;">
-					<button
-						onclick={() => {
-							spinSpeed = 'slow';
-						}}
-						style="flex: 1; padding: 10px; background: {spinSpeed === 'slow'
-							? 'linear-gradient(135deg, #4488ff 0%, #66aaff 100%)'
-							: 'rgba(255,255,255,0.1)'}; color: white; border: {spinSpeed === 'slow'
-							? '2px solid #ffd700'
-							: '1px solid #555'}; border-radius: 8px; cursor: pointer; font-size: 0.9em;"
-					>
-						🐌 Slow
-					</button>
-					<button
-						onclick={() => {
-							spinSpeed = 'medium';
-						}}
-						style="flex: 1; padding: 10px; background: {spinSpeed === 'medium'
-							? 'linear-gradient(135deg, #4488ff 0%, #66aaff 100%)'
-							: 'rgba(255,255,255,0.1)'}; color: white; border: {spinSpeed === 'medium'
-							? '2px solid #ffd700'
-							: '1px solid #555'}; border-radius: 8px; cursor: pointer; font-size: 0.9em;"
-					>
-						🏃 Medium
-					</button>
-					<button
-						onclick={() => {
-							spinSpeed = 'fast';
-						}}
-						style="flex: 1; padding: 10px; background: {spinSpeed === 'fast'
-							? 'linear-gradient(135deg, #4488ff 0%, #66aaff 100%)'
-							: 'rgba(255,255,255,0.1)'}; color: white; border: {spinSpeed === 'fast'
-							? '2px solid #ffd700'
-							: '1px solid #555'}; border-radius: 8px; cursor: pointer; font-size: 0.9em;"
-					>
-						⚡ Fast
-					</button>
-				</div>
-			</div>
-
-			<div style="border-top: 1px solid #555; margin: 20px 0;"></div>
-		</div>
+		<SettingsSection
+			{isAutoPlaying}
+			{autoPlayRoundsLeft}
+			{spinSpeed}
+			onStopAutoplay={stopAutoPlay}
+			onOpenAutoplay={() => {
+				showAutoPlayMenu = true;
+				showPaytable = false;
+			}}
+			onSetSpinSpeed={(nextSpinSpeed) => (spinSpeed = nextSpinSpeed)}
+		/>
 
 		<PaytableSection />
 
@@ -2308,10 +2233,6 @@
 		}
 	}
 
-	.mobile-menu-controls {
-		display: none !important;
-	}
-
 	/* Piilota tietyt elementit mobiilissa */
 	.hide-on-mobile {
 		display: flex !important;
@@ -2325,10 +2246,6 @@
 	/* Mobiili portrait-tila - pelialue isompi, kontrollit alareunaan */
 	/* HUOM: Sijainti tulee nyt layoutConfig.ts:stä - CSS ei enää ylikirjoita */
 	@media (max-width: 768px) and (orientation: portrait) {
-		.mobile-menu-controls {
-			display: block !important;
-		}
-
 		/* Piilota BALANCE, Autoplay, Spin Speed, WIN mobiilissa */
 		.hide-on-mobile {
 			display: none !important;
@@ -2343,10 +2260,6 @@
 	/* Mobiili landscape-tila - myös yksinkertaistettu layout */
 	/* HUOM: Sijainti tulee nyt layoutConfig.ts:stä - CSS ei enää ylikirjoita */
 	@media (max-width: 900px) and (max-height: 500px) and (orientation: landscape) {
-		.mobile-menu-controls {
-			display: block !important;
-		}
-
 		/* Piilota BALANCE, Autoplay, Spin Speed, WIN mobiilissa */
 		.hide-on-mobile {
 			display: none !important;

@@ -528,6 +528,18 @@ progress:
         renders four symbol groups and remains inside the modal at 390x844,
         740x360, and 1440x1000. pnpm run build --filter=oma-peli passed with
         the known warning set.
+    - date: '2026-07-05'
+      author: 'GitHub Copilot'
+      note: >-
+        Completed OMA_PELI_UI_REFACTOR_PHASES.md Phase 06 for the deployed
+        HelloPixi route. Added SettingsSection.svelte and moved mobile menu
+        autoplay/speed controls out of HelloPixi while keeping autoplay and
+        spin-speed state transitions callback-owned. get_errors passed for
+        SettingsSection; HelloPixi only reported the known editor-only
+        $app/paths diagnostic. Browser smoke confirmed settings are visible
+        and in-bounds at 390x844 and 740x360, hidden on 1440x1000, and mobile
+        Start Autoplay closes the modal and opens the autoplay selector. pnpm
+        run build --filter=oma-peli passed with the known warning set.
 
 phases:
   - id: 'phase_00_workflow_and_docs'
