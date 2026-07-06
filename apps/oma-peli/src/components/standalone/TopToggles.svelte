@@ -203,7 +203,12 @@
 		.mobile-top-actions {
 			right: max(8px, env(safe-area-inset-right));
 			top: max(8px, env(safe-area-inset-top));
-			gap: 5px;
+			gap: 4px;
+		}
+
+		.mobile-icon {
+			width: 34px;
+			height: 34px;
 		}
 
 		.top-action {

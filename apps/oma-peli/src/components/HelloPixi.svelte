@@ -763,9 +763,9 @@
 			viewportModel.viewportClass === 'phonePortrait' ||
 			viewportModel.viewportClass === 'phonePortraitCompact'
 		) {
-			logoSpriteRef.scale.set(0.9);
+			logoSpriteRef.scale.set(0.76);
 			logoSpriteRef.x = 430;
-			logoSpriteRef.y = -300;
+			logoSpriteRef.y = -255;
 			return;
 		}
 
@@ -1762,18 +1762,20 @@
 <!-- Avataan "💰 PAYTABLE" -napista, suljetaan "Sulje"-napista -->
 <!-- Skaalautuu automaattisesti gameScale-muuttujan mukaan -->
 {#if showPaytable}
-	<ModalShell title="MENU" {gameScale} {uiLayoutTokens} onClose={() => (showPaytable = false)}>
-		<SettingsSection
-			{isAutoPlaying}
-			{autoPlayRoundsLeft}
-			{spinSpeed}
-			onStopAutoplay={stopAutoPlay}
-			onOpenAutoplay={() => {
-				showAutoPlayMenu = true;
-				showPaytable = false;
-			}}
-			onSetSpinSpeed={(nextSpinSpeed) => (spinSpeed = nextSpinSpeed)}
-		/>
+	<ModalShell title={isPhonePortraitLayout ? 'VOITTOTAULU' : 'MENU'} {gameScale} {uiLayoutTokens} onClose={() => (showPaytable = false)}>
+		{#if !isPhonePortraitLayout}
+			<SettingsSection
+				{isAutoPlaying}
+				{autoPlayRoundsLeft}
+				{spinSpeed}
+				onStopAutoplay={stopAutoPlay}
+				onOpenAutoplay={() => {
+					showAutoPlayMenu = true;
+					showPaytable = false;
+				}}
+				onSetSpinSpeed={(nextSpinSpeed) => (spinSpeed = nextSpinSpeed)}
+			/>
+		{/if}
 
 		<PaytableSection />
 
@@ -2059,6 +2061,34 @@
 				</div>
 			</ControlPanelFrame>
 			<!-- Suljetaan control panel -->
+
+			<div class="portrait-status-row">
+				<StatusMeters mode="strip" {balance} {betAmount} {lastWin} />
+			</div>
+
+			<div class="portrait-spin-cluster">
+				<button
+					onclick={decreaseBet}
+					class="portrait-bet-button"
+					style:background-image="url('{controlsPath}/Control_lowerbet_select.png')"
+					title="Decrease Bet"
+					aria-label="Decrease bet"
+				></button>
+				<SpinButton
+					{controlsPath}
+					{gameScale}
+					{isAutoPlaying}
+					{playButtonGlareActive}
+					onPress={pressSpinButton}
+				/>
+				<button
+					onclick={increaseBet}
+					class="portrait-bet-button"
+					style:background-image="url('{controlsPath}/Control_upperbet_select.png')"
+					title="Increase Bet"
+					aria-label="Increase bet"
+				></button>
+			</div>
 
 			<div class="landscape-control-rail">
 				<SpinButton
@@ -2403,6 +2433,23 @@
 		display: none;
 	}
 
+	.portrait-status-row,
+	.portrait-spin-cluster {
+		display: none;
+	}
+
+	.portrait-bet-button {
+		width: 58px;
+		height: 58px;
+		border: 0;
+		padding: 0;
+		background-color: transparent;
+		background-repeat: no-repeat;
+		background-position: center;
+		background-size: contain;
+		cursor: pointer;
+	}
+
 	.landscape-bet-controls {
 		display: flex;
 		flex-direction: column;
@@ -2497,6 +2544,47 @@
 			height: 46px !important;
 			min-width: 46px;
 			min-height: 46px;
+		}
+
+		:global(.control-panel-mobile) {
+			display: none !important;
+		}
+
+		.portrait-status-row {
+			position: fixed;
+			left: max(12px, env(safe-area-inset-left));
+			right: max(12px, env(safe-area-inset-right));
+			top: clamp(452px, 60dvh, 560px);
+			z-index: 2400;
+			display: block;
+			pointer-events: none;
+		}
+
+		.portrait-status-row :global(.mobile-status-strip) {
+			position: static;
+			display: grid;
+			grid-template-columns: minmax(0, 1fr) minmax(76px, 0.78fr) minmax(0, 1fr);
+			gap: 8px;
+		}
+
+		.portrait-spin-cluster {
+			position: fixed;
+			left: 50%;
+			bottom: max(118px, calc(env(safe-area-inset-bottom) + 96px));
+			transform: translateX(-50%);
+			z-index: 2450;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 22px;
+			pointer-events: auto;
+		}
+
+		.portrait-spin-cluster :global(.play-button) {
+			width: 92px !important;
+			height: 92px !important;
+			min-width: 92px;
+			min-height: 92px;
 		}
 	}
 

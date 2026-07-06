@@ -60,7 +60,7 @@
 			position: fixed !important;
 			left: 0 !important;
 			right: 0 !important;
-			top: min(610px, calc(50dvh + 58px)) !important;
+			top: clamp(470px, 60dvh, 610px) !important;
 			bottom: auto !important;
 			width: 100vw !important;
 			height: 58px !important;
