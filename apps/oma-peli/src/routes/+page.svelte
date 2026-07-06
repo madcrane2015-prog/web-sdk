@@ -1,12 +1,20 @@
 <script lang="ts">
-  import HelloPixi from "../components/HelloPixi.svelte";
-  import PasswordProtection from "../components/PasswordProtection.svelte";
-  
-  let isAuthenticated = false;
+	import { browser } from '$app/environment';
+	import HelloPixi from '../components/HelloPixi.svelte';
+	import PasswordProtection from '../components/PasswordProtection.svelte';
+
+	const auditEnabled = browser
+		? new URLSearchParams(window.location.search).get('audit') !== null ||
+			new URLSearchParams(window.location.search).get('skipIntro') === '1'
+		: false;
+
+	let isAuthenticated = $state(auditEnabled);
 </script>
 
-<PasswordProtection bind:isAuthenticated />
+{#if !auditEnabled}
+	<PasswordProtection bind:isAuthenticated />
+{/if}
 
 {#if isAuthenticated}
-  <HelloPixi />
+	<HelloPixi />
 {/if}

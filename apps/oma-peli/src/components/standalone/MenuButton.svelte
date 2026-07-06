@@ -43,10 +43,19 @@
 	@media (max-width: 768px) and (orientation: portrait),
 		(max-width: 900px) and (max-height: 500px) and (orientation: landscape) {
 		.play-button {
-			width: var(--oma-spin-button-size) !important;
-			height: var(--oma-spin-button-size) !important;
-			min-width: var(--oma-spin-button-size);
-			min-height: var(--oma-spin-button-size);
+			width: 54px !important;
+			height: 54px !important;
+			min-width: 54px;
+			min-height: 54px;
+		}
+	}
+
+	@media (max-width: 900px) and (max-height: 500px) and (orientation: landscape) {
+		.play-button {
+			width: 42px !important;
+			height: 42px !important;
+			min-width: 42px;
+			min-height: 42px;
 		}
 	}
 </style>

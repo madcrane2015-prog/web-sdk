@@ -54,4 +54,34 @@
 		align-items: center;
 		position: relative;
 	}
+
+	@media (max-width: 768px) and (orientation: portrait) {
+		.control-panel-mobile {
+			position: fixed !important;
+			left: 0 !important;
+			right: 0 !important;
+			top: min(610px, calc(50dvh + 58px)) !important;
+			bottom: auto !important;
+			width: 100vw !important;
+			height: 58px !important;
+			justify-content: center;
+		}
+
+		.control-panel-center {
+			height: 58px !important;
+			padding: 0 8px !important;
+			gap: 6px !important;
+			justify-content: center;
+		}
+
+		.control-panel-mobile > img {
+			height: 58px !important;
+		}
+	}
+
+	@media (max-width: 900px) and (max-height: 500px) and (orientation: landscape) {
+		.control-panel-mobile {
+			display: none !important;
+		}
+	}
 </style>

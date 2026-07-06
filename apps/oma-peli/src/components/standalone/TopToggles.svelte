@@ -37,9 +37,7 @@
 </script>
 
 {#if isMobile}
-	<div class="mobile-top-actions">
-		<button onclick={onTogglePaytable} class="top-action paytable mobile-text">MENU</button>
-		<button onclick={onToggleDebug} class="top-action debug mobile-text">DEBUG</button>
+	<div class="mobile-top-actions dev-actions">
 		<button
 			onclick={onToggleMusic}
 			class="icon-button mobile-icon"
@@ -187,26 +185,59 @@
 		top: max(var(--oma-top-action-inset, 8px), env(safe-area-inset-top));
 		right: max(var(--oma-top-action-inset, 8px), env(safe-area-inset-right));
 		display: flex;
+		flex-direction: column;
 		align-items: center;
 		gap: var(--oma-top-action-gap, 6px);
 		z-index: 4000;
 		pointer-events: auto;
 	}
 
-	.mobile-text {
-		position: static;
-		min-width: var(--oma-top-action-text-min-width, 64px);
-		min-height: var(--oma-top-action-text-min-height, 40px);
-		padding: 7px 9px;
-		border-width: 1px;
-		border-radius: 7px;
-		font-size: 11px;
-		letter-spacing: 0;
-	}
-
 	.mobile-icon {
 		width: var(--oma-top-action-icon-size, 40px);
 		height: var(--oma-top-action-icon-size, 40px);
 		flex: 0 0 auto;
+	}
+
+	@media (max-width: 768px) and (orientation: portrait),
+		(max-width: 900px) and (max-height: 500px) and (orientation: landscape) {
+		.mobile-top-actions {
+			right: max(8px, env(safe-area-inset-right));
+			top: max(8px, env(safe-area-inset-top));
+			gap: 5px;
+		}
+
+		.top-action {
+			position: fixed !important;
+			top: max(8px, env(safe-area-inset-top)) !important;
+			min-width: 64px !important;
+			min-height: 40px !important;
+			padding: 7px 9px !important;
+			border-width: 1px !important;
+			border-radius: 7px !important;
+			font-size: 11px !important;
+			letter-spacing: 0;
+			z-index: 4000;
+		}
+
+		.paytable {
+			right: calc(164px + env(safe-area-inset-right)) !important;
+		}
+
+		.debug {
+			right: calc(94px + env(safe-area-inset-right)) !important;
+		}
+
+		.audio-actions {
+			position: fixed !important;
+			top: max(8px, env(safe-area-inset-top)) !important;
+			right: max(8px, env(safe-area-inset-right)) !important;
+			gap: 6px !important;
+			z-index: 4001;
+		}
+
+		.audio-actions .icon-button {
+			width: 40px !important;
+			height: 40px !important;
+		}
 	}
 </style>

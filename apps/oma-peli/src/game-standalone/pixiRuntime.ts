@@ -11,7 +11,8 @@ export async function createPixiApplication(options: CreatePixiApplicationOption
 	await app.init({
 		width: options.width,
 		height: options.height,
-		backgroundAlpha: 0,
+		backgroundColor: 0x000000,
+		backgroundAlpha: 1,
 		antialias: true,
 		resolution: options.resolution,
 		autoDensity: true,

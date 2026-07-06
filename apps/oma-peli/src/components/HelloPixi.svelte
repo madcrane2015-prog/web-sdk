@@ -131,7 +131,9 @@
 		viewportModel.viewportClass === 'phoneLandscapeCompact' ||
 			viewportModel.viewportClass === 'desktopShort',
 	);
-	const showsMobileStatusStrip = $derived(isPhonePortraitLayout || isCompactShortLayout);
+	const showsMobileStatusStrip = $derived(
+		isPhonePortraitLayout || viewportModel.viewportClass === 'desktopShort',
+	);
 
 	// Kiekkojen koko ja sijainti - uudelle 1445x1000 taustalle
 	const SCALE_MULTIPLIER = 1.75; // Symbolien koko kerroin (1.0 = normaali)
@@ -183,6 +185,10 @@
 	// ===== ÄÄNIEFEKTIT =====
 	// Äänitiedostojen URLit
 	const SOUND_URLS = assetManifest.soundUrls;
+	const auditParams =
+		typeof window === 'undefined' ? new URLSearchParams() : new URLSearchParams(window.location.search);
+	const auditMode = auditParams.get('audit') ?? '';
+	const skipsIntro = auditParams.get('skipIntro') === '1' || auditMode.length > 0;
 
 	// Äänien hallinta
 	let soundEnabled = $state(initialGameState.soundEnabled); // Voi käyttäjä halutessaan mykistää
@@ -208,6 +214,7 @@
 	let isFastPlayEnabled = $state(false); // Nopea pelitila
 	let controlPanelWidth = $state(1100); // Paneelin leveys (päivittyy dynaamisesti)
 	let reelFramesSpriteRef: any = null; // Viittaus reel frames spriteen
+	let logoSpriteRef: Sprite | null = null;
 
 	// ===================================================================
 	// SPIN SPEED KONFIGURAATIO
@@ -448,7 +455,7 @@
 	let loadingStatus = $state('Initializing...'); // Nykyinen latausvaihe
 	let errorMessage = $state(''); // Virheviesti jos lataus epäonnistuu
 	let debugInfo: string[] = []; // Kootut debug-tiedot
-	let gameReady = $state(false); // Onko peli valmis aloitettavaksi (loading screen valmis)
+	let gameReady = $state(skipsIntro); // Onko peli valmis aloitettavaksi (loading screen valmis)
 
 	// ===== CREDIT JÄRJESTELMÄ =====
 	// Pelaajan saldo ja panostus
@@ -465,8 +472,8 @@
 	// Autoplay-toiminnallisuus
 	let isAutoPlaying = $state(initialGameState.isAutoPlaying);
 	let autoPlayRoundsLeft = $state(initialGameState.autoPlayRoundsLeft);
-	let showAutoPlayMenu = $state(initialGameState.showAutoPlayMenu);
-	let showDebugPanel = $state(initialGameState.showDebugPanel); // Debug-paneelin näkyvyys
+	let showAutoPlayMenu = $state(auditMode === 'autoplay' || initialGameState.showAutoPlayMenu);
+	let showDebugPanel = $state(auditMode === 'debug' || initialGameState.showDebugPanel); // Debug-paneelin näkyvyys
 	let winPopupShownAt = $state(0); // Timestamp kun popup tuli näkyviin
 	let isProcessingAutoPlay = initialGameState.isProcessingAutoPlay; // Lukko estää päällekkäiset kutsut
 	let autoPlayTimeoutId: number | null = null; // Tallenna timeout ID
@@ -643,7 +650,7 @@
 	let totalWin = $state(0);
 	let currentWins = $state<WinResult[]>([]);
 	let isShowingWin = $state(false);
-	let showPaytable = $state(false); // Paytable-näkyvyys
+	let showPaytable = $state(auditMode === 'menu' || auditMode === 'paytable'); // Paytable-näkyvyys
 	let showFreeSpinsEndPopup = $state(false); // Free spins end popup
 	let freeSpinsEndAmount = $state(0); // Total won in free spins
 
@@ -678,7 +685,7 @@
 	// Korostaa voittavat symbolit
 	function highlightWinningSymbols(wins: WinResult[]) {
 		// Poista vanhat korostukset
-		winHighlights.forEach((h) => app.stage.removeChild(h));
+		winHighlights.forEach((h) => h.parent?.removeChild(h));
 		winHighlights = [];
 
 		// Lisää uudet korostukset
@@ -692,7 +699,7 @@
 
 				highlight.x = reel.container.x;
 				highlight.y = reel.container.y;
-				app.stage.addChild(highlight);
+				gameLayer.addChild(highlight);
 				winHighlights.push(highlight);
 
 				// Pulssi-animaatio
@@ -712,7 +719,7 @@
 
 	// Poista voittokorostukset
 	function clearWinHighlights() {
-		winHighlights.forEach((h) => app.stage.removeChild(h));
+		winHighlights.forEach((h) => h.parent?.removeChild(h));
 		winHighlights = [];
 	}
 
@@ -722,8 +729,50 @@
 	// PixiJS sovelluksen pääkomponentit
 	let container: HTMLDivElement; // HTML-elementti johon peli sijoitetaan
 	let app: Awaited<ReturnType<typeof createPixiApplication>>; // Pelin pääsovellus
+	let gameLayer: Container; // Skaalattava pelisisältö; tausta jää root-stageen
+	let backgroundSprite: Sprite | null = null; // Root-stage tausta, sommitellaan viewporttiin
 	let reels: StandaloneReel[] = []; // Kaikki kiekot (13 kpl)
 	let winHighlights: Graphics[] = []; // Voittavien symbolien korostukset
+
+	function layoutBackgroundSprite() {
+		if (!backgroundSprite) return;
+
+		const targetWidth = stageViewportWidth || CANVAS_WIDTH;
+		const targetHeight = stageViewportHeight || CANVAS_HEIGHT;
+		const backgroundScale = Math.max(
+			targetWidth / backgroundSprite.texture.width,
+			targetHeight / backgroundSprite.texture.height,
+		);
+
+		backgroundSprite.scale.set(backgroundScale);
+		backgroundSprite.x = (targetWidth - backgroundSprite.width) / 2;
+		backgroundSprite.y = (targetHeight - backgroundSprite.height) / 2;
+	}
+
+	function layoutLogoSprite() {
+		if (!logoSpriteRef) return;
+
+		if (viewportModel.viewportClass === 'phoneLandscapeCompact') {
+			logoSpriteRef.scale.set(0.5);
+			logoSpriteRef.x = -140;
+			logoSpriteRef.y = 100;
+			return;
+		}
+
+		if (
+			viewportModel.viewportClass === 'phonePortrait' ||
+			viewportModel.viewportClass === 'phonePortraitCompact'
+		) {
+			logoSpriteRef.scale.set(0.9);
+			logoSpriteRef.x = 430;
+			logoSpriteRef.y = -300;
+			return;
+		}
+
+		logoSpriteRef.scale.set(LOGO_SCALE);
+		logoSpriteRef.x = (CANVAS_WIDTH - logoSpriteRef.width) / 2 + LOGO_X;
+		logoSpriteRef.y = LOGO_Y;
+	}
 
 	// ===================================================================
 	// PIXIJS ALUSTUS - Suoritetaan kun komponentti on ladattu
@@ -738,6 +787,14 @@
 
 	// Reactive skaalausmuuttuja - päivittyy automaattisesti kun ikkunan kokoa muutetaan
 	let gameScale = $state(1);
+	let stageViewportWidth = $state(1445);
+	let stageViewportHeight = $state(1000);
+	let scheduleViewportResize: (() => void) | null = null;
+	let viewportSyncFrame = 0;
+	const rendererResolution =
+		typeof window === 'undefined'
+			? 1
+			: Math.min(window.devicePixelRatio || 1, window.innerWidth <= 900 ? 1.5 : 2);
 
 	// Control panel position (lasketaan gameScalen kanssa)
 	const controlPanelPos = $derived(
@@ -753,7 +810,11 @@
 	const debugButtonTop = $derived(getSafeTopPosition(190 * gameScale, viewportModel));
 	const audioButtonTop = $derived(getSafeTopPosition(10 * gameScale, viewportModel));
 	const audioButtonRight = $derived(getSafeRightPosition(10 * gameScale, viewportModel));
-	const usesViewportAnchoredTopActions = $derived(viewportModel.usesViewportAnchoredTopActions);
+	const usesMobileTopActions = $derived(
+		viewportModel.viewportClass === 'phonePortrait' ||
+			viewportModel.viewportClass === 'phonePortraitCompact' ||
+			viewportModel.viewportClass === 'phoneLandscapeCompact',
+	);
 	const uiLayoutTokens = $derived(getUILayoutTokens(viewportModel.viewportClass));
 	const uiLayoutCssVars = $derived(createUILayoutCssVars(uiLayoutTokens));
 	const stageCompositionCssVars = $derived(createStageCompositionCssVars(STAGE_COMPOSITION));
@@ -768,7 +829,7 @@
 			app = await createPixiApplication({
 				width: CANVAS_WIDTH, // Canvas leveys pikseleinä (1445px)
 				height: CANVAS_HEIGHT, // Canvas korkeus pikseleinä (1000px)
-				resolution: window.devicePixelRatio || 1, // Käytä laitteen pixel ratiota (retina-tuki)
+				resolution: rendererResolution,
 			});
 			if (destroyed) {
 				destroyPixiApplication(app);
@@ -777,17 +838,27 @@
 
 			// Liitä PixiJS canvas HTML-elementtiin (container-diviin)
 			container.appendChild(app.canvas);
+			app.canvas.style.display = 'block';
+			app.canvas.style.width = '100%';
+			app.canvas.style.height = '100%';
 			cleanupCallbacks.push(() => app.canvas.remove());
+			gameLayer = new Container();
+			app.stage.addChild(gameLayer);
 
 			// ===== 2) RESPONSIIVINEN SKAALAUS =====
 			// Skaalataan peliä ikkunan koon mukaan mutta ei koskaan suuremmaksi kuin 100%
+			let resizeFrameId: number | null = null;
+
 			const resizeGame = () => {
 				viewportModel = createViewportModel({ width: CANVAS_WIDTH, height: CANVAS_HEIGHT });
 				layoutUpdateTrigger += 1;
 				const newScale = viewportModel.gameScale;
+				stageViewportWidth = Math.max(1, viewportModel.width);
+				stageViewportHeight = Math.max(1, viewportModel.height);
 
 				// Päivitä reactive skaalaus (käytetään UI-elementeissä)
 				gameScale = newScale;
+				app.renderer.resize(stageViewportWidth, stageViewportHeight);
 
 				// Compose the Pixi stage around the reel viewport while HTML controls keep base scale.
 				const pixiStageTransform = createPixiStageTransform(
@@ -795,19 +866,58 @@
 					newScale,
 					STAGE_COMPOSITION,
 				);
-				app.stage.scale.set(pixiStageTransform.scale);
-				app.stage.position.set(pixiStageTransform.x, pixiStageTransform.y);
+				gameLayer.scale.set(pixiStageTransform.scale);
+				gameLayer.position.set(pixiStageTransform.x, pixiStageTransform.y);
 
 				// Renderer pysyy kiinteässä koossa (1445x1000)
-				app.renderer.resize(CANVAS_WIDTH, CANVAS_HEIGHT);
+				layoutBackgroundSprite();
+				layoutLogoSprite();
 			};
+
+			const scheduleResizeGame = () => {
+				if (resizeFrameId !== null) {
+					return;
+				}
+
+				resizeFrameId = window.requestAnimationFrame(() => {
+					resizeFrameId = null;
+					if (!destroyed) {
+						resizeGame();
+					}
+				});
+			};
+			scheduleViewportResize = scheduleResizeGame;
 
 			// Kutsu heti alussa (aseta oikea skaalaus)
 			resizeGame();
 
 			// Päivitä kun ikkunan kokoa muutetaan
-			window.addEventListener('resize', resizeGame);
-			cleanupCallbacks.push(() => window.removeEventListener('resize', resizeGame));
+			window.addEventListener('resize', scheduleResizeGame);
+			window.addEventListener('orientationchange', scheduleResizeGame);
+			window.visualViewport?.addEventListener('resize', scheduleResizeGame);
+			window.addEventListener('pageshow', scheduleResizeGame);
+			document.addEventListener('visibilitychange', scheduleResizeGame);
+			const viewportResizeObserver = new ResizeObserver(scheduleResizeGame);
+			viewportResizeObserver.observe(document.documentElement);
+			const viewportPollId = window.setInterval(() => {
+				if (window.innerWidth !== viewportModel.width || window.innerHeight !== viewportModel.height) {
+					scheduleResizeGame();
+				}
+			}, 250);
+			cleanupCallbacks.push(() => {
+				scheduleViewportResize = null;
+				window.removeEventListener('resize', scheduleResizeGame);
+				window.removeEventListener('orientationchange', scheduleResizeGame);
+				window.visualViewport?.removeEventListener('resize', scheduleResizeGame);
+				window.removeEventListener('pageshow', scheduleResizeGame);
+				document.removeEventListener('visibilitychange', scheduleResizeGame);
+				viewportResizeObserver.disconnect();
+				window.clearInterval(viewportPollId);
+				if (resizeFrameId !== null) {
+					window.cancelAnimationFrame(resizeFrameId);
+					resizeFrameId = null;
+				}
+			});
 
 			// ===== VÄLILYÖNTI-NÄPPÄIN: SKIP SPIN =====
 			// Jos kiekot pyörivät → pysäytä ne välittömästi
@@ -850,14 +960,17 @@
 
 			try {
 				loadingStatus = 'Loading UI images...';
+				debugInfo.push(`Loading background: ${BACKGROUND_URL}`);
 				debugInfo.push(`Loading reel frames: ${REEL_FRAMES_URL}`);
 				debugInfo.push(`Loading logo: ${LOGO_URL}`);
 
 				// UI-KUVIEN LATAUS (taustakuva käyttää nyt GameBackground-komponenttia HTML-puolella)
 				await Assets.load([
+					{ alias: 'standalone-background', src: BACKGROUND_URL },
 					{ alias: 'reelframes', src: REEL_FRAMES_URL },
 					{ alias: 'logo', src: LOGO_URL },
 				]);
+				backgroundTexture = Texture.from('standalone-background');
 				reelFramesTexture = Texture.from('reelframes');
 				logoTexture = Texture.from('logo');
 
@@ -954,55 +1067,13 @@
 				audioElements[key] = audio;
 			}
 			// ===== 4) TAUSTAKUVAN ASETTELU =====
-			// KOMMENTOITU POIS - Taustakuva ei näy
-			// Lisätään taustakuva ENSIMMÄISENÄ jotta se jää kaiken taakse
-			/*
-    console.log("Taustakuva ladattu, tekstuuri:", backgroundTexture);
-
-    if (backgroundTexture) {
-      const bgSprite = new Sprite(backgroundTexture);
-
-      // Joustava taustakuvan skaalaus käyttäjän asetuksen mukaan
-      const canvasAspect = app.renderer.width / app.renderer.height;   // Canvas kuvasuhde
-      const imageAspect = bgSprite.texture.width / bgSprite.texture.height; // Kuvan kuvasuhde
-
-      let scale; // Lopullinen skaalaukskerroin
-
-      if (BACKGROUND_FIT_MODE === "width") {
-        // Skaalaa täyttämään leveys (saattaa leikata ylä/alaosaa)
-        scale = app.renderer.width / bgSprite.texture.width;
-      } else if (BACKGROUND_FIT_MODE === "height") {
-        // Skaalaa täyttämään korkeus (saattaa leikata sivuosia mutta näyttää koko pystysuunnan)
-        scale = app.renderer.height / bgSprite.texture.height;
-      } else {
-        // Skaalaa mahtumaan kokonaan (pienin kerroin leveästä/korkeudesta)
-        scale = Math.min(
-          app.renderer.width / bgSprite.texture.width,
-          app.renderer.height / bgSprite.texture.height
-        );
-      }
-
-      // Käytä käyttäjän asettamaa koko-kerrointa
-      scale *= BACKGROUND_SCALE;
-
-      // Aseta lopullinen koko
-      bgSprite.scale.set(scale);
-
-      // Keskitä vaakasuunnassa, aseta pystysuunnassa Y-siirtymällä
-      bgSprite.x = (app.renderer.width - bgSprite.width) / 2;  // Keskelle vaakasuunnassa
-      bgSprite.y = (app.renderer.height - bgSprite.height) / 2 + BACKGROUND_Y_SHIFT; // Keskelle + siirtymä
-
-      // Lisää taustakuva näytölle
-      app.stage.addChild(bgSprite);
-
-      console.log("Taustakuva lisätty:", BACKGROUND_FIT_MODE, "mode, size:",
-                  bgSprite.width.toFixed(0), "x", bgSprite.height.toFixed(0),
-                  "image aspect:", imageAspect.toFixed(2), "scale:", scale.toFixed(2),
-                  "pos:", bgSprite.x.toFixed(0), bgSprite.y.toFixed(0));
-    } else {
-      console.error("Taustakuva ei ole saatavilla!");
-    }
-    */
+			// Piirretään tausta myös Pixi-canvasin sisään. Opaakki canvas estää Android/WebGL
+			// compositorin stale-pikselien välkkymisen ja pitää pelin itsenäisenä.
+			if (backgroundTexture) {
+				backgroundSprite = new Sprite(backgroundTexture);
+				layoutBackgroundSprite();
+				app.stage.addChildAt(backgroundSprite, 0);
+			}
 
 			// ===== 5) KIEKKOJEN MITAT JA SIJAINNIT =====
 			// Lasketaan kiekkojen mitat taustakuvan mukaan
@@ -1112,8 +1183,8 @@
 				reelCont.mask = mask; // Aseta maski kiekon kontille
 
 				// Lisää maski ja kiekko näytölle
-				app.stage.addChild(mask); // Maski ensin
-				app.stage.addChild(reelCont); // Sitten kiekko
+				gameLayer.addChild(mask); // Maski ensin
+				gameLayer.addChild(reelCont); // Sitten kiekko
 
 				// Luo Reel-olio ja lisää listaan
 				reels.push(new StandaloneReel(reelIndex, reelCont, reelDimensions, reelDependencies));
@@ -1132,7 +1203,7 @@
 				reelFramesSprite.x = 250; // Säädä kiekkojen mukaan
 				reelFramesSprite.y = 200; // Säädä kiekkojen mukaan
 
-				app.stage.addChild(reelFramesSprite);
+				gameLayer.addChild(reelFramesSprite);
 				reelFramesSpriteRef = reelFramesSprite; // Tallenna viittaus control panelia varten
 				controlPanelWidth = reelFramesSprite.width; // Päivitä paneelin leveys dynaamisesti
 				console.log(
@@ -1161,10 +1232,10 @@
 				logoSprite.scale.set(LOGO_SCALE);
 
 				// Sijoita logo käyttäjän asetusten mukaan
-				logoSprite.x = (app.renderer.width - logoSprite.width) / 2 + LOGO_X; // Keskitetty + X-siirtymä
-				logoSprite.y = LOGO_Y; // Käyttäjän määrittelemä Y-koordinaatti
+				logoSpriteRef = logoSprite;
+				layoutLogoSprite();
 
-				app.stage.addChild(logoSprite); // Päällimmäinen layer
+				gameLayer.addChild(logoSprite); // Päällimmäinen layer
 				console.log(
 					'Logo lisätty päällimmäiseen layeriin:',
 					logoSprite.width.toFixed(0),
@@ -1197,6 +1268,16 @@
 	// Tämä on pelin "sydän" joka pyörii jatkuvasti
 	// PixiJS ticker kutsuu tätä funktiota ~60 kertaa sekunnissa
 	function update() {
+		viewportSyncFrame = (viewportSyncFrame + 1) % 20;
+		if (
+			viewportSyncFrame === 0 &&
+			typeof window !== 'undefined' &&
+			scheduleViewportResize &&
+			(window.innerWidth !== viewportModel.width || window.innerHeight !== viewportModel.height)
+		) {
+			scheduleViewportResize();
+		}
+
 		// Päivitä jokainen kiekko (liike, animaatiot)
 		for (const r of reels) {
 			r.update(); // Päivitä kiekon tila (spinning → slowing → bouncing → stopped)
@@ -1739,6 +1820,7 @@
 <!-- Keskittää pelin näytöllä ja käsittelee responsiivisen skaalauksen -->
 <!-- Sisältää PixiJS canvasin ja kaikki HTML-kontrollit -->
 <div
+	class="game-shell"
 	style="
   width: 100vw;
   height: 100vh;
@@ -1750,10 +1832,11 @@
 "
 >
 	<div
+		class="game-stage"
 		style="
     position: relative;
-    width: {CANVAS_WIDTH * gameScale}px;
-    height: {CANVAS_HEIGHT * gameScale}px;
+    width: {stageViewportWidth}px;
+    height: {stageViewportHeight}px;
 		margin-top: {isPhonePortraitLayout ? uiLayoutTokens.stagePortraitTop : 0}px;
 		{uiLayoutCssVars}
 		{stageCompositionCssVars}
@@ -1761,32 +1844,35 @@
 	>
 		<!-- PixiJS canvas sijoitetaan tähän (container-div) -->
 		<div
+			class="pixi-layer"
 			bind:this={container}
 			style="
         position: absolute;
         top: 0;
         left: 0;
-        width: {CANVAS_WIDTH}px;
-        height: {CANVAS_HEIGHT}px;
+        width: {stageViewportWidth}px;
+        height: {stageViewportHeight}px;
       "
 		>
-			<TopToggles
-				{controlsPath}
-				{gameScale}
-				isMobile={usesViewportAnchoredTopActions}
-				paytableTop={paytableButtonTop}
-				debugTop={debugButtonTop}
-				topRight={topButtonRight}
-				audioTop={audioButtonTop}
-				audioRight={audioButtonRight}
-				{musicEnabled}
-				{soundEnabled}
-				gameVersion={GAME_VERSION}
-				onTogglePaytable={() => (showPaytable = !showPaytable)}
-				onToggleDebug={() => (showDebugPanel = !showDebugPanel)}
-				onToggleMusic={toggleMusic}
-				onToggleSound={toggleSound}
-			/>
+			{#if !showPaytable && !showAutoPlayMenu && !showDebugPanel}
+				<TopToggles
+					{controlsPath}
+					{gameScale}
+					isMobile={usesMobileTopActions}
+					paytableTop={paytableButtonTop}
+					debugTop={debugButtonTop}
+					topRight={topButtonRight}
+					audioTop={audioButtonTop}
+					audioRight={audioButtonRight}
+					{musicEnabled}
+					{soundEnabled}
+					gameVersion={GAME_VERSION}
+					onTogglePaytable={() => (showPaytable = !showPaytable)}
+					onToggleDebug={() => (showDebugPanel = !showDebugPanel)}
+					onToggleMusic={toggleMusic}
+					onToggleSound={toggleSound}
+				/>
+			{/if}
 
 			<!-- ===== 6) CONTROL PANEL (LAYOUT SYSTEM) ===== -->
 			<!-- Pelin pääkontrollit näytön alareunassa -->
@@ -1973,6 +2059,49 @@
 				</div>
 			</ControlPanelFrame>
 			<!-- Suljetaan control panel -->
+
+			<div class="landscape-control-rail">
+				<SpinButton
+					{controlsPath}
+					{gameScale}
+					{isAutoPlaying}
+					{playButtonGlareActive}
+					onPress={pressSpinButton}
+				/>
+				<div class="landscape-bet-controls">
+					<button
+						onclick={decreaseBet}
+						class="landscape-bet-button"
+						style:background-image="url('{controlsPath}/Control_lowerbet_select.png')"
+						title="Decrease Bet"
+						aria-label="Decrease bet"
+					></button>
+					<div class="landscape-bet-amount">
+						<span>BET</span>
+						<strong>{betAmount.toFixed(2)}</strong>
+					</div>
+					<button
+						onclick={increaseBet}
+						class="landscape-bet-button"
+						style:background-image="url('{controlsPath}/Control_upperbet_select.png')"
+						title="Increase Bet"
+						aria-label="Increase bet"
+					></button>
+				</div>
+				<MenuButton
+					{controlsPath}
+					{gameScale}
+					onTogglePaytable={() => (showPaytable = !showPaytable)}
+				/>
+			</div>
+
+			<div class="portrait-menu-fab">
+				<MenuButton
+					{controlsPath}
+					{gameScale}
+					onTogglePaytable={() => (showPaytable = !showPaytable)}
+				/>
+			</div>
 		</div>
 		<!-- Suljetaan canvas-kontti -->
 
@@ -2247,6 +2376,79 @@
 	}
 
 	/* Piilota tietyt elementit mobiilissa */
+	.game-shell {
+		min-height: 100vh;
+	}
+
+	.game-stage {
+		overflow: visible;
+	}
+
+	.pixi-layer {
+		background: #000;
+		overflow: hidden;
+	}
+
+	.pixi-layer :global(canvas) {
+		width: 100% !important;
+		height: 100% !important;
+		display: block;
+	}
+
+	.landscape-control-rail {
+		display: none;
+	}
+
+	.portrait-menu-fab {
+		display: none;
+	}
+
+	.landscape-bet-controls {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 4px;
+		padding: 6px 5px;
+		border: 1px solid rgba(255, 215, 0, 0.28);
+		border-radius: 10px;
+		background: rgba(0, 0, 0, 0.46);
+		box-shadow: 0 4px 14px rgba(0, 0, 0, 0.32);
+	}
+
+	.landscape-bet-button {
+		width: 36px;
+		height: 36px;
+		border: 0;
+		padding: 0;
+		background-color: transparent;
+		background-repeat: no-repeat;
+		background-position: center;
+		background-size: contain;
+		cursor: pointer;
+	}
+
+	.landscape-bet-amount {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		min-width: 52px;
+		font-family: 'Courier New', monospace;
+		line-height: 1;
+		color: #fff;
+	}
+
+	.landscape-bet-amount span {
+		font-family: system-ui, sans-serif;
+		font-size: 10px;
+		font-weight: 800;
+		color: #00ff00;
+	}
+
+	.landscape-bet-amount strong {
+		margin-top: 3px;
+		font-size: 14px;
+	}
+
 	.hide-on-mobile {
 		display: flex !important;
 	}
@@ -2259,6 +2461,18 @@
 	/* Mobiili portrait-tila - pelialue isompi, kontrollit alareunaan */
 	/* HUOM: Sijainti tulee nyt layoutConfig.ts:stä - CSS ei enää ylikirjoita */
 	@media (max-width: 768px) and (orientation: portrait) {
+		.game-shell {
+			align-items: stretch !important;
+			justify-content: center !important;
+		}
+
+		.game-stage {
+			width: 100vw !important;
+			height: 100vh !important;
+			margin-top: 0 !important;
+			overflow: hidden;
+		}
+
 		/* Piilota BALANCE, Autoplay, Spin Speed, WIN mobiilissa */
 		.hide-on-mobile {
 			display: none !important;
@@ -2266,13 +2480,41 @@
 
 		/* Näytä Menu vasemmalla mobiilissa */
 		.hide-on-desktop {
-			display: flex !important;
+			display: none !important;
+		}
+
+		.portrait-menu-fab {
+			position: fixed;
+			right: max(12px, env(safe-area-inset-right));
+			bottom: max(16px, env(safe-area-inset-bottom));
+			z-index: 2500;
+			display: flex;
+			pointer-events: auto;
+		}
+
+		.portrait-menu-fab :global(.play-button) {
+			width: 46px !important;
+			height: 46px !important;
+			min-width: 46px;
+			min-height: 46px;
 		}
 	}
 
 	/* Mobiili landscape-tila - myös yksinkertaistettu layout */
 	/* HUOM: Sijainti tulee nyt layoutConfig.ts:stä - CSS ei enää ylikirjoita */
 	@media (max-width: 900px) and (max-height: 500px) and (orientation: landscape) {
+		.game-shell {
+			align-items: stretch !important;
+			justify-content: center !important;
+		}
+
+		.game-stage {
+			width: 100vw !important;
+			height: 100vh !important;
+			margin-top: 0 !important;
+			overflow: hidden;
+		}
+
 		/* Piilota BALANCE, Autoplay, Spin Speed, WIN mobiilissa */
 		.hide-on-mobile {
 			display: none !important;
@@ -2281,6 +2523,19 @@
 		/* Näytä Menu vasemmalla mobiilissa */
 		.hide-on-desktop {
 			display: flex !important;
+		}
+
+		.landscape-control-rail {
+			position: fixed;
+			right: max(8px, env(safe-area-inset-right));
+			top: 50%;
+			transform: translateY(-42%);
+			z-index: 2500;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 7px;
+			pointer-events: auto;
 		}
 	}
 </style>

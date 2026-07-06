@@ -74,4 +74,29 @@
 		text-align: center;
 		font-family: 'Courier New', monospace;
 	}
+
+	@media (max-width: 768px) and (orientation: portrait),
+		(max-width: 900px) and (max-height: 500px) and (orientation: landscape) {
+		.label {
+			font-size: 11px !important;
+			height: 14px !important;
+		}
+
+		.row {
+			height: 40px !important;
+			gap: 4px !important;
+		}
+
+		.bet-button {
+			width: 40px !important;
+			height: 40px !important;
+			min-width: 40px;
+			min-height: 40px;
+		}
+
+		.amount {
+			min-width: 58px !important;
+			font-size: 16px !important;
+		}
+	}
 </style>

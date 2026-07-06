@@ -60,27 +60,44 @@ export function createPixiStageTransform(
 	baseScale: number,
 	composition: StageComposition = STAGE_COMPOSITION,
 ): PixiStageTransform {
-	if (
-		viewportModel.viewportClass !== 'phonePortrait' &&
-		viewportModel.viewportClass !== 'phonePortraitCompact'
-	) {
+	if (viewportModel.viewportClass === 'phoneLandscapeCompact') {
+		const targetWidth = Math.max(0, viewportModel.usableWidth * 0.7);
+		const targetHeight = Math.max(0, viewportModel.usableHeight * 0.62);
+		const scale = Math.min(
+			targetWidth / composition.reelViewport.width,
+			targetHeight / composition.reelViewport.height,
+			0.46,
+		);
+		const reelViewportWidth = composition.reelViewport.width * scale;
+		const reelViewportTop = composition.reelViewport.y * scale;
+		const targetReelTop = 48;
+
+		return {
+			scale,
+			x: (viewportModel.usableWidth - reelViewportWidth) / 2 - composition.reelViewport.x * scale,
+			y: targetReelTop - reelViewportTop,
+		};
+	}
+
+	if (viewportModel.viewportClass !== 'phonePortrait' && viewportModel.viewportClass !== 'phonePortraitCompact') {
 		return { scale: baseScale, x: 0, y: 0 };
 	}
 
-	const viewportMargin = viewportModel.viewportClass === 'phonePortraitCompact' ? 10 : 12;
-	const targetWidth = Math.max(0, viewportModel.usableWidth - viewportMargin * 2);
-	const targetHeight = Math.max(0, viewportModel.usableHeight * 0.62);
-	const widthScale = targetWidth / composition.reelViewport.width;
-	const heightScale = targetHeight / composition.reelViewport.height;
-	const scale = Math.min(widthScale, heightScale, baseScale * 1.22);
-	const visibleStageWidth = composition.logicalCanvas.width * baseScale;
+	const targetWidth = Math.max(0, viewportModel.usableWidth * 1.06);
+	const targetHeightRatio = viewportModel.viewportClass === 'phonePortraitCompact' ? 0.36 : 0.38;
+	const targetHeight = Math.max(0, viewportModel.usableHeight * targetHeightRatio);
+	const scale = Math.min(
+		targetWidth / composition.reelViewport.width,
+		targetHeight / composition.reelViewport.height,
+		0.45,
+	);
 	const reelViewportWidth = composition.reelViewport.width * scale;
 	const reelViewportTop = composition.reelViewport.y * scale;
-	const targetReelTop = viewportModel.viewportClass === 'phonePortraitCompact' ? 48 : 54;
+	const targetReelTop = viewportModel.viewportClass === 'phonePortraitCompact' ? 218 : 250;
 
 	return {
 		scale,
-		x: (visibleStageWidth - reelViewportWidth) / 2 - composition.reelViewport.x * scale,
-		y: Math.min(0, targetReelTop - reelViewportTop),
+		x: (viewportModel.usableWidth - reelViewportWidth) / 2 - composition.reelViewport.x * scale,
+		y: targetReelTop - reelViewportTop,
 	};
 }
