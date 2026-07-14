@@ -763,9 +763,9 @@
 			viewportModel.viewportClass === 'phonePortrait' ||
 			viewportModel.viewportClass === 'phonePortraitCompact'
 		) {
-			logoSpriteRef.scale.set(0.76);
+			logoSpriteRef.scale.set(0.7);
 			logoSpriteRef.x = 430;
-			logoSpriteRef.y = -255;
+			logoSpriteRef.y = -230;
 			return;
 		}
 
@@ -1823,6 +1823,7 @@
 <!-- Sisältää PixiJS canvasin ja kaikki HTML-kontrollit -->
 <div
 	class="game-shell"
+	class:modal-open={showPaytable || showAutoPlayMenu || showDebugPanel}
 	style="
   width: 100vw;
   height: 100vh;
@@ -2533,7 +2534,7 @@
 		.portrait-menu-fab {
 			position: fixed;
 			right: max(12px, env(safe-area-inset-right));
-			bottom: max(16px, env(safe-area-inset-bottom));
+			bottom: max(22px, calc(env(safe-area-inset-bottom) + 22px));
 			z-index: 2500;
 			display: flex;
 			pointer-events: auto;
@@ -2554,7 +2555,7 @@
 			position: fixed;
 			left: max(12px, env(safe-area-inset-left));
 			right: max(12px, env(safe-area-inset-right));
-			top: clamp(452px, 60dvh, 560px);
+			bottom: max(220px, calc(env(safe-area-inset-bottom) + 220px));
 			z-index: 2400;
 			display: block;
 			pointer-events: none;
@@ -2570,13 +2571,13 @@
 		.portrait-spin-cluster {
 			position: fixed;
 			left: 50%;
-			bottom: max(118px, calc(env(safe-area-inset-bottom) + 96px));
+			bottom: max(92px, calc(env(safe-area-inset-bottom) + 92px));
 			transform: translateX(-50%);
 			z-index: 2450;
 			display: flex;
 			align-items: center;
 			justify-content: center;
-			gap: 22px;
+			gap: clamp(16px, 5.5vw, 24px);
 			pointer-events: auto;
 		}
 
@@ -2585,6 +2586,12 @@
 			height: 92px !important;
 			min-width: 92px;
 			min-height: 92px;
+		}
+
+		.modal-open .portrait-status-row,
+		.modal-open .portrait-spin-cluster,
+		.modal-open .portrait-menu-fab {
+			display: none;
 		}
 	}
 

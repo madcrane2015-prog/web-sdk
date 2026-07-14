@@ -64,7 +64,10 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		background: transparent;
+		padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right))
+			max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+		background: rgba(0, 0, 0, 0.42);
+		box-sizing: border-box;
 	}
 
 	.paytable-modal {

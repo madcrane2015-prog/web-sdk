@@ -54,6 +54,8 @@
 		margin: 0 0 15px;
 		text-align: center;
 		color: #aaa;
+		font-size: 0.9rem;
+		line-height: 1.4;
 	}
 
 	.symbol-groups {
@@ -72,18 +74,19 @@
 		padding: 10px;
 		border-radius: 8px;
 		border-left: 4px solid var(--accent);
-		line-height: 1.32;
+		line-height: 1.38;
 	}
 
 	.symbol-group h4 {
 		margin: 0 0 5px;
-		font-size: 1.2em;
+		font-size: 1.08rem;
 		font-weight: bold;
 		color: var(--accent);
 	}
 
 	.symbol-group p {
 		margin: 5px 0;
+		font-size: 0.92rem;
 		font-variant-numeric: tabular-nums;
 	}
 

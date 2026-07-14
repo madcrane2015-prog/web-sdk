@@ -10,7 +10,9 @@ const profileDir = path.join(outputDir, '.chrome-profile');
 const port = 12000 + Math.floor(Math.random() * 1000);
 
 const viewports = [
-	{ name: 'portrait', width: 390, height: 844, mobile: true },
+	{ name: 'portrait-360x780', width: 360, height: 780, mobile: true },
+	{ name: 'portrait-390x844', width: 390, height: 844, mobile: true },
+	{ name: 'portrait-430x932', width: 430, height: 932, mobile: true },
 	{ name: 'landscape', width: 844, height: 390, mobile: false },
 	{ name: 'desktop', width: 1240, height: 900, mobile: false },
 ];
