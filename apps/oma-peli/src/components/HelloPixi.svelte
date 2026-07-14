@@ -468,6 +468,11 @@
 	let lastWin = $state(initialGameState.lastWin); // Viimeisin voittosumma (näytetään UI:ssa)
 	const MIN_BET = BET_LEVELS[0]; // Pienin mahdollinen panos (0.4)
 	const MAX_BET = BET_LEVELS[BET_LEVELS.length - 1]; // Suurin mahdollinen panos (100)
+	const formatAmount = (amount: number) =>
+		amount.toLocaleString('en-US', {
+			minimumFractionDigits: 2,
+			maximumFractionDigits: 2,
+		});
 
 	// Autoplay-toiminnallisuus
 	let isAutoPlaying = $state(initialGameState.isAutoPlaying);
@@ -1174,8 +1179,14 @@
 				// reelText.y = reelCont.y + 5;
 				// app.stage.addChild(reelText);
 
+				const frameEdgeInset = viewportModel.viewportClass === 'phoneLandscapeCompact' ? 12 : 8;
+				const maskInsets = {
+					left: col === 0 ? frameEdgeInset : 0,
+					right: col === 4 ? frameEdgeInset : 0,
+				};
+
 				// Luo maski joka rajaa kiekon näkyvän alueen
-				const mask = createReelMask(symbolWidth, symbolHeight);
+				const mask = createReelMask(symbolWidth, symbolHeight, maskInsets);
 
 				mask.x = reelCont.x; // Sama sijainti kuin kiekko
 				mask.y = reelCont.y;
@@ -2091,7 +2102,14 @@
 				></button>
 			</div>
 
-			<div class="landscape-control-rail">
+			<div class="mobile-spin-cluster">
+				<button
+					onclick={decreaseBet}
+					class="mobile-bet-button"
+					style:background-image="url('{controlsPath}/Control_lowerbet_select.png')"
+					title="Decrease Bet"
+					aria-label="Decrease bet"
+				></button>
 				<SpinButton
 					{controlsPath}
 					{gameScale}
@@ -2099,31 +2117,23 @@
 					{playButtonGlareActive}
 					onPress={pressSpinButton}
 				/>
-				<div class="landscape-bet-controls">
-					<button
-						onclick={decreaseBet}
-						class="landscape-bet-button"
-						style:background-image="url('{controlsPath}/Control_lowerbet_select.png')"
-						title="Decrease Bet"
-						aria-label="Decrease bet"
-					></button>
-					<div class="landscape-bet-amount">
-						<span>BET</span>
-						<strong>{betAmount.toFixed(2)}</strong>
-					</div>
-					<button
-						onclick={increaseBet}
-						class="landscape-bet-button"
-						style:background-image="url('{controlsPath}/Control_upperbet_select.png')"
-						title="Increase Bet"
-						aria-label="Increase bet"
-					></button>
-				</div>
-				<MenuButton
-					{controlsPath}
-					{gameScale}
-					onTogglePaytable={() => (showPaytable = !showPaytable)}
-				/>
+				<button
+					onclick={increaseBet}
+					class="mobile-bet-button"
+					style:background-image="url('{controlsPath}/Control_upperbet_select.png')"
+					title="Increase Bet"
+					aria-label="Increase bet"
+				></button>
+			</div>
+
+			<div class="mobile-balance-readout">
+				<span>DEMOSALDO</span>
+				<strong>{formatAmount(balance)}</strong>
+			</div>
+
+			<div class="mobile-bet-readout">
+				<span>DEMOPANOS</span>
+				<strong>{betAmount.toFixed(2)}</strong>
 			</div>
 
 			<div class="portrait-menu-fab">
@@ -2426,7 +2436,9 @@
 		display: block;
 	}
 
-	.landscape-control-rail {
+	.mobile-spin-cluster,
+	.mobile-balance-readout,
+	.mobile-bet-readout {
 		display: none;
 	}
 
@@ -2439,6 +2451,47 @@
 		display: none;
 	}
 
+	.mobile-balance-readout,
+	.mobile-bet-readout {
+		color: #fff;
+		font-family: Arial, sans-serif;
+		line-height: 1.05;
+		text-align: center;
+		text-shadow:
+			0 2px 4px rgba(0, 0, 0, 0.85),
+			0 0 10px rgba(0, 0, 0, 0.65);
+		pointer-events: none;
+	}
+
+	.mobile-balance-readout span,
+	.mobile-bet-readout span {
+		display: block;
+		font-size: 15px;
+		font-weight: 600;
+		letter-spacing: 0;
+	}
+
+	.mobile-balance-readout strong,
+	.mobile-bet-readout strong {
+		display: block;
+		margin-top: 4px;
+		font-size: 18px;
+		font-weight: 800;
+		letter-spacing: 0;
+	}
+
+	.mobile-bet-button {
+		border: 0;
+		padding: 0;
+		background-color: rgba(10, 13, 18, 0.34);
+		background-repeat: no-repeat;
+		background-position: center;
+		background-size: contain;
+		cursor: pointer;
+		border-radius: 14px;
+		box-shadow: 0 8px 18px rgba(0, 0, 0, 0.28);
+	}
+
 	.portrait-bet-button {
 		width: 58px;
 		height: 58px;
@@ -2449,52 +2502,6 @@
 		background-position: center;
 		background-size: contain;
 		cursor: pointer;
-	}
-
-	.landscape-bet-controls {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 4px;
-		padding: 6px 5px;
-		border: 1px solid rgba(255, 215, 0, 0.28);
-		border-radius: 10px;
-		background: rgba(0, 0, 0, 0.46);
-		box-shadow: 0 4px 14px rgba(0, 0, 0, 0.32);
-	}
-
-	.landscape-bet-button {
-		width: 36px;
-		height: 36px;
-		border: 0;
-		padding: 0;
-		background-color: transparent;
-		background-repeat: no-repeat;
-		background-position: center;
-		background-size: contain;
-		cursor: pointer;
-	}
-
-	.landscape-bet-amount {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		min-width: 52px;
-		font-family: 'Courier New', monospace;
-		line-height: 1;
-		color: #fff;
-	}
-
-	.landscape-bet-amount span {
-		font-family: system-ui, sans-serif;
-		font-size: 10px;
-		font-weight: 800;
-		color: #00ff00;
-	}
-
-	.landscape-bet-amount strong {
-		margin-top: 3px;
-		font-size: 14px;
 	}
 
 	.hide-on-mobile {
@@ -2533,8 +2540,8 @@
 
 		.portrait-menu-fab {
 			position: fixed;
-			right: max(12px, env(safe-area-inset-right));
-			bottom: max(22px, calc(env(safe-area-inset-bottom) + 22px));
+			left: max(14px, env(safe-area-inset-left));
+			bottom: max(118px, calc(env(safe-area-inset-bottom) + 118px));
 			z-index: 2500;
 			display: flex;
 			pointer-events: auto;
@@ -2552,45 +2559,57 @@
 		}
 
 		.portrait-status-row {
-			position: fixed;
-			left: max(12px, env(safe-area-inset-left));
-			right: max(12px, env(safe-area-inset-right));
-			bottom: max(220px, calc(env(safe-area-inset-bottom) + 220px));
-			z-index: 2400;
-			display: block;
-			pointer-events: none;
+			display: none;
 		}
 
-		.portrait-status-row :global(.mobile-status-strip) {
-			position: static;
-			display: grid;
-			grid-template-columns: minmax(0, 1fr) minmax(76px, 0.78fr) minmax(0, 1fr);
-			gap: 8px;
-		}
-
-		.portrait-spin-cluster {
+		.mobile-spin-cluster {
 			position: fixed;
 			left: 50%;
-			bottom: max(92px, calc(env(safe-area-inset-bottom) + 92px));
+			bottom: max(116px, calc(env(safe-area-inset-bottom) + 116px));
 			transform: translateX(-50%);
 			z-index: 2450;
 			display: flex;
 			align-items: center;
 			justify-content: center;
-			gap: clamp(16px, 5.5vw, 24px);
+			gap: 0;
 			pointer-events: auto;
 		}
 
-		.portrait-spin-cluster :global(.play-button) {
-			width: 92px !important;
-			height: 92px !important;
-			min-width: 92px;
-			min-height: 92px;
+		.mobile-spin-cluster :global(.play-button) {
+			width: 112px !important;
+			height: 112px !important;
+			min-width: 112px;
+			min-height: 112px;
+		}
+
+		.mobile-bet-button {
+			width: 74px;
+			height: 74px;
+			margin: 0 -8px;
+		}
+
+		.mobile-balance-readout,
+		.mobile-bet-readout {
+			position: fixed;
+			bottom: max(52px, calc(env(safe-area-inset-bottom) + 52px));
+			z-index: 2440;
+			display: block;
+		}
+
+		.mobile-balance-readout {
+			left: max(20px, calc(env(safe-area-inset-left) + 20px));
+		}
+
+		.mobile-bet-readout {
+			left: 50%;
+			transform: translateX(-50%);
 		}
 
 		.modal-open .portrait-status-row,
-		.modal-open .portrait-spin-cluster,
-		.modal-open .portrait-menu-fab {
+		.modal-open .mobile-spin-cluster,
+		.modal-open .portrait-menu-fab,
+		.modal-open .mobile-balance-readout,
+		.modal-open .mobile-bet-readout {
 			display: none;
 		}
 	}
@@ -2620,17 +2639,81 @@
 			display: flex !important;
 		}
 
-		.landscape-control-rail {
+		.portrait-menu-fab {
 			position: fixed;
-			right: max(8px, env(safe-area-inset-right));
-			top: 50%;
-			transform: translateY(-42%);
+			left: max(18px, env(safe-area-inset-left));
+			bottom: max(28px, calc(env(safe-area-inset-bottom) + 28px));
 			z-index: 2500;
 			display: flex;
-			flex-direction: column;
-			align-items: center;
-			gap: 7px;
 			pointer-events: auto;
+		}
+
+		.portrait-menu-fab :global(.play-button) {
+			width: 48px !important;
+			height: 48px !important;
+			min-width: 48px;
+			min-height: 48px;
+		}
+
+		.mobile-spin-cluster {
+			position: fixed;
+			right: max(54px, calc(env(safe-area-inset-right) + 54px));
+			top: 50%;
+			transform: translateY(-42%);
+			z-index: 2450;
+			display: grid;
+			grid-template-rows: 58px 92px 58px;
+			align-items: center;
+			justify-items: center;
+			pointer-events: auto;
+		}
+
+		.mobile-spin-cluster :global(.play-button) {
+			width: 92px !important;
+			height: 92px !important;
+			min-width: 92px;
+			min-height: 92px;
+		}
+
+		.mobile-bet-button {
+			width: 54px;
+			height: 54px;
+			background-color: transparent;
+			box-shadow: none;
+		}
+
+		.mobile-balance-readout,
+		.mobile-bet-readout {
+			position: fixed;
+			bottom: max(16px, calc(env(safe-area-inset-bottom) + 16px));
+			z-index: 2440;
+			display: block;
+		}
+
+		.mobile-balance-readout {
+			left: max(128px, calc(env(safe-area-inset-left) + 128px));
+		}
+
+		.mobile-bet-readout {
+			left: 50%;
+			transform: translateX(-50%);
+		}
+
+		.mobile-balance-readout span,
+		.mobile-bet-readout span {
+			font-size: 14px;
+		}
+
+		.mobile-balance-readout strong,
+		.mobile-bet-readout strong {
+			font-size: 17px;
+		}
+
+		.modal-open .mobile-spin-cluster,
+		.modal-open .portrait-menu-fab,
+		.modal-open .mobile-balance-readout,
+		.modal-open .mobile-bet-readout {
+			display: none;
 		}
 	}
 </style>

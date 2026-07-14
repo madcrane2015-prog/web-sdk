@@ -20,8 +20,14 @@ export async function createPixiApplication(options: CreatePixiApplicationOption
 	return app;
 }
 
-export function createReelMask(symbolWidth: number, symbolHeight: number) {
-	return new Graphics().rect(0, 0, symbolWidth, symbolHeight).fill(0xffffff);
+export function createReelMask(
+	symbolWidth: number,
+	symbolHeight: number,
+	insets: { left?: number; right?: number } = {},
+) {
+	const left = insets.left ?? 0;
+	const right = insets.right ?? 0;
+	return new Graphics().rect(left, 0, symbolWidth - left - right, symbolHeight).fill(0xffffff);
 }
 
 export function configureLogoTexture(texture: Texture) {
