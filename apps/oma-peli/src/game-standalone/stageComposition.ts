@@ -70,7 +70,7 @@ export function createPixiStageTransform(
 		);
 		const reelViewportWidth = composition.reelViewport.width * scale;
 		const reelViewportTop = composition.reelViewport.y * scale;
-		const targetReelTop = 48;
+		const targetReelTop = 38;
 
 		return {
 			scale,

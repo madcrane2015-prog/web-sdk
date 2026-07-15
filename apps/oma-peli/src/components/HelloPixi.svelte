@@ -1145,7 +1145,12 @@
 				const baseY = 250 + row * ROW_HEIGHT; // Alemmas uudella taustalla
 
 				// Keskikiekko (indeksi 6) erikoiskohdistus - käytä parametreja
-				const adjustedX = reelIndex === 6 ? baseX + MIDDLE_REEL_X_OFFSET : baseX;
+				const landscapeReelXCorrection =
+					viewportModel.viewportClass === 'phoneLandscapeCompact' ? -8 : 0;
+				const adjustedX =
+					reelIndex === 6
+						? baseX + MIDDLE_REEL_X_OFFSET + landscapeReelXCorrection
+						: baseX + landscapeReelXCorrection;
 				const adjustedY = reelIndex === 6 ? baseY + MIDDLE_REEL_Y_OFFSET : baseY;
 
 				// Luo PixiJS kontti tälle kiekolle
@@ -1180,9 +1185,10 @@
 				// reelText.y = reelCont.y + 5;
 				// app.stage.addChild(reelText);
 
-				const frameEdgeInset = viewportModel.viewportClass === 'phoneLandscapeCompact' ? 5 : 3;
+				const isPhoneLandscape = viewportModel.viewportClass === 'phoneLandscapeCompact';
+				const frameEdgeInset = isPhoneLandscape ? 8 : 3;
 				const maskInsets = {
-					left: col === 0 ? frameEdgeInset : 0,
+					left: col === 0 && !isPhoneLandscape ? frameEdgeInset : 0,
 					right: col === 4 ? frameEdgeInset : 0,
 				};
 
@@ -2686,7 +2692,7 @@
 		.mobile-balance-readout,
 		.mobile-bet-readout {
 			position: fixed;
-			bottom: max(16px, calc(env(safe-area-inset-bottom) + 16px));
+			bottom: max(2px, calc(env(safe-area-inset-bottom) + 2px));
 			z-index: 2440;
 			display: block;
 		}
@@ -2702,12 +2708,13 @@
 
 		.mobile-balance-readout span,
 		.mobile-bet-readout span {
-			font-size: 14px;
+			font-size: 12px;
 		}
 
 		.mobile-balance-readout strong,
 		.mobile-bet-readout strong {
-			font-size: 17px;
+			margin-top: 2px;
+			font-size: 15px;
 		}
 
 		.modal-open .mobile-spin-cluster,
