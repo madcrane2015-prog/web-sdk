@@ -61,12 +61,12 @@ export function createPixiStageTransform(
 	composition: StageComposition = STAGE_COMPOSITION,
 ): PixiStageTransform {
 	if (viewportModel.viewportClass === 'phoneLandscapeCompact') {
-		const targetWidth = Math.max(0, viewportModel.usableWidth * 0.7);
-		const targetHeight = Math.max(0, viewportModel.usableHeight * 0.62);
+		const targetWidth = Math.max(0, viewportModel.usableWidth * 0.76);
+		const targetHeight = Math.max(0, viewportModel.usableHeight * 0.68);
 		const scale = Math.min(
 			targetWidth / composition.reelViewport.width,
 			targetHeight / composition.reelViewport.height,
-			0.46,
+			0.5,
 		);
 		const reelViewportWidth = composition.reelViewport.width * scale;
 		const reelViewportTop = composition.reelViewport.y * scale;
@@ -83,13 +83,13 @@ export function createPixiStageTransform(
 		return { scale: baseScale, x: 0, y: 0 };
 	}
 
-	const targetWidth = Math.max(0, viewportModel.usableWidth * 1.03);
+	const targetWidth = Math.max(0, viewportModel.usableWidth * 1.06);
 	const targetHeightRatio = viewportModel.viewportClass === 'phonePortraitCompact' ? 0.36 : 0.38;
 	const targetHeight = Math.max(0, viewportModel.usableHeight * targetHeightRatio);
 	const scale = Math.min(
 		targetWidth / composition.reelViewport.width,
 		targetHeight / composition.reelViewport.height,
-		0.45,
+		0.47,
 	);
 	const reelViewportWidth = composition.reelViewport.width * scale;
 	const reelViewportTop = composition.reelViewport.y * scale;

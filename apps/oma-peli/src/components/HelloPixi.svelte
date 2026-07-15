@@ -136,7 +136,7 @@
 	);
 
 	// Kiekkojen koko ja sijainti - uudelle 1445x1000 taustalle
-	const SCALE_MULTIPLIER = 1.75; // Symbolien koko kerroin (1.0 = normaali)
+	const SCALE_MULTIPLIER = 1.8; // Symbolien koko kerroin (1.0 = normaali)
 	const OFFSET_X = $derived(currentLayout().gameArea.offsetX); // Layout-järjestelmästä
 	const OFFSET_Y = $derived(currentLayout().gameArea.offsetY); // Layout-järjestelmästä
 
@@ -167,9 +167,10 @@
 	// Nämä määrittävät kuinka isoja symbolit näyttävät pelissä
 	const baseSymbolWidth = 100; // Perusleveys pikseleinä (ennen skaalaus-kerrointa)
 	const symbolWidth = Math.round(baseSymbolWidth * SCALE_MULTIPLIER); // Lopullinen leveys (skaalattu)
-	const symbolHeight = Math.round(symbolWidth * (700 / 760)); // Korkeus (sama suhde kuin alkuperäiset kuvat)
+	const symbolHeight = Math.round(symbolWidth * 0.94); // Sovitettu paremmin reel-raamien ruutuihin
 	const cellSize = symbolWidth; // Ruudun koko (käytetään vanhoissa laskuissa, säilytetty yhteensopivuuden takia)
-	const gap = 10; // Väli symbolien välillä pikseleinä
+	const gap = 4; // Väli symbolien välillä pikseleinä
+	const columnGap = 8;
 	const ROW_HEIGHT = symbolHeight + gap; // Yhden rivin kokonaiskorkeus (symboli + väli)
 
 	const assetManifest: StandaloneAssetManifest = createStandaloneAssetManifest(base, {
@@ -1140,8 +1141,8 @@
 				const row = position.row;
 
 				// Laske ruudun sijainti näytöllä - uudet koordinaatit 1445x1000 taustalle
-				const baseX = 300 + col * (symbolWidth + 20); // Keskemmälle uudella taustalla
-				const baseY = 250 + row * (symbolHeight + 15); // Alemmas uudella taustalla
+				const baseX = 300 + col * (symbolWidth + columnGap); // Keskemmälle uudella taustalla
+				const baseY = 250 + row * ROW_HEIGHT; // Alemmas uudella taustalla
 
 				// Keskikiekko (indeksi 6) erikoiskohdistus - käytä parametreja
 				const adjustedX = reelIndex === 6 ? baseX + MIDDLE_REEL_X_OFFSET : baseX;
@@ -1179,7 +1180,7 @@
 				// reelText.y = reelCont.y + 5;
 				// app.stage.addChild(reelText);
 
-				const frameEdgeInset = viewportModel.viewportClass === 'phoneLandscapeCompact' ? 12 : 8;
+				const frameEdgeInset = viewportModel.viewportClass === 'phoneLandscapeCompact' ? 5 : 3;
 				const maskInsets = {
 					left: col === 0 ? frameEdgeInset : 0,
 					right: col === 4 ? frameEdgeInset : 0,
