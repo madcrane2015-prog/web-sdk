@@ -21,6 +21,24 @@
 
 	let visible = $state(false);
 	let animating = $state(false);
+	let animationKey = $state(0);
+
+	type VinylPosition = {
+		x: number;
+		y: number;
+		rotation: number;
+		scale: number;
+		delay: number;
+		color: string;
+	};
+
+	type SparklePosition = {
+		x: number;
+		y: number;
+		delay: number;
+		duration: number;
+		rotation: number;
+	};
 
 	// Win level configurations (tighter spread to keep vinyls on screen)
 	const config = {
@@ -34,23 +52,26 @@
 	// Label colors for variety
 	const labelColors = ['#f04e37', '#ffd966', '#ff8533', '#4ecdc4', '#ff6b9d'];
 
-	// Generate vinyl positions (center-weighted, stays on screen)
-	function generateVinylPositions(count: number) {
-		const positions = [];
+	let vinyls = $state<VinylPosition[]>([]);
+	let sparkles = $state<SparklePosition[]>([]);
+
+	// Build a stable record pile so the animation does not reshuffle during Svelte updates.
+	function generateVinylPositions(count: number, maxRadius: number) {
+		const positions: VinylPosition[] = [];
 		const centerX = 512;
-		const centerY = 400;
-		const maxRadius = currentConfig.maxRadius;
+		const centerY = 430;
 
 		for (let i = 0; i < count; i++) {
-			const angle = (Math.PI * 2 * i) / count + Math.random() * 0.4;
-			const radius = Math.random() * maxRadius * 0.7 + maxRadius * 0.2; // Tighter spread
+			const ring = Math.floor(i / 7);
+			const angle = (Math.PI * 2 * i) / Math.min(count, 7) + ring * 0.42;
+			const radius = Math.min(maxRadius, 22 + ring * 26 + (i % 3) * 5);
 
 			positions.push({
 				x: centerX + Math.cos(angle) * radius,
-				y: centerY + Math.sin(angle) * radius,
-				rotation: Math.random() * 30 - 15,
-				scale: vinylEndScale * (0.8 + Math.random() * 0.4), // Use configured end scale with variation
-				delay: i * 0.05,
+				y: centerY + Math.sin(angle) * radius * 0.55,
+				rotation: ((i * 37) % 60) - 30,
+				scale: vinylEndScale * (1.75 + (i % 4) * 0.12),
+				delay: i * 0.035,
 				color: labelColors[i % labelColors.length]
 			});
 		}
@@ -60,23 +81,25 @@
 
 	// Generate sparkle positions
 	function generateSparklePositions(count: number) {
-		const positions = [];
+		const positions: SparklePosition[] = [];
 		for (let i = 0; i < count; i++) {
+			const angle = (Math.PI * 2 * i) / count;
+			const radius = 120 + (i % 5) * 34;
 			positions.push({
-				x: 100 + Math.random() * 824,
-				y: 50 + Math.random() * 700,
-				delay: Math.random() * 0.8,
-				duration: 0.6 + Math.random() * 0.4,
-				rotation: Math.random() * 360
+				x: 512 + Math.cos(angle) * radius,
+				y: 390 + Math.sin(angle) * radius * 0.62,
+				delay: (i % 8) * 0.08,
+				duration: 0.7 + (i % 4) * 0.08,
+				rotation: (i * 31) % 360
 			});
 		}
 		return positions;
 	}
 
-	const vinyls = $derived(generateVinylPositions(currentConfig.vinyls));
-	const sparkles = $derived(generateSparklePositions(currentConfig.sparkles));
-
 	export function show() {
+		animationKey += 1;
+		vinyls = generateVinylPositions(currentConfig.vinyls, currentConfig.maxRadius);
+		sparkles = generateSparklePositions(currentConfig.sparkles);
 		visible = true;
 		animating = true;
 
@@ -127,31 +150,23 @@
 		height: 100%;
 	}
 
-	/* Vinyl zoom-in animation - starts from tiny center point */
-	@keyframes vinylZoomIn {
+	/* Vinyl fly-in animation - records start from center and form a controlled pile. */
+	@keyframes vinylFlyToPile {
 		0% {
 			transform: translate(512px, 400px) scale(var(--start-scale, 0.01)) rotate(0deg);
 			opacity: 0;
 		}
-		50% {
+		35% {
+			opacity: 1;
+		}
+		78% {
+			transform: translate(var(--tx), var(--ty)) scale(calc(var(--scale) * 1.12))
+				rotate(calc(var(--rotation) + 16deg));
 			opacity: 1;
 		}
 		100% {
 			transform: translate(var(--tx), var(--ty)) scale(var(--scale)) rotate(var(--rotation));
 			opacity: 1;
-		}
-	}
-
-	/* Vinyl floating animation */
-	@keyframes vinylFloat {
-		0%,
-		100% {
-			transform: translate(var(--tx), var(--ty)) scale(var(--scale)) rotate(var(--rotation))
-				translateY(0px);
-		}
-		50% {
-			transform: translate(var(--tx), var(--ty)) scale(var(--scale)) rotate(var(--rotation))
-				translateY(-15px);
 		}
 	}
 
@@ -169,15 +184,9 @@
 	}
 
 	.vinyl-group {
-		animation: vinylZoomIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+		animation: vinylFlyToPile 0.95s cubic-bezier(0.18, 0.9, 0.22, 1) forwards;
 		animation-delay: var(--delay);
 		opacity: 0;
-	}
-
-	.vinyl-group.floating {
-		animation: vinylFloat 2s ease-in-out infinite;
-		animation-delay: var(--delay);
-		opacity: 1;
 	}
 
 	.sparkle {
@@ -188,10 +197,10 @@
 	/* Win amount display */
 	.win-amount-display {
 		position: absolute;
-		top: 50%;
+		top: 53%;
 		left: 50%;
 		transform: translate(-50%, -50%);
-		font-size: 120px;
+		font-size: clamp(54px, 9vw, 116px);
 		font-weight: bold;
 		color: #ffd700;
 		text-shadow: 0 0 20px rgba(255, 215, 0, 0.8), 0 0 40px rgba(255, 215, 0, 0.6),
@@ -214,10 +223,10 @@
 
 	.win-label {
 		position: absolute;
-		top: 35%;
+		top: 38%;
 		left: 50%;
 		transform: translate(-50%, -50%);
-		font-size: 48px;
+		font-size: clamp(26px, 4vw, 48px);
 		font-weight: bold;
 		color: #ffffff;
 		text-shadow: 0 0 15px rgba(255, 255, 255, 0.8), 0 4px 8px rgba(0, 0, 0, 0.8);
@@ -237,7 +246,12 @@
 			</div>
 		{/if}
 
-		<svg class="vinyl-canvas" viewBox="0 0 1024 800" xmlns="http://www.w3.org/2000/svg">
+		<svg
+			class="vinyl-canvas"
+			viewBox="0 0 1024 800"
+			xmlns="http://www.w3.org/2000/svg"
+			aria-hidden="true"
+		>
 			<!-- Define reusable vinyl record symbol -->
 			<defs>
 				<symbol id="vinyl" viewBox="-200 -200 400 400">
@@ -304,7 +318,7 @@
 			</defs>
 
 			<!-- Render sparkles/stars -->
-			{#each sparkles as sparkle, i}
+			{#each sparkles as sparkle, i (`sparkle-${animationKey}-${i}`)}
 				<use
 					href="#sparkle"
 					class="sparkle"
@@ -319,11 +333,10 @@
 			{/each}
 
 			<!-- Render vinyl records -->
-			{#each vinyls as vinyl, i}
+			{#each vinyls as vinyl, i (`vinyl-${animationKey}-${i}`)}
 				<use
 					href="#vinyl"
 					class="vinyl-group"
-					class:floating={animating}
 					style="
             --tx: {vinyl.x}px;
             --ty: {vinyl.y}px;

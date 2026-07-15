@@ -759,9 +759,9 @@
 		if (!logoSpriteRef) return;
 
 		if (viewportModel.viewportClass === 'phoneLandscapeCompact') {
-			logoSpriteRef.scale.set(0.5);
-			logoSpriteRef.x = 12;
-			logoSpriteRef.y = 100;
+			logoSpriteRef.scale.set(0.46);
+			logoSpriteRef.x = -100;
+			logoSpriteRef.y = 96;
 			return;
 		}
 
@@ -1123,6 +1123,7 @@
 				symbolWidth,
 				symbolHeight,
 				rowHeight: ROW_HEIGHT,
+				symbolBleedX: viewportModel.viewportClass === 'phoneLandscapeCompact' ? 12 : 0,
 			};
 			const reelDependencies = {
 				getSymbol: (reelIndex: number) => reelData[reelIndex],
@@ -1186,10 +1187,11 @@
 				// app.stage.addChild(reelText);
 
 				const isPhoneLandscape = viewportModel.viewportClass === 'phoneLandscapeCompact';
-				const frameEdgeInset = isPhoneLandscape ? 8 : 3;
+				const frameEdgeInset = isPhoneLandscape ? 12 : 3;
+				const symbolBleedX = isPhoneLandscape ? 12 : 0;
 				const maskInsets = {
-					left: col === 0 && !isPhoneLandscape ? frameEdgeInset : 0,
-					right: col === 4 ? frameEdgeInset : 0,
+					left: col === 0 && !isPhoneLandscape ? frameEdgeInset : -symbolBleedX,
+					right: col === 4 ? frameEdgeInset : -symbolBleedX,
 				};
 
 				// Luo maski joka rajaa kiekon näkyvän alueen
@@ -2134,13 +2136,13 @@
 			</div>
 
 			<div class="mobile-balance-readout">
-				<span>DEMOSALDO</span>
+				<span>CREDITS</span>
 				<strong>{formatAmount(balance)}</strong>
 			</div>
 
 			<div class="mobile-bet-readout">
-				<span>DEMOPANOS</span>
-				<strong>{betAmount.toFixed(2)}</strong>
+				<span>BET</span>
+				<strong>{formatAmount(betAmount)}</strong>
 			</div>
 
 			<div class="portrait-menu-fab">
