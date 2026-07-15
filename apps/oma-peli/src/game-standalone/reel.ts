@@ -71,9 +71,8 @@ export class Reel {
 
 		if (this.state === 'slowing') {
 			const spinSpeed = this.dependencies.getSpinSpeed();
-			const slowDownFactor = spinSpeed === 'slow' ? 0.88 : spinSpeed === 'medium' ? 0.92 : 0.95;
-			this.speed *= slowDownFactor;
-			this.speed = Math.max(this.speed, 2.5);
+			const stopSpeed = spinSpeed === 'slow' ? 24 : spinSpeed === 'medium' ? 28 : 32;
+			this.speed = Math.max(this.speed * 0.96, stopSpeed);
 		}
 
 		if (this.state === 'bouncing') {
@@ -117,7 +116,7 @@ export class Reel {
 	private prepareStop() {
 		this.state = 'slowing';
 		this.finalSymbol = this.dependencies.randomSymbol(this.index);
-		this.stopRowsRemaining = 4;
+		this.stopRowsRemaining = 3;
 	}
 
 	private startBounce() {
