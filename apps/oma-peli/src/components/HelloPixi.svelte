@@ -760,7 +760,7 @@
 
 		if (viewportModel.viewportClass === 'phoneLandscapeCompact') {
 			logoSpriteRef.scale.set(0.5);
-			logoSpriteRef.x = -140;
+			logoSpriteRef.x = 12;
 			logoSpriteRef.y = 100;
 			return;
 		}
