@@ -2488,6 +2488,8 @@
 	}
 
 	.mobile-bet-button {
+		position: relative;
+		z-index: 1;
 		border: 0;
 		padding: 0;
 		background-color: rgba(10, 13, 18, 0.34);
@@ -2589,6 +2591,11 @@
 			min-height: 82px;
 		}
 
+		.mobile-spin-cluster :global(.play-button-wrapper) {
+			z-index: 3;
+			overflow: visible;
+		}
+
 		.mobile-bet-button {
 			width: 58px;
 			height: 58px;
@@ -2680,6 +2687,11 @@
 			height: 70px !important;
 			min-width: 70px;
 			min-height: 70px;
+		}
+
+		.mobile-spin-cluster :global(.play-button-wrapper) {
+			z-index: 3;
+			overflow: visible;
 		}
 
 		.mobile-bet-button {
