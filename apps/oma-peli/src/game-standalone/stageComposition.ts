@@ -83,8 +83,8 @@ export function createPixiStageTransform(
 		return { scale: baseScale, x: 0, y: 0 };
 	}
 
-	const targetWidth = Math.max(0, viewportModel.usableWidth * 0.96);
-	const targetHeightRatio = viewportModel.viewportClass === 'phonePortraitCompact' ? 0.34 : 0.36;
+	const targetWidth = Math.max(0, viewportModel.usableWidth * 1.03);
+	const targetHeightRatio = viewportModel.viewportClass === 'phonePortraitCompact' ? 0.36 : 0.38;
 	const targetHeight = Math.max(0, viewportModel.usableHeight * targetHeightRatio);
 	const scale = Math.min(
 		targetWidth / composition.reelViewport.width,
@@ -97,7 +97,7 @@ export function createPixiStageTransform(
 
 	return {
 		scale,
-		x: (viewportModel.usableWidth - reelViewportWidth) / 2 - composition.reelViewport.x * scale,
+		x: (viewportModel.usableWidth - reelViewportWidth) / 2 - composition.reelViewport.x * scale + 8,
 		y: targetReelTop - reelViewportTop,
 	};
 }

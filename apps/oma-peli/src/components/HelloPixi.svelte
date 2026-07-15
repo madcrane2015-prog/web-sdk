@@ -2548,10 +2548,10 @@
 		}
 
 		.portrait-menu-fab :global(.play-button) {
-			width: 46px !important;
-			height: 46px !important;
-			min-width: 46px;
-			min-height: 46px;
+			width: 23px !important;
+			height: 23px !important;
+			min-width: 23px;
+			min-height: 23px;
 		}
 
 		:global(.control-panel-mobile) {
@@ -2565,7 +2565,7 @@
 		.mobile-spin-cluster {
 			position: fixed;
 			left: 50%;
-			bottom: max(116px, calc(env(safe-area-inset-bottom) + 116px));
+			bottom: max(128px, calc(env(safe-area-inset-bottom) + 128px));
 			transform: translateX(-50%);
 			z-index: 2450;
 			display: flex;
@@ -2576,16 +2576,16 @@
 		}
 
 		.mobile-spin-cluster :global(.play-button) {
-			width: 112px !important;
-			height: 112px !important;
-			min-width: 112px;
-			min-height: 112px;
+			width: 82px !important;
+			height: 82px !important;
+			min-width: 82px;
+			min-height: 82px;
 		}
 
 		.mobile-bet-button {
-			width: 74px;
-			height: 74px;
-			margin: 0 -8px;
+			width: 58px;
+			height: 58px;
+			margin: 0 8px;
 		}
 
 		.mobile-balance-readout,
@@ -2649,35 +2649,35 @@
 		}
 
 		.portrait-menu-fab :global(.play-button) {
-			width: 48px !important;
-			height: 48px !important;
-			min-width: 48px;
-			min-height: 48px;
+			width: 24px !important;
+			height: 24px !important;
+			min-width: 24px;
+			min-height: 24px;
 		}
 
 		.mobile-spin-cluster {
 			position: fixed;
-			right: max(54px, calc(env(safe-area-inset-right) + 54px));
+			right: max(70px, calc(env(safe-area-inset-right) + 70px));
 			top: 50%;
 			transform: translateY(-42%);
 			z-index: 2450;
 			display: grid;
-			grid-template-rows: 58px 92px 58px;
+			grid-template-rows: 48px 70px 48px;
 			align-items: center;
 			justify-items: center;
 			pointer-events: auto;
 		}
 
 		.mobile-spin-cluster :global(.play-button) {
-			width: 92px !important;
-			height: 92px !important;
-			min-width: 92px;
-			min-height: 92px;
+			width: 70px !important;
+			height: 70px !important;
+			min-width: 70px;
+			min-height: 70px;
 		}
 
 		.mobile-bet-button {
-			width: 54px;
-			height: 54px;
+			width: 38px;
+			height: 38px;
 			background-color: transparent;
 			box-shadow: none;
 		}
