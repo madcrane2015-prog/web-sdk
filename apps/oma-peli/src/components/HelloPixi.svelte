@@ -1123,7 +1123,8 @@
 				symbolWidth,
 				symbolHeight,
 				rowHeight: ROW_HEIGHT,
-				symbolBleedX: viewportModel.viewportClass === 'phoneLandscapeCompact' ? 12 : 0,
+				symbolBleedLeft: viewportModel.viewportClass === 'phoneLandscapeCompact' ? 42 : 0,
+				symbolBleedRight: viewportModel.viewportClass === 'phoneLandscapeCompact' ? 16 : 0,
 			};
 			const reelDependencies = {
 				getSymbol: (reelIndex: number) => reelData[reelIndex],
@@ -1188,10 +1189,9 @@
 
 				const isPhoneLandscape = viewportModel.viewportClass === 'phoneLandscapeCompact';
 				const frameEdgeInset = isPhoneLandscape ? 12 : 3;
-				const symbolBleedX = isPhoneLandscape ? 12 : 0;
 				const maskInsets = {
-					left: col === 0 && !isPhoneLandscape ? frameEdgeInset : -symbolBleedX,
-					right: col === 4 ? frameEdgeInset : -symbolBleedX,
+					left: col === 0 && !isPhoneLandscape ? frameEdgeInset : 0,
+					right: col === 4 ? frameEdgeInset : 0,
 				};
 
 				// Luo maski joka rajaa kiekon näkyvän alueen

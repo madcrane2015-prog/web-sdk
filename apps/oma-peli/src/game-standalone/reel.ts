@@ -7,7 +7,8 @@ export interface ReelDimensions {
 	symbolWidth: number;
 	symbolHeight: number;
 	rowHeight: number;
-	symbolBleedX?: number;
+	symbolBleedLeft?: number;
+	symbolBleedRight?: number;
 }
 
 export interface ReelDependencies {
@@ -183,10 +184,11 @@ export class Reel {
 			}
 
 			sprite.texture = texture;
-			const bleedX = this.dimensions.symbolBleedX ?? 0;
-			sprite.width = this.dimensions.symbolWidth + bleedX * 2;
+			const bleedLeft = this.dimensions.symbolBleedLeft ?? 0;
+			const bleedRight = this.dimensions.symbolBleedRight ?? bleedLeft;
+			sprite.width = this.dimensions.symbolWidth + bleedLeft + bleedRight;
 			sprite.height = this.dimensions.symbolHeight;
-			sprite.x = -bleedX;
+			sprite.x = -bleedLeft;
 			sprite.y = yPos;
 		};
 
