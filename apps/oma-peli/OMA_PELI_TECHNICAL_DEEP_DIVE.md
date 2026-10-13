@@ -168,6 +168,8 @@ Phase 04 started the Pixi runtime split:
 
 `HelloPixi` still creates the 13 reel containers and masks because their positions depend on component layout constants. It now returns teardown cleanup from `onMount`, removing resize and keydown listeners, removing the Pixi ticker callback, removing the canvas, and destroying the Pixi application.
 
+Targeted reel rendering polish now keeps a stable three-symbol strip per reel during spinning, preserves row-wrap scroll remainder, pixel-aligns symbol drawing, plans the final stopped symbol when slowdown begins, queues that symbol into the strip before the final stop boundary, and uses a damped spring settle for the stop overshoot. This reduces visible texture flicker during rolling and removes abrupt symbol swaps at the end of the bounce without changing symbol weights, payouts, or win calculation rules.
+
 Phase 05 started the standalone HTML UI split:
 
 - `src/components/standalone/TopToggles.svelte`: owns the top paytable/debug/music/sound buttons and receives only display positions, asset path, toggle state, and callbacks from `HelloPixi`.
@@ -205,24 +207,50 @@ Post-plan mobile UI follow-up fixed the phase 06 mobile layout failures for the 
 - The central spin button has explicit mobile touch sizes: 72x72 px in portrait and 56x56 px in compact landscape.
 - Browser viewport checks confirmed the targeted controls and modal fit at 390x844 and 844x390. Full gameplay smoke was not repeated in that targeted follow-up.
 
+2026-07-06 deployed-route mobile runtime follow-up:
+
+- `HelloPixi` now listens to `visualViewport.resize`, `orientationchange`, `pageshow`, document resize observation, and a low-frequency viewport-dimension guard so Android browser chrome changes and rotated/suspended tabs are less likely to leave stale desktop coordinates.
+- Pixi renderer resolution is capped on small screens to reduce high-DPR Android GPU pressure.
+- `pixiRuntime.ts` now creates an opaque black renderer instead of a transparent WebGL surface.
+- `HelloPixi` loads and draws `bg_base.jpg` inside the Pixi canvas. The background stays on the root stage, while reels, masks, frames, logo, and win highlights live in a separate transformed `gameLayer`. This avoids transparent-framebuffer/stale-pixel artifacts while still allowing the reel composition to be scaled/positioned for mobile.
+- Compact CSS fallbacks in the standalone control components keep top actions, spin/menu controls, and bet buttons visible and touch-sized even when a mobile browser delays or misses JS viewport updates.
+- `stageComposition.ts` now scales and centers the reel viewport for phone portrait and compact landscape instead of fitting the entire 1445px logical canvas. This intentionally crops unused side space and gives mobile a denser board-first composition.
+- Validation: `get_errors` showed only the known editor-only `$app/paths` diagnostic in `HelloPixi.svelte`; `pnpm run build --filter=oma-peli` passed with existing warnings about deprecated slots, modal a11y, env exports, and the unused Pixi `TextStyle` import.
+- Browser screenshots confirmed the black/stale-pixel compositor artifacts were reduced by the opaque Pixi/background split, and controls remained reachable in compact mobile captures. The shared browser session intermittently reported a 396x275 viewport while saving screenshots, so those captures are useful diagnostics but not a substitute for a real-device Android portrait/landscape pass.
+
+2026-09-12 reel/frame alignment follow-up:
+
+- Reel symbols now draw with small horizontal and vertical bleed under `ReelFrames.png`, and reel masks allow matching top/bottom bleed. This hides tiny scale and alignment gaps at the frame edges without changing the logical symbol size used by spin/math code.
+- `HelloPixi` draws an opaque dark backing rectangle behind every reel cell before adding the reel sprite and the frame overlay. If a symbol image, mask, or frame aperture leaves a few pixels exposed, the backing is visible instead of the game background.
+- A small symbol Y nudge centers the symbol art more cleanly inside the frame aperture, including the single middle reel.
+- The single middle reel no longer applies its legacy `-5 px` horizontal offset; it follows the measured center aperture so the Wild symbol's left edge stays inside the opening on desktop and mobile compositions.
+- This is visual-only. Symbol selection, reel indexes, win calculation, payout values, and spin timing rules are unchanged.
+
+2026-10-13 reel/frame alignment follow-up (validation pending):
+
+- The five reel columns now use fixed positions derived from the `ReelFrames.png` apertures. Device-specific `gameArea.offsetX` no longer moves reel sprites independently of the frame overlay.
+- The middle cell uses a narrower 160 px sprite and mask centered in the frame opening, to keep the Wild artwork clear of the gold rim in compact landscape.
+- Reel masks no longer expose the next symbol at their top or bottom edge while stopped.
+- Desktop, portrait, landscape screenshots and an actual spin still need to be rechecked after this latest adjustment; this entry does not claim final visual acceptance.
+
 ### PixiJS Initialization
 
 On mount, `HelloPixi`:
 
 1. Creates a new `PIXI.Application`.
-2. Initializes it with a transparent renderer.
+2. Initializes it with an opaque renderer.
 3. Uses canvas dimensions from the current layout config.
 4. Enables antialiasing, retina resolution, and `autoDensity`.
 5. Appends the Pixi canvas to a bound container element.
-6. Registers a resize handler that computes `gameScale` from the browser viewport.
+6. Registers resize, visualViewport, orientation, pageshow, ResizeObserver, and low-frequency viewport-dimension guards that compute `gameScale` from the browser viewport.
 7. Registers a spacebar handler for spin or skip-spin behavior.
-8. Loads reel frames, logo, and all symbol textures with `PIXI.Assets.load`.
+8. Loads background, reel frames, logo, and all symbol textures with `PIXI.Assets.load`.
 9. Creates HTML audio elements for spin, stop, and win effects.
 10. Creates 13 Pixi reel containers and masks, then instantiates `StandaloneReel` from `src/game-standalone/reel.ts`.
 11. Initializes music with Howler.js from the direct `howler` package dependency.
 12. Starts `app.ticker.add(update)`.
 
-The renderer keeps a fixed logical size from layout config, while `app.stage.scale` is changed for responsive display.
+The renderer keeps a fixed logical size from layout config. The root Pixi stage holds the opaque background; a child `gameLayer` is scaled and positioned for responsive reel composition.
 
 ### Canvas And Game Dimensions
 
@@ -835,6 +863,8 @@ UI refactor Phase 07 started the stage-composition split. `src/game-standalone/s
 Phase 07 validation confirmed the stage remains bounded and centered on desktop wide layouts without an extra transform: `1920x1080` and `2560x1080` keep the full canvas visible with equal side margins, while `900x500` keeps spin and bottom controls reachable. The remaining side-area treatment is visual polish rather than functional stage composition.
 
 UI refactor Phase 08 completed the visual polish and density pass. `ModalShell.svelte` now has a denser sticky header, stronger modal surface treatment, scrollbar color, and close-button focus/hover state. `PaytableSection.svelte` uses tabular numeric values and switches symbol groups to two columns on wider modal bodies. `SettingsSection.svelte` uses stable active button borders, focus states, touch-sized buttons, and compact short-landscape spacing. `TopToggles.svelte`, `SpinButton.svelte`, `QuickActions.svelte`, and `MenuButton.svelte` now share consistent hover, focus-visible, and pressed states without changing the established control dimensions. Phase 09 started with a quick accessibility checkpoint: the music and sound toggles expose `aria-pressed` in mobile and desktop layouts.
+
+UI refactor Phase 09 now also gives the menu modal deterministic keyboard focus: opening it focuses the close action, Escape closes it, and teardown restores focus to the still-connected opener. The global Space shortcut ignores interactive elements, repeated key events, and open overlays so native button activation is not duplicated by a game spin. The standalone spin button announces whether it will spin, skip the active spin, or stop autoplay, and it becomes disabled when a new paid spin is unavailable because the balance is below the bet. `HelloPixi.svelte` owns the small reactive `isSpinInProgress` flag used by those button semantics; reel state and math remain unchanged.
 
 ### 9. Final Refactor Status After Phase 10
 

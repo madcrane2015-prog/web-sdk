@@ -10,26 +10,41 @@
 	}
 
 	let { title, gameScale, uiLayoutTokens, onClose }: ModalShellProps = $props();
+	let closeButton: HTMLButtonElement;
 
 	onMount(() => {
+		const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+		closeButton.focus();
+
 		function handleKeydown(event: KeyboardEvent) {
 			if (event.key === 'Escape') {
+				event.preventDefault();
 				onClose();
 			}
 		}
 
 		window.addEventListener('keydown', handleKeydown);
-		return () => window.removeEventListener('keydown', handleKeydown);
+		return () => {
+			window.removeEventListener('keydown', handleKeydown);
+			if (opener?.isConnected) {
+				opener.focus();
+			}
+		};
 	});
 </script>
 
-<div class="modal-backdrop" role="presentation" onclick={onClose}>
+<div
+	class="modal-backdrop"
+	role="presentation"
+	onclick={(event) => {
+		if (event.target === event.currentTarget) onClose();
+	}}
+>
 	<section
 		class="paytable-modal"
 		role="dialog"
 		aria-modal="true"
 		aria-labelledby="modal-shell-title"
-		onclick={(event) => event.stopPropagation()}
 		style="
 			padding: {uiLayoutTokens.modalPadding}px;
 			border-radius: {15 * gameScale}px;
@@ -45,7 +60,13 @@
 	>
 		<header class="modal-header">
 			<h2 id="modal-shell-title">{title}</h2>
-			<button type="button" onclick={onClose} class="paytable-close-top" aria-label="Close menu">
+			<button
+				bind:this={closeButton}
+				type="button"
+				onclick={onClose}
+				class="paytable-close-top"
+				aria-label="Close menu"
+			>
 				Sulje
 			</button>
 		</header>
@@ -80,6 +101,12 @@
 		border-color: #ffd700;
 		overflow-y: auto;
 		scrollbar-color: #ffd700 rgba(255, 255, 255, 0.08);
+	}
+
+	@media (max-width: 768px) and (orientation: portrait) {
+		.paytable-modal {
+			font-size: 16px !important;
+		}
 	}
 
 	.modal-header {

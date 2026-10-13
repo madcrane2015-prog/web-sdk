@@ -54,7 +54,7 @@
 		margin: 0 0 15px;
 		text-align: center;
 		color: #aaa;
-		font-size: 0.9rem;
+		font-size: 0.9em;
 		line-height: 1.4;
 	}
 
@@ -79,14 +79,14 @@
 
 	.symbol-group h4 {
 		margin: 0 0 5px;
-		font-size: 1.08rem;
+		font-size: 1.08em;
 		font-weight: bold;
 		color: var(--accent);
 	}
 
 	.symbol-group p {
 		margin: 5px 0;
-		font-size: 0.92rem;
+		font-size: 0.92em;
 		font-variant-numeric: tabular-nums;
 	}
 

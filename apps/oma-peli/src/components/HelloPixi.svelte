@@ -137,12 +137,16 @@
 
 	// Kiekkojen koko ja sijainti - uudelle 1445x1000 taustalle
 	const SCALE_MULTIPLIER = 1.8; // Symbolien koko kerroin (1.0 = normaali)
-	const OFFSET_X = $derived(currentLayout().gameArea.offsetX); // Layout-järjestelmästä
 	const OFFSET_Y = $derived(currentLayout().gameArea.offsetY); // Layout-järjestelmästä
 
 	// KESKIKIEKON (indeksi 6) erikoiskohdistus
 	const MIDDLE_REEL_Y_OFFSET = 175; // Keskikiekon Y-siirtymä (+ = alaspäin, - = ylöspäin)
-	const MIDDLE_REEL_X_OFFSET = -5; // Keskikiekon X-siirtymä (+ = oikealle, - = vasemmalle)
+	// ReelFrames.png on 1000 px leveä. Nämä viisi X-arvoa asettavat 180 px
+	// symbolit sen aukkoihin; laitekohtainen gameArea.offsetX ei saa siirtää
+	// symboleita erilleen paikallaan pysyvästä kehyskuvasta.
+	const FRAME_X = 250;
+	const FRAME_Y = 200;
+	const REEL_COLUMN_X = [FRAME_X + 25, FRAME_X + 215, FRAME_X + 410, FRAME_X + 600, FRAME_X + 790];
 
 	// SPIN-napin sijainti (uudelle 1445x1000 taustalle)
 	const BUTTON_X = 720; // Napin X-koordinaatti
@@ -151,8 +155,6 @@
 	// ===== CONTROL PANEL ASETUKSET =====
 	// HUOM: Control panel -arvot tulevat nyt layout-järjestelmästä!
 	// Säädä parametreja tiedostossa: src/config/layoutConfig.ts
-	const REEL_FRAMES_X = 250; // Kehysten X-sijainti (sama kuin kehyksissä)
-	const REEL_FRAMES_WIDTH = 1100; // Kehysten leveys (leveämpi mobiilia varten)
 
 	// LOGO-asetukset (helppo säätää)
 	const LOGO_SCALE = 0.5; // Logon koko kerroin (1.0 = alkuperäinen koko)
@@ -170,8 +172,10 @@
 	const symbolHeight = Math.round(symbolWidth * 0.94); // Sovitettu paremmin reel-raamien ruutuihin
 	const cellSize = symbolWidth; // Ruudun koko (käytetään vanhoissa laskuissa, säilytetty yhteensopivuuden takia)
 	const gap = 4; // Väli symbolien välillä pikseleinä
-	const columnGap = 8;
 	const ROW_HEIGHT = symbolHeight + gap; // Yhden rivin kokonaiskorkeus (symboli + väli)
+	const SYMBOL_FRAME_BLEED_X = 12; // Piilottaa raamin ja symbolien väliin jäävät pikseliraot
+	const SYMBOL_FRAME_BLEED_Y = 14;
+	const SYMBOL_FRAME_Y_NUDGE = -4; // Keskittää symbolitaiteen raamin aukkoihin
 
 	const assetManifest: StandaloneAssetManifest = createStandaloneAssetManifest(base, {
 		hostname: typeof window !== 'undefined' ? window.location.hostname : undefined,
@@ -187,7 +191,9 @@
 	// Äänitiedostojen URLit
 	const SOUND_URLS = assetManifest.soundUrls;
 	const auditParams =
-		typeof window === 'undefined' ? new URLSearchParams() : new URLSearchParams(window.location.search);
+		typeof window === 'undefined'
+			? new URLSearchParams()
+			: new URLSearchParams(window.location.search);
 	const auditMode = auditParams.get('audit') ?? '';
 	const skipsIntro = auditParams.get('skipIntro') === '1' || auditMode.length > 0;
 
@@ -233,6 +239,7 @@
 	};
 
 	let spinSpeed = $state<SpinSpeed>(initialGameState.spinSpeed); // Nykyinen spinninopeus
+	let isSpinInProgress = $state(false);
 	let showSpinSpeedMenu = $state(false); // Näytetäänkö nopeusvalikko
 
 	let currentBackgroundLoop = $state<BackgroundMusicLoop>(
@@ -906,7 +913,10 @@
 			const viewportResizeObserver = new ResizeObserver(scheduleResizeGame);
 			viewportResizeObserver.observe(document.documentElement);
 			const viewportPollId = window.setInterval(() => {
-				if (window.innerWidth !== viewportModel.width || window.innerHeight !== viewportModel.height) {
+				if (
+					window.innerWidth !== viewportModel.width ||
+					window.innerHeight !== viewportModel.height
+				) {
 					scheduleResizeGame();
 				}
 			}, 250);
@@ -930,6 +940,25 @@
 			// Jos kiekot ovat pysähtyneet → aloita uusi spin
 			const handleKeyPress = (e: KeyboardEvent) => {
 				if (e.code === 'Space' || e.key === ' ') {
+					const target = e.target instanceof HTMLElement ? e.target : null;
+					const isInteractiveTarget = Boolean(
+						target?.closest(
+							'button, input, select, textarea, a[href], [contenteditable="true"], [role="button"]',
+						),
+					);
+
+					if (
+						e.repeat ||
+						isInteractiveTarget ||
+						showPaytable ||
+						showAutoPlayMenu ||
+						showDebugPanel ||
+						isShowingWin ||
+						showFreeSpinsEndPopup
+					) {
+						return;
+					}
+
 					e.preventDefault(); // Estä sivun scrollaus
 
 					// Tarkista ovatko kiekot pyörimässä
@@ -1085,46 +1114,19 @@
 			// Lasketaan kiekkojen mitat taustakuvan mukaan
 			const REEL_WIDTH = symbolWidth; // Kiekon leveys = symbolien leveys
 
-			// Eri korkeudet eri kiekoille - keskimmäinen kiekko on lyhyempi (1 symboli vs 3)
-			const getReelHeight = (reelIndex: number) => {
-				return reelIndex === 2 ? symbolHeight : ROWS * ROW_HEIGHT - gap;
-			};
-
-			// Keskimmäisen kiekon Y-korjaus: sijoitetaan samalle korkeudelle muiden kanssa
-			const getAdjustedY = (reelIndex: number, baseY: number) => {
-				if (reelIndex === 2) {
-					// Keskimmäinen kiekko: siirretään ylöspäin niin että sen keskikohta
-					// on samalla tasolla muiden kiekkojen keskikohdan kanssa
-					const otherReelsCenter = (ROWS * ROW_HEIGHT - gap) / 2; // Muiden keskikohta
-					const thisReelCenter = symbolHeight / 2; // Tämän keskikohta
-					return baseY + otherReelsCenter - thisReelCenter; // Korjattu Y-sijainti
-				}
-				return baseY; // Muut kiekot käyttävät alkuperäistä sijaintia
-			};
-
-			// Kiekkojen perussijainnit (mitattu taustakuvan kiekkojen kohdilta)
-			const baseReelPositions = [
-				{ x: 70, y: 120 }, // 1. kiekko: vasen (siirretty hieman ulkospäin)
-				{ x: 203, y: 120 }, // 2. kiekko: vasen-keski
-				{ x: 345, y: 120 }, // 3. kiekko: keskimmäinen (pysyy keskellä)
-				{ x: 487, y: 120 }, // 4. kiekko: oikea-keski
-				{ x: 620, y: 120 }, // 5. kiekko: oikea (siirretty hieman ulkospäin)
-			];
-
-			// Lisätään käyttäjän asettamat offset-arvot
-			const reelPositions = baseReelPositions.map((pos) => ({
-				x: pos.x + OFFSET_X, // Lisää X-siirtymä
-				y: pos.y + OFFSET_Y, // Lisää Y-siirtymä
-			}));
-
 			// ===== 5) KIEKKOJEN LUONTI JA MASKIEN ASETUS =====
 			reels = []; // Tyhjennetään kiekko-array
 			const reelDimensions = {
 				symbolWidth,
 				symbolHeight,
 				rowHeight: ROW_HEIGHT,
-				symbolBleedLeft: viewportModel.viewportClass === 'phoneLandscapeCompact' ? 42 : 0,
-				symbolBleedRight: viewportModel.viewportClass === 'phoneLandscapeCompact' ? 16 : 0,
+				symbolBleedLeft:
+					viewportModel.viewportClass === 'phoneLandscapeCompact' ? 42 : SYMBOL_FRAME_BLEED_X,
+				symbolBleedRight:
+					viewportModel.viewportClass === 'phoneLandscapeCompact' ? 16 : SYMBOL_FRAME_BLEED_X,
+				symbolBleedTop: SYMBOL_FRAME_BLEED_Y,
+				symbolBleedBottom: SYMBOL_FRAME_BLEED_Y,
+				symbolYOffset: SYMBOL_FRAME_Y_NUDGE,
 			};
 			const reelDependencies = {
 				getSymbol: (reelIndex: number) => reelData[reelIndex],
@@ -1143,22 +1145,35 @@
 				const row = position.row;
 
 				// Laske ruudun sijainti näytöllä - uudet koordinaatit 1445x1000 taustalle
-				const baseX = 300 + col * (symbolWidth + columnGap); // Keskemmälle uudella taustalla
+				const baseX = REEL_COLUMN_X[col];
 				const baseY = 250 + row * ROW_HEIGHT; // Alemmas uudella taustalla
 
-				// Keskikiekko (indeksi 6) erikoiskohdistus - käytä parametreja
-				const landscapeReelXCorrection =
-					viewportModel.viewportClass === 'phoneLandscapeCompact' ? -8 : 0;
-				const adjustedX =
-					reelIndex === 6
-						? baseX + MIDDLE_REEL_X_OFFSET + landscapeReelXCorrection
-						: baseX + landscapeReelXCorrection;
+				// Kehys ja kiekot käyttävät samaa koordinaatistoa kaikissa näkymissä.
+				const isMiddleReel = reelIndex === 6;
+				const adjustedX = baseX + (isMiddleReel ? 10 : 0);
 				const adjustedY = reelIndex === 6 ? baseY + MIDDLE_REEL_Y_OFFSET : baseY;
 
 				// Luo PixiJS kontti tälle kiekolle
 				const reelCont = new Container();
-				reelCont.x = adjustedX + OFFSET_X;
+				reelCont.x = adjustedX;
 				reelCont.y = adjustedY + OFFSET_Y;
+
+				const isPhoneLandscape = viewportModel.viewportClass === 'phoneLandscapeCompact';
+				const reelBleedLeft = isMiddleReel ? 0 : isPhoneLandscape ? 42 : SYMBOL_FRAME_BLEED_X;
+				const reelBleedRight = isMiddleReel ? 0 : isPhoneLandscape ? 16 : SYMBOL_FRAME_BLEED_X;
+				const visibleSymbolWidth = isMiddleReel ? 160 : symbolWidth;
+
+				// Täyttää raamin aukon symbolien alla, jotta pelin taustakuva ei pilkota
+				// symbolin ja metalliraamin välistä pienissä kohdistus-/skaalauseroissa.
+				const reelBacking = new Graphics()
+					.rect(
+						reelCont.x - reelBleedLeft,
+						reelCont.y - SYMBOL_FRAME_BLEED_Y + SYMBOL_FRAME_Y_NUDGE,
+						visibleSymbolWidth + reelBleedLeft + reelBleedRight,
+						symbolHeight + SYMBOL_FRAME_BLEED_Y * 2,
+					)
+					.fill({ color: 0x050505, alpha: 1 });
+				gameLayer.addChild(reelBacking);
 
 				// *** POISTETTU: Värillinen tausta ja debug-numerot ***
 				// const colors = [
@@ -1187,15 +1202,15 @@
 				// reelText.y = reelCont.y + 5;
 				// app.stage.addChild(reelText);
 
-				const isPhoneLandscape = viewportModel.viewportClass === 'phoneLandscapeCompact';
-				const frameEdgeInset = isPhoneLandscape ? 12 : 3;
 				const maskInsets = {
-					left: col === 0 && !isPhoneLandscape ? frameEdgeInset : 0,
-					right: col === 4 ? frameEdgeInset : 0,
+					left: col === 2 ? 0 : -5,
+					right: col === 2 ? 0 : -5,
+					top: 0,
+					bottom: 0,
 				};
 
 				// Luo maski joka rajaa kiekon näkyvän alueen
-				const mask = createReelMask(symbolWidth, symbolHeight, maskInsets);
+				const mask = createReelMask(visibleSymbolWidth, symbolHeight, maskInsets);
 
 				mask.x = reelCont.x; // Sama sijainti kuin kiekko
 				mask.y = reelCont.y;
@@ -1207,7 +1222,16 @@
 				gameLayer.addChild(reelCont); // Sitten kiekko
 
 				// Luo Reel-olio ja lisää listaan
-				reels.push(new StandaloneReel(reelIndex, reelCont, reelDimensions, reelDependencies));
+				reels.push(
+					new StandaloneReel(
+						reelIndex,
+						reelCont,
+						isMiddleReel
+							? { ...reelDimensions, symbolWidth: visibleSymbolWidth, symbolBleedLeft: 0, symbolBleedRight: 0 }
+							: reelDimensions,
+						reelDependencies,
+					),
+				);
 			}
 
 			// ===== 6) REEL KEHYKSET =====
@@ -1220,8 +1244,8 @@
 				reelFramesSprite.scale.set(framesScale);
 
 				// Keskitä kehykset kiekkojen päälle
-				reelFramesSprite.x = 250; // Säädä kiekkojen mukaan
-				reelFramesSprite.y = 200; // Säädä kiekkojen mukaan
+				reelFramesSprite.x = FRAME_X;
+				reelFramesSprite.y = FRAME_Y;
 
 				gameLayer.addChild(reelFramesSprite);
 				reelFramesSpriteRef = reelFramesSprite; // Tallenna viittaus control panelia varten
@@ -1311,6 +1335,7 @@
 		// 2) Voitto-popuppia ei näytetä (isShowingWin === false)
 		// 3) Kaikki kiekot ovat tilassa "stopped"
 		if (!isShowingWin && !winsCheckedForCurrentSpin && reels.every((r) => r.state === 'stopped')) {
+			isSpinInProgress = false;
 			winsCheckedForCurrentSpin = true; // Merkitse että voitot on tarkistettu (estetaan duplikaattitarkistukset)
 
 			// Feidaa musiikki alas kun kierros on ohi (v1.0.9)
@@ -1480,6 +1505,7 @@
 		reels.forEach((r, i) => {
 			r.startSynchronized(i, SPIN_SPEED_CONFIG[spinSpeed]); // Jokainen kiekko pysähtyy eri aikaan (i = beatIndex)
 		});
+		isSpinInProgress = true;
 
 		// Soita "whirr" SPIN-ääni
 		playSound('spin');
@@ -1782,8 +1808,12 @@
 <!-- Avataan "💰 PAYTABLE" -napista, suljetaan "Sulje"-napista -->
 <!-- Skaalautuu automaattisesti gameScale-muuttujan mukaan -->
 {#if showPaytable}
-	<ModalShell title={isPhonePortraitLayout ? 'VOITTOTAULU' : 'MENU'} {gameScale} {uiLayoutTokens} onClose={() => (showPaytable = false)}>
-		{#if !isPhonePortraitLayout}
+	<ModalShell
+		title={isPhonePortraitLayout ? 'VOITTOTAULU' : 'MENU'}
+		{gameScale}
+		{uiLayoutTokens}
+		onClose={() => (showPaytable = false)}
+	>
 			<SettingsSection
 				{isAutoPlaying}
 				{autoPlayRoundsLeft}
@@ -1795,7 +1825,6 @@
 				}}
 				onSetSpinSpeed={(nextSpinSpeed) => (spinSpeed = nextSpinSpeed)}
 			/>
-		{/if}
 
 		<PaytableSection />
 
@@ -1822,6 +1851,17 @@
 {/if}
 
 <!-- ===== 4) VAPAAERÄ-LOPETUS-POPUP ===== -->
+<AutoplayMenu
+	visible={showAutoPlayMenu}
+	{gameScale}
+	{controlPanelPos}
+	onSelectRounds={(rounds) => {
+		startAutoPlay(rounds);
+		showAutoPlayMenu = false;
+	}}
+	onCancel={() => (showAutoPlayMenu = false)}
+/>
+
 <!-- Näytetään kun vapaaeräjakso päättyy (freeSpinsRemaining === 0) -->
 <!-- Näyttää vapaaerän aikana voitetun kokonaissumman -->
 <!-- "JATKA PERUSPELIIN" -nappi palauttaa peruspelitilaan ja vaihtaa musiikin -->
@@ -1902,19 +1942,6 @@
 			<!-- Sisältää: Panos-kontrollit, Balance, Play-nappi, Autoplay, Spin Speed, Win-näyttö, Menu -->
 			<!-- HUOM: Sijainti ja koko tulevat nyt layout-järjestelmästä! -->
 			<ControlPanelFrame {controlsPath} {gameScale} {controlPanelPos}>
-				<div slot="overlay">
-					<AutoplayMenu
-						visible={showAutoPlayMenu}
-						{gameScale}
-						{controlPanelPos}
-						onSelectRounds={(rounds) => {
-							startAutoPlay(rounds);
-							showAutoPlayMenu = false;
-						}}
-						onCancel={() => (showAutoPlayMenu = false)}
-					/>
-				</div>
-
 				<!-- ===== CONTROL PANEL (v1.1.0) ===== -->
 				<!--
   Moderni control panel joka skaalautuu reelien kehysten leveyteen.
@@ -2002,6 +2029,8 @@
 						{controlsPath}
 						{gameScale}
 						{isAutoPlaying}
+						{isSpinInProgress}
+						disabled={!isAutoPlaying && !isSpinInProgress && !isFreeSpinMode && balance < betAmount}
 						{playButtonGlareActive}
 						onPress={pressSpinButton}
 					/>
@@ -2099,6 +2128,8 @@
 					{controlsPath}
 					{gameScale}
 					{isAutoPlaying}
+					{isSpinInProgress}
+					disabled={!isAutoPlaying && !isSpinInProgress && !isFreeSpinMode && balance < betAmount}
 					{playButtonGlareActive}
 					onPress={pressSpinButton}
 				/>
@@ -2123,6 +2154,8 @@
 					{controlsPath}
 					{gameScale}
 					{isAutoPlaying}
+					{isSpinInProgress}
+					disabled={!isAutoPlaying && !isSpinInProgress && !isFreeSpinMode && balance < betAmount}
 					{playButtonGlareActive}
 					onPress={pressSpinButton}
 				/>

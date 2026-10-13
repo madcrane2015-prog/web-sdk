@@ -90,14 +90,19 @@ async function capture(client, viewport, mode) {
 	const url = `${baseUrl}?${mode.query}`;
 	await client.send('Page.navigate', { url });
 
-	for (let i = 0; i < 80; i += 1) {
+	let ready = false;
+	for (let i = 0; i < 120; i += 1) {
 		await wait(250);
 		const result = await client.send('Runtime.evaluate', {
-			expression: `Boolean(document.querySelector('canvas')) && !document.body.innerText.includes('Loading...')`,
+			expression: `Boolean(document.querySelector('canvas')) && !document.body.innerText.includes('Assets loaded successfully!') && !document.body.innerText.includes('Initializing...') && !document.body.innerText.includes('Loading UI images...') && !document.body.innerText.includes('Loading symbols...') && Boolean(document.querySelector('.game-stage'))`,
 			returnByValue: true,
 		});
-		if (result.result.value) break;
+		if (result.result.value) {
+			ready = true;
+			break;
+		}
 	}
+	if (!ready) throw new Error(`Game did not render for ${viewport.name}/${mode.name}`);
 
 	await wait(1200);
 

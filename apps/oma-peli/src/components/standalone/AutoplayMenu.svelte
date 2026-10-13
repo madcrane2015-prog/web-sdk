@@ -76,7 +76,7 @@
 
 <style>
 	.autoplay-menu-popover {
-		position: absolute;
+		position: fixed;
 		left: 50%;
 		transform: translateX(-50%);
 		background: rgba(0, 0, 0, 0.95);
@@ -84,6 +84,38 @@
 		border-color: #0088ff;
 		box-sizing: border-box;
 		z-index: 2000;
+		max-height: min(720px, calc(100dvh - 32px));
+		overflow-y: auto;
+	}
+
+	@media (max-width: 768px) and (orientation: portrait) {
+		.autoplay-menu-popover {
+			top: 50%;
+			bottom: auto !important;
+			transform: translate(-50%, -50%);
+			width: min(360px, calc(100vw - 32px));
+			min-width: 0 !important;
+			padding: 16px !important;
+			border-radius: 14px !important;
+		}
+
+		.autoplay-title {
+			font-size: 18px !important;
+			margin-bottom: 12px !important;
+		}
+
+		.round-button {
+			min-height: 40px;
+			margin-bottom: 6px !important;
+			padding: 8px !important;
+			font-size: 14px !important;
+		}
+
+		.cancel-button {
+			min-height: 40px;
+			padding: 8px !important;
+			font-size: 14px !important;
+		}
 	}
 
 	.autoplay-title {
@@ -145,6 +177,24 @@
 			padding: 12px !important;
 			border-radius: 10px !important;
 			z-index: 2400;
+		}
+
+		.autoplay-title {
+			font-size: 15px !important;
+			margin-bottom: 6px !important;
+		}
+
+		.round-button {
+			min-height: 28px;
+			padding: 4px !important;
+			margin-bottom: 4px !important;
+			font-size: 12px !important;
+		}
+
+		.cancel-button {
+			min-height: 28px;
+			padding: 4px !important;
+			font-size: 12px !important;
 		}
 	}
 </style>

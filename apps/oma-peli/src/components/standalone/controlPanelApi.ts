@@ -30,6 +30,8 @@ export interface SpinButtonProps {
 	controlsPath: string;
 	gameScale: number;
 	isAutoPlaying: boolean;
+	isSpinInProgress: boolean;
+	disabled: boolean;
 	playButtonGlareActive: boolean;
 	onPress: () => void;
 }

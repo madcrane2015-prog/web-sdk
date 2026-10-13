@@ -1,14 +1,26 @@
 <script lang="ts">
 	import type { SpinButtonProps } from './controlPanelApi';
 
-	let { controlsPath, gameScale, isAutoPlaying, playButtonGlareActive, onPress }: SpinButtonProps =
-		$props();
+	let {
+		controlsPath,
+		gameScale,
+		isAutoPlaying,
+		isSpinInProgress,
+		disabled,
+		playButtonGlareActive,
+		onPress,
+	}: SpinButtonProps = $props();
+
+	let actionLabel = $derived(
+		isAutoPlaying ? 'Stop autoplay' : isSpinInProgress ? 'Skip spin' : 'Spin',
+	);
 </script>
 
 <div class="play-button-wrapper" class:glare-animate={playButtonGlareActive}>
 	<button
 		class="play-button"
 		onclick={onPress}
+		{disabled}
 		style="
 			width: {110 * gameScale}px;
 			height: {110 * gameScale}px;
@@ -16,8 +28,8 @@
 			? 'Control_playbutton_stop.png'
 			: 'Control_playbutton.png'}');
 		"
-		title={isAutoPlaying ? 'STOP AUTOPLAY' : 'SPIN'}
-		aria-label={isAutoPlaying ? 'Stop autoplay' : 'Spin'}
+		title={actionLabel.toUpperCase()}
+		aria-label={actionLabel}
 	></button>
 </div>
 
@@ -78,6 +90,12 @@
 
 	.play-button:active {
 		transform: scale(0.97);
+	}
+
+	.play-button:disabled {
+		cursor: not-allowed;
+		filter: grayscale(0.75) brightness(0.62);
+		opacity: 0.72;
 	}
 
 	@media (max-width: 768px) and (orientation: portrait),

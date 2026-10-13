@@ -9,6 +9,9 @@ export interface ReelDimensions {
 	rowHeight: number;
 	symbolBleedLeft?: number;
 	symbolBleedRight?: number;
+	symbolBleedTop?: number;
+	symbolBleedBottom?: number;
+	symbolYOffset?: number;
 }
 
 export interface ReelDependencies {
@@ -186,10 +189,12 @@ export class Reel {
 			sprite.texture = texture;
 			const bleedLeft = this.dimensions.symbolBleedLeft ?? 0;
 			const bleedRight = this.dimensions.symbolBleedRight ?? bleedLeft;
+			const bleedTop = this.dimensions.symbolBleedTop ?? 0;
+			const bleedBottom = this.dimensions.symbolBleedBottom ?? bleedTop;
 			sprite.width = this.dimensions.symbolWidth + bleedLeft + bleedRight;
-			sprite.height = this.dimensions.symbolHeight;
+			sprite.height = this.dimensions.symbolHeight + bleedTop + bleedBottom;
 			sprite.x = -bleedLeft;
-			sprite.y = yPos;
+			sprite.y = yPos - bleedTop + (this.dimensions.symbolYOffset ?? 0);
 		};
 
 		drawSymbol(0, previousSymbol, y - this.dimensions.rowHeight);

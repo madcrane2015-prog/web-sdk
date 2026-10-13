@@ -2,7 +2,7 @@ schema_version: 1
 document_type: oma_peli_refactor_plan
 status: active
 created: '2026-07-05'
-last_updated: '2026-07-05'
+last_updated: '2026-10-13'
 master_document: 'apps/oma-peli/OMA_PELI_TECHNICAL_DEEP_DIVE.md'
 agent_rules: 'apps/oma-peli/AGENTS.md'
 phase_runner: 'apps/oma-peli/agentic-refactor/Invoke-OmaPeliCopilotRefactor.ps1'
@@ -132,8 +132,8 @@ target_architecture:
       responsibility: 'Paytable/menu, win popup, free-spin outro, debug panel, and modal overlays.'
 
 progress:
-  active_phase: 'ui_phase_09_accessibility_input'
-  active_step: '09.02_toggle_pressed_state_quick_pass'
+  active_phase: 'ui_phase_10_layout_regression'
+  active_step: 'ui.10.02_align_reel_cells_to_frame_asset_apertures'
   completed_steps:
     - '00.01_read_context'
     - '00.02_set_scope'
@@ -186,8 +186,86 @@ progress:
     - '10.04_final_validation'
     - 'ui.08_visual_polish_complete'
     - 'ui.09.02_toggle_pressed_state_quick_pass'
+    - 'ui.09.03_modal_focus_and_keyboard_guards'
+    - 'reel.01_reduce_spin_flicker'
+    - 'reel.02_smooth_stop_bounce'
+    - 'ui.11.01_stabilize_mobile_resize_and_dpr'
+    - 'ui.11.02_opaque_pixi_background_layer'
+    - 'ui.11.03_mobile_reel_viewport_composition'
+    - 'ui.12.01_reel_frame_bleed_and_backing'
+    - 'ui.12.02_center_reel_horizontal_alignment'
   blocked_steps: []
   agent_journal:
+    - date: '2026-10-13'
+      author: 'Codex'
+      note: >-
+        Corrected the single center reel's horizontal frame alignment on the
+        deployed HelloPixi route. Removed its legacy -5 px X offset so the Wild
+        and other center symbols follow the measured center aperture instead of
+        extending behind its left frame edge. Browser screenshots confirmed the
+        center cell remains aligned at 1440x1000, 390x844, and 844x390. This is
+        position-only and does not change symbol sizing, math, or reel behavior.
+    - date: '2026-10-13'
+      author: 'Codex'
+      note: >-
+        Continued UI Phase 09 on the deployed HelloPixi route. ModalShell now
+        focuses its close button on open, closes with Escape, and restores focus
+        to its connected opener. The global Space shortcut ignores focused
+        interactive controls, repeated keydown events, and open overlays. The
+        spin button exposes Spin, Skip spin, or Stop autoplay according to
+        state and is disabled only when a new paid spin is unavailable. Browser
+        keyboard validation at 1440x1000 confirmed modal focus entry, Escape
+        close, focus return to the menu button, and native Space activation of
+        the focused menu button without deducting another bet. Production build
+        passed with the existing warning set; git diff --check passed.
+    - date: '2026-09-12'
+      author: 'Codex'
+      note: >-
+        Targeted deployed-route reel/frame visual alignment repair. Extended
+        reel mask support to top/bottom bleed, added symbol top/bottom and
+        horizontal bleed plus a small y nudge in the standalone Reel renderer,
+        and placed an opaque dark backing rectangle behind every reel cell before
+        the frame sprite is drawn. This prevents the game background from
+        showing through small gaps between symbols and ReelFrames.png and makes
+        the reel cells sit more cleanly under the frame. No math, symbol weights,
+        payout, or spin-state rules changed. Validation: local browser audit
+        route loaded with one Pixi canvas and all images complete; screenshot
+        confirmed the frame gaps now show reel backing instead of background;
+        pnpm run build --filter=oma-peli passed with the existing warning set.
+    - date: '2026-07-06'
+      author: 'GitHub Copilot'
+      note: >-
+        Targeted deployed-route mobile runtime repair for HelloPixi. Added
+        visualViewport/orientation/pageshow/ResizeObserver/interval viewport
+        sync, capped Pixi renderer resolution on small screens, made the Pixi
+        renderer opaque, restored an in-canvas background sprite, and separated
+        fixed root-stage background from transformed gameLayer content. Added
+        compact CSS fallbacks for top actions, bottom control frame, spin/menu
+        buttons, and bet buttons so controls remain reachable even if mobile
+        browser viewport events lag. Validation: get_errors showed only the
+        known editor-only $app/paths diagnostic; pnpm run build
+        --filter=oma-peli passed with existing Svelte warnings. Browser checks
+        confirmed mobile controls stayed in viewport at compact portrait and
+        landscape sizes; the shared browser session intermittently reported a
+        396x275 viewport during screenshot capture, so final visual screenshots
+        are diagnostic rather than full acceptance evidence.
+        Follow-up in the same slice changed stageComposition mobile transforms
+        to scale and center the reel viewport instead of the full logical canvas,
+        making phone portrait/compact landscape denser and closer to native
+        mobile slot composition.
+    - date: '2026-07-05'
+      author: 'GitHub Copilot'
+      note: >-
+        Targeted deployed-route reel rendering polish: game-standalone/reel.ts
+        now maintains a three-symbol strip while spinning, preserves row-wrap
+        scroll remainder, pixel-aligns symbol y positions, plans the stopped
+        symbol when slowdown begins, queues that symbol into the strip before
+        the final stop boundary, and uses a damped spring stop bounce instead
+        of an abrupt one-way snap. This is visual-only and does not change
+        symbol weights, payouts, or win calculation rules.
+        Validation: get_errors passed for reel.ts; pnpm run build
+        --filter=oma-peli passed with pre-existing Svelte warnings in
+        standalone UI components.
     - date: '2026-07-05'
       author: 'GitHub Copilot'
       note: >-

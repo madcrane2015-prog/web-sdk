@@ -23,11 +23,15 @@ export async function createPixiApplication(options: CreatePixiApplicationOption
 export function createReelMask(
 	symbolWidth: number,
 	symbolHeight: number,
-	insets: { left?: number; right?: number } = {},
+	insets: { left?: number; right?: number; top?: number; bottom?: number } = {},
 ) {
 	const left = insets.left ?? 0;
 	const right = insets.right ?? 0;
-	return new Graphics().rect(left, 0, symbolWidth - left - right, symbolHeight).fill(0xffffff);
+	const top = insets.top ?? 0;
+	const bottom = insets.bottom ?? 0;
+	return new Graphics()
+		.rect(left, -top, symbolWidth - left - right, symbolHeight + top + bottom)
+		.fill(0xffffff);
 }
 
 export function configureLogoTexture(texture: Texture) {
