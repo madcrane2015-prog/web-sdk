@@ -140,12 +140,14 @@
 	const OFFSET_Y = $derived(currentLayout().gameArea.offsetY); // Layout-järjestelmästä
 
 	// KESKIKIEKON (indeksi 6) erikoiskohdistus
-	const MIDDLE_REEL_Y_OFFSET = 175; // Keskikiekon Y-siirtymä (+ = alaspäin, - = ylöspäin)
 	// ReelFrames.png on 1000 px leveä. Nämä viisi X-arvoa asettavat 180 px
 	// symbolit sen aukkoihin; laitekohtainen gameArea.offsetX ei saa siirtää
 	// symboleita erilleen paikallaan pysyvästä kehyskuvasta.
 	const FRAME_X = 250;
 	const FRAME_Y = 200;
+	// Inner gold-frame opening measured in ReelFrames.png coordinates.
+	const MIDDLE_REEL_APERTURE_TOP = 207;
+	const MIDDLE_REEL_APERTURE_HEIGHT = 158;
 	const REEL_COLUMN_X = [FRAME_X + 25, FRAME_X + 215, FRAME_X + 410, FRAME_X + 600, FRAME_X + 790];
 
 	// SPIN-napin sijainti (uudelle 1445x1000 taustalle)
@@ -975,15 +977,7 @@
 					if (isAnyReelSpinning) {
 						// Pysäytä kaikki kiekot välittömästi asettamalla stopDelay = 0
 						// Tämä käynnistää hidastuksen välittömästi jokaiselle kiekolle
-						reels.forEach((r) => {
-							if (r.state === 'spinning') {
-								r.stopDelay = 0; // Aloita hidastus heti
-								r.state = 'slowing';
-								r.speed = r.targetSpeed * 0.5; // Puolita nopeus nopeaa pysähtymistä varten
-							} else if (r.state === 'slowing') {
-								r.speed = r.speed * 0.3; // Kiihdytä hidastusta
-							}
-						});
+						reels.forEach((r) => r.requestStop());
 						console.log('⚡ Skip spin - kiekot pysähtyvät nopeasti');
 					} else {
 						// Aloita uusi spin jos kiekot eivät pyöri
@@ -1157,12 +1151,11 @@
 				// Kehys ja kiekot käyttävät samaa koordinaatistoa kaikissa näkymissä.
 				const isMiddleReel = reelIndex === 6;
 				const adjustedX = baseX + (isMiddleReel ? 10 : 0);
-				const adjustedY = reelIndex === 6 ? baseY + MIDDLE_REEL_Y_OFFSET : baseY;
 
 				// Luo PixiJS kontti tälle kiekolle
 				const reelCont = new Container();
 				reelCont.x = adjustedX;
-				reelCont.y = adjustedY + OFFSET_Y;
+				reelCont.y = isMiddleReel ? FRAME_Y + MIDDLE_REEL_APERTURE_TOP : baseY + OFFSET_Y;
 
 				const isPhoneLandscape = viewportModel.viewportClass === 'phoneLandscapeCompact';
 				const reelBleedLeft = isMiddleReel ? 0 : isPhoneLandscape ? 42 : SYMBOL_FRAME_BLEED_X;
@@ -1218,10 +1211,15 @@
 				};
 
 				// Luo maski joka rajaa kiekon näkyvän alueen
-				const mask = createReelMask(visibleSymbolWidth, symbolHeight, maskInsets);
+				// The gold center frame has a smaller aperture than the side reels.
+				// Anchor its clipping to the frame asset, not device-specific reel y.
+				const mask = isMiddleReel
+					? new Graphics().roundRect(0, 0, visibleSymbolWidth, MIDDLE_REEL_APERTURE_HEIGHT, 10).fill(0xffffff)
+					: createReelMask(visibleSymbolWidth, symbolHeight, maskInsets);
 
 				mask.x = reelCont.x; // Sama sijainti kuin kiekko
-				mask.y = reelCont.y;
+				mask.y = isMiddleReel ? FRAME_Y + MIDDLE_REEL_APERTURE_TOP : reelCont.y;
+				if (isMiddleReel) reelBacking.mask = mask;
 
 				reelCont.mask = mask; // Aseta maski kiekon kontille
 
@@ -1235,7 +1233,17 @@
 						reelIndex,
 						reelCont,
 						isMiddleReel
-							? { ...reelDimensions, symbolWidth: visibleSymbolWidth, symbolBleedLeft: 0, symbolBleedRight: 0 }
+							? {
+								...reelDimensions,
+								symbolWidth: visibleSymbolWidth,
+								symbolHeight: MIDDLE_REEL_APERTURE_HEIGHT,
+								rowHeight: MIDDLE_REEL_APERTURE_HEIGHT,
+								symbolBleedLeft: 0,
+								symbolBleedRight: 0,
+								symbolBleedTop: 0,
+								symbolBleedBottom: 0,
+								symbolYOffset: 0,
+							}
 							: reelDimensions,
 						reelDependencies,
 					),
@@ -1669,15 +1677,7 @@
 		const isAnyReelSpinning = reels.some((r) => r.state === 'spinning' || r.state === 'slowing');
 
 		if (isAnyReelSpinning) {
-			reels.forEach((r) => {
-				if (r.state === 'spinning') {
-					r.stopDelay = 0;
-					r.state = 'slowing';
-					r.speed = r.targetSpeed * 0.5;
-				} else if (r.state === 'slowing') {
-					r.speed = r.speed * 0.3;
-				}
-			});
+			reels.forEach((r) => r.requestStop());
 			return;
 		}
 

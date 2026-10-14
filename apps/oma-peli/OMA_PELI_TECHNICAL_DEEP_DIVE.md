@@ -2,6 +2,26 @@
 
 Last investigated: 2026-10-14
 
+Reel stop repair, version 1.5.4 (2026-10-14): button and Space skip handlers
+must call `Reel.requestStop()` rather than assigning `state = 'slowing'`.
+The direct assignment bypassed `prepareStop()`, leaving `finalSymbol` null
+and the row countdown unset. Those reels could never reach their bounce/stop
+transition; skipping late could strand just the last reel. `requestStop()`
+uses the timed-stop initialization and ignores subsequent requests once slowing
+has begun, preserving the selected result. `scripts/test-reel-stop.mjs` checks
+all 13 reels at three speeds with immediate, mixed-state, late, and repeated
+skip requests. Run with Node 22.16+ via `pnpm --filter=oma-peli test:reel-stop`.
+
+The center reel and its dark backing now share a rounded mask anchored to the
+gold frame aperture (asset y=207, height=158), independent of device reel offsets.
+Side-reel vertical bleed must not be reused for the shorter center aperture:
+it allowed Wild art to extend below the gold frame in layouts with offsetY=0.
+The center strip is also anchored at the aperture top and uses its 158 px
+height with zero symbol bleed/y nudge. This centers the complete Wild artwork
+inside the opening rather than clipping the bottom of an oversized, lower
+positioned side-reel sprite. Center row pitch is 158 px so neighboring symbols
+meet during animation without appearing in the stopped cell.
+
 Reel aperture correction (2026-10-14): `HelloPixi.svelte` now extends each reel
 mask vertically to match the sprite bleed and y nudge (18 logical pixels above,
 10 below). Zero top/bottom mask expansion had clipped the enlarged symbols,

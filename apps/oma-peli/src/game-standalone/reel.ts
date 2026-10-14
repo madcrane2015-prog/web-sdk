@@ -65,6 +65,14 @@ export class Reel {
 		this.start(delay);
 	}
 
+	requestStop() {
+		if (this.state !== 'spinning') return;
+		this.stopDelay = 0;
+		// Use the same transition as a timed stop so finalSymbol and the strip
+		// countdown are initialized before entering the slowing state.
+		this.prepareStop();
+	}
+
 	update() {
 		if (this.state === 'idle') return;
 

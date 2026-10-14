@@ -1,6 +1,6 @@
 {
 	"name": "oma-peli",
-	"version": "1.5.3",
+	"version": "1.5.4",
 	"private": true,
 	"license": "MIT",
 	"scripts": {
@@ -10,7 +10,8 @@
 		"dev": "vite dev --host --port 3010",
 		"build": "vite build",
 		"preview": "vite preview",
-		"audit:screens": "node scripts/capture-audit-screenshots.mjs"
+		"audit:screens": "node scripts/capture-audit-screenshots.mjs",
+		"test:reel-stop": "node --experimental-transform-types scripts/test-reel-stop.mjs"
 	},
 	"type": "module",
 	"devDependencies": {
