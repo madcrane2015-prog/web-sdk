@@ -140,7 +140,6 @@
 	const OFFSET_Y = $derived(currentLayout().gameArea.offsetY); // Layout-järjestelmästä
 
 	// KESKIKIEKON (indeksi 6) erikoiskohdistus
-	const MIDDLE_REEL_Y_OFFSET = 175; // Keskikiekon Y-siirtymä (+ = alaspäin, - = ylöspäin)
 	// ReelFrames.png on 1000 px leveä. Nämä viisi X-arvoa asettavat 180 px
 	// symbolit sen aukkoihin; laitekohtainen gameArea.offsetX ei saa siirtää
 	// symboleita erilleen paikallaan pysyvästä kehyskuvasta.
@@ -1152,12 +1151,11 @@
 				// Kehys ja kiekot käyttävät samaa koordinaatistoa kaikissa näkymissä.
 				const isMiddleReel = reelIndex === 6;
 				const adjustedX = baseX + (isMiddleReel ? 10 : 0);
-				const adjustedY = reelIndex === 6 ? baseY + MIDDLE_REEL_Y_OFFSET : baseY;
 
 				// Luo PixiJS kontti tälle kiekolle
 				const reelCont = new Container();
 				reelCont.x = adjustedX;
-				reelCont.y = adjustedY + OFFSET_Y;
+				reelCont.y = isMiddleReel ? FRAME_Y + MIDDLE_REEL_APERTURE_TOP : baseY + OFFSET_Y;
 
 				const isPhoneLandscape = viewportModel.viewportClass === 'phoneLandscapeCompact';
 				const reelBleedLeft = isMiddleReel ? 0 : isPhoneLandscape ? 42 : SYMBOL_FRAME_BLEED_X;
@@ -1235,7 +1233,17 @@
 						reelIndex,
 						reelCont,
 						isMiddleReel
-							? { ...reelDimensions, symbolWidth: visibleSymbolWidth, symbolBleedLeft: 0, symbolBleedRight: 0 }
+							? {
+								...reelDimensions,
+								symbolWidth: visibleSymbolWidth,
+								symbolHeight: MIDDLE_REEL_APERTURE_HEIGHT,
+								rowHeight: MIDDLE_REEL_APERTURE_HEIGHT,
+								symbolBleedLeft: 0,
+								symbolBleedRight: 0,
+								symbolBleedTop: 0,
+								symbolBleedBottom: 0,
+								symbolYOffset: 0,
+							}
 							: reelDimensions,
 						reelDependencies,
 					),

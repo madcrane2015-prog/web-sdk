@@ -10,7 +10,9 @@ for (const speed of ['slow', 'medium', 'fast']) {
     const stops = Array(13).fill(0);
     const draws = Array(13).fill(0);
     const reels = symbols.map((_, index) => new Reel(index, new Container(), {
-      symbolWidth: 180, symbolHeight: 169, rowHeight: 173,
+      symbolWidth: index === 6 ? 160 : 180,
+      symbolHeight: index === 6 ? 158 : 169,
+      rowHeight: index === 6 ? 158 : 173,
     }, {
       getSymbol: i => symbols[i], setSymbol: (i, symbol) => { symbols[i] = symbol; },
       randomSymbol: i => { draws[i]++; return i === 6 ? 'emptyslot' : 'b'; },

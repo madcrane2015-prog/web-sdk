@@ -16,6 +16,11 @@ The center reel and its dark backing now share a rounded mask anchored to the
 gold frame aperture (asset y=207, height=158), independent of device reel offsets.
 Side-reel vertical bleed must not be reused for the shorter center aperture:
 it allowed Wild art to extend below the gold frame in layouts with offsetY=0.
+The center strip is also anchored at the aperture top and uses its 158 px
+height with zero symbol bleed/y nudge. This centers the complete Wild artwork
+inside the opening rather than clipping the bottom of an oversized, lower
+positioned side-reel sprite. Center row pitch is 158 px so neighboring symbols
+meet during animation without appearing in the stopped cell.
 
 Reel aperture correction (2026-10-14): `HelloPixi.svelte` now extends each reel
 mask vertically to match the sprite bleed and y nudge (18 logical pixels above,

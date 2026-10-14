@@ -133,8 +133,9 @@ target_architecture:
 
 progress:
   active_phase: 'reel_stop_regression'
-  active_step: 'reel.03_initialize_skipped_stop'
+  active_step: 'reel.04_center_wild_in_gold_aperture'
   completed_steps:
+    - 'reel.04_center_wild_in_gold_aperture'
     - 'reel.03_initialize_skipped_stop'
     - 'ui.10.05_mobile_validation_and_1_5_3_release'
     - 'ui.10.04_desktop_control_bar_reference_layout'
@@ -200,6 +201,15 @@ progress:
     - 'ui.12.02_center_reel_horizontal_alignment'
   blocked_steps: []
   agent_journal:
+    - date: '2026-10-14'
+      author: 'Codex'
+      note: >-
+        Centered the full center-reel artwork in the gold aperture by anchoring
+        the reel itself to the fixed frame top, setting symbol/row height to
+        the aperture's 158 px, and removing center vertical bleed and y nudge.
+        Previously the oversized sprite was still positioned using device
+        offsets despite its fixed mask, pushing Wild text down. Desktop browser
+        screenshot shows centered Wild; reel-stop regressions continue to pass.
     - date: '2026-10-14'
       author: 'Codex'
       note: >-
