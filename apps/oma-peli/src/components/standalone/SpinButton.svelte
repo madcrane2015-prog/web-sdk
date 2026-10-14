@@ -36,7 +36,7 @@
 <style>
 	.play-button-wrapper {
 		position: relative;
-		display: inline-block;
+		display: inline-flex;
 		overflow: hidden;
 		border-radius: 50%;
 	}

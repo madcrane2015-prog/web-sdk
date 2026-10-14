@@ -16,6 +16,7 @@
 	import AutoplayMenu from './standalone/AutoplayMenu.svelte';
 	import ControlPanelFrame from './standalone/ControlPanelFrame.svelte';
 	import DesktopControlPanel from './standalone/DesktopControlPanel.svelte';
+	import DesktopControlBar from './standalone/DesktopControlBar.svelte';
 	import FreeSpinsEndPopup from './standalone/FreeSpinsEndPopup.svelte';
 	import ModalShell from './standalone/ModalShell.svelte';
 	import MenuButton from './standalone/MenuButton.svelte';
@@ -128,11 +129,10 @@
 			viewportModel.viewportClass === 'phonePortraitCompact',
 	);
 	const isCompactShortLayout = $derived(
-		viewportModel.viewportClass === 'phoneLandscapeCompact' ||
-			viewportModel.viewportClass === 'desktopShort',
+		viewportModel.viewportClass === 'phoneLandscapeCompact',
 	);
 	const showsMobileStatusStrip = $derived(
-		isPhonePortraitLayout || viewportModel.viewportClass === 'desktopShort',
+		isPhonePortraitLayout,
 	);
 
 	// Kiekkojen koko ja sijainti - uudelle 1445x1000 taustalle
@@ -819,6 +819,12 @@
 		),
 	);
 	const topButtonRight = $derived(getSafeRightPosition(20 * gameScale, viewportModel));
+	const desktopControlPanelPos = $derived({
+		x: FRAME_X * gameScale,
+		y: 800 * gameScale,
+		width: controlPanelWidth * gameScale,
+		height: 77 * gameScale,
+	});
 	const paytableButtonTop = $derived(getSafeTopPosition(130 * gameScale, viewportModel));
 	const debugButtonTop = $derived(getSafeTopPosition(190 * gameScale, viewportModel));
 	const audioButtonTop = $derived(getSafeTopPosition(10 * gameScale, viewportModel));
@@ -1205,8 +1211,10 @@
 				const maskInsets = {
 					left: col === 2 ? 0 : -5,
 					right: col === 2 ? 0 : -5,
-					top: 0,
-					bottom: 0,
+					// Keep the sprite's vertical bleed visible beneath the frame.
+					// A zero inset clips it away and exposes the dark reel backing.
+					top: SYMBOL_FRAME_BLEED_Y - SYMBOL_FRAME_Y_NUDGE,
+					bottom: SYMBOL_FRAME_BLEED_Y + SYMBOL_FRAME_Y_NUDGE,
 				};
 
 				// Luo maski joka rajaa kiekon näkyvän alueen
@@ -1941,6 +1949,17 @@
 			<!-- Pelin pääkontrollit näytön alareunassa -->
 			<!-- Sisältää: Panos-kontrollit, Balance, Play-nappi, Autoplay, Spin Speed, Win-näyttö, Menu -->
 			<!-- HUOM: Sijainti ja koko tulevat nyt layout-järjestelmästä! -->
+			{#if !viewportModel.isMobile && !isCompactShortLayout}
+				<DesktopControlBar
+					{controlsPath} controlPanelPos={desktopControlPanelPos} {balance} {betAmount} {lastWin}
+					{isAutoPlaying} {isSpinInProgress} {playButtonGlareActive} {spinSpeed}
+					disabled={!isAutoPlaying && !isSpinInProgress && !isFreeSpinMode && balance < betAmount}
+					onDecreaseBet={decreaseBet} onIncreaseBet={increaseBet} onPressSpin={pressSpinButton}
+					onToggleAutoplayMenu={() => (showAutoPlayMenu = !showAutoPlayMenu)}
+					onStopAutoplay={stopAutoPlay} onCycleSpinSpeed={cycleSpinSpeed}
+					onTogglePaytable={() => (showPaytable = !showPaytable)}
+				/>
+			{:else}
 			<ControlPanelFrame {controlsPath} {gameScale} {controlPanelPos}>
 				<!-- ===== CONTROL PANEL (v1.1.0) ===== -->
 				<!--
@@ -2110,6 +2129,7 @@
 					</div>
 				</div>
 			</ControlPanelFrame>
+			{/if}
 			<!-- Suljetaan control panel -->
 
 			<div class="portrait-status-row">

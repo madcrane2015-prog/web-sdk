@@ -1,6 +1,20 @@
 # Oma Peli UI Test Matrix
 
-Last run: 2026-07-05
+Last run: 2026-10-14
+
+## Version 1.5.3 release check (2026-10-14)
+
+Browser viewport checks of the standalone route covered 360x740, 390x844,
+740x360, and 844x390. Reel art and the center Wild fill the frame apertures;
+mobile keeps its dedicated controls while desktop uses the reference bar.
+All visible controls were within the viewport in the measured 360x740,
+740x360, and 844x390 views. Portrait spin is 82x82 px, landscape spin 70x70 px.
+The menu fits at 336x710.4 px on 360x740 and 820x370.4 px on 844x390.
+Menu open/close, bet increase/decrease, speed change, audio toggles, and
+autoplay-picker open/cancel were checked. Desktop bar checks from this release
+also cover 1440x1000, 1100x650 and the default 764x612 browser panel.
+Version 1.5.3 production build passed with the existing warning set.
+These are browser viewport checks; physical iOS/Android devices were not tested.
 
 This matrix validates the deployed standalone route: `src/routes/+page.svelte -> PasswordProtection.svelte -> HelloPixi.svelte`. Storybook is not a substitute for these checks.
 
