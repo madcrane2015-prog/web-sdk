@@ -1,6 +1,24 @@
 # Oma Peli Technical Deep Dive
 
-Last investigated: 2026-07-05
+Last investigated: 2026-10-14
+
+Reel aperture correction (2026-10-14): `HelloPixi.svelte` now extends each reel
+mask vertically to match the sprite bleed and y nudge (18 logical pixels above,
+10 below). Zero top/bottom mask expansion had clipped the enlarged symbols,
+exposing the dark backing between their top edge and the frame, including the
+center Wild cell. The correction keeps sprite dimensions and reel math unchanged.
+
+Desktop controls (2026-10-14): `DesktopControlBar.svelte` renders the reference
+order BET, BALANCE, centered spin, autoplay, speed, WIN, menu. Its grid uses fixed
+proportions and anchors spin at the bar's 50%/50% point. `HelloPixi` positions it
+at logical x=250, y=800 and uses the loaded reel-frame width with the same game
+scale. Desktop/tablet landscape views no longer inherit the narrower legacy
+Android control-panel scale or move BET to the mobile side merely because the
+window is under 768 px wide. `desktopShort` also uses this desktop bar; dedicated
+compact controls remain for phone landscape and portrait.
+
+Release 1.5.3 (2026-10-14) synchronizes `package.json` and `src/version.ts`.
+Mobile/desktop browser validation is recorded in `UI_TEST_MATRIX.md`.
 
 Related agent/refactor documents:
 
