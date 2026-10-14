@@ -132,9 +132,10 @@ target_architecture:
       responsibility: 'Paytable/menu, win popup, free-spin outro, debug panel, and modal overlays.'
 
 progress:
-  active_phase: 'ui_phase_10_layout_regression'
-  active_step: 'ui.10.05_mobile_validation_and_1_5_3_release'
+  active_phase: 'reel_stop_regression'
+  active_step: 'reel.03_initialize_skipped_stop'
   completed_steps:
+    - 'reel.03_initialize_skipped_stop'
     - 'ui.10.05_mobile_validation_and_1_5_3_release'
     - 'ui.10.04_desktop_control_bar_reference_layout'
     - 'ui.10.03_unclip_symbol_vertical_frame_bleed'
@@ -199,6 +200,18 @@ progress:
     - 'ui.12.02_center_reel_horizontal_alignment'
   blocked_steps: []
   agent_journal:
+    - date: '2026-10-14'
+      author: 'Codex'
+      note: >-
+        Version 1.5.4 repairs button/Space skip transitions through
+        Reel.requestStop(), initializing finalSymbol and the stop-row countdown.
+        Direct slowing-state assignments had left skipped reels spinning forever.
+        Added test-reel-stop.mjs: normal stops plus 27 timing/speed combinations
+        and repeated requests, all 13 reels stop exactly once. Also masks both
+        center symbol art and backing to the measured rounded gold-frame
+        aperture, avoiding Wild bleed beneath the center frame on mobile.
+        Version 1.5.4 production build and source diff checks passed with the
+        existing build warning set. get_errors is unavailable in this session.
     - date: '2026-10-14'
       author: 'Codex'
       note: >-

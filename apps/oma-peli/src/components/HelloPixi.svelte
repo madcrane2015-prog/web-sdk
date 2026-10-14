@@ -146,6 +146,9 @@
 	// symboleita erilleen paikallaan pysyvästä kehyskuvasta.
 	const FRAME_X = 250;
 	const FRAME_Y = 200;
+	// Inner gold-frame opening measured in ReelFrames.png coordinates.
+	const MIDDLE_REEL_APERTURE_TOP = 207;
+	const MIDDLE_REEL_APERTURE_HEIGHT = 158;
 	const REEL_COLUMN_X = [FRAME_X + 25, FRAME_X + 215, FRAME_X + 410, FRAME_X + 600, FRAME_X + 790];
 
 	// SPIN-napin sijainti (uudelle 1445x1000 taustalle)
@@ -975,15 +978,7 @@
 					if (isAnyReelSpinning) {
 						// Pysäytä kaikki kiekot välittömästi asettamalla stopDelay = 0
 						// Tämä käynnistää hidastuksen välittömästi jokaiselle kiekolle
-						reels.forEach((r) => {
-							if (r.state === 'spinning') {
-								r.stopDelay = 0; // Aloita hidastus heti
-								r.state = 'slowing';
-								r.speed = r.targetSpeed * 0.5; // Puolita nopeus nopeaa pysähtymistä varten
-							} else if (r.state === 'slowing') {
-								r.speed = r.speed * 0.3; // Kiihdytä hidastusta
-							}
-						});
+						reels.forEach((r) => r.requestStop());
 						console.log('⚡ Skip spin - kiekot pysähtyvät nopeasti');
 					} else {
 						// Aloita uusi spin jos kiekot eivät pyöri
@@ -1218,10 +1213,15 @@
 				};
 
 				// Luo maski joka rajaa kiekon näkyvän alueen
-				const mask = createReelMask(visibleSymbolWidth, symbolHeight, maskInsets);
+				// The gold center frame has a smaller aperture than the side reels.
+				// Anchor its clipping to the frame asset, not device-specific reel y.
+				const mask = isMiddleReel
+					? new Graphics().roundRect(0, 0, visibleSymbolWidth, MIDDLE_REEL_APERTURE_HEIGHT, 10).fill(0xffffff)
+					: createReelMask(visibleSymbolWidth, symbolHeight, maskInsets);
 
 				mask.x = reelCont.x; // Sama sijainti kuin kiekko
-				mask.y = reelCont.y;
+				mask.y = isMiddleReel ? FRAME_Y + MIDDLE_REEL_APERTURE_TOP : reelCont.y;
+				if (isMiddleReel) reelBacking.mask = mask;
 
 				reelCont.mask = mask; // Aseta maski kiekon kontille
 
@@ -1669,15 +1669,7 @@
 		const isAnyReelSpinning = reels.some((r) => r.state === 'spinning' || r.state === 'slowing');
 
 		if (isAnyReelSpinning) {
-			reels.forEach((r) => {
-				if (r.state === 'spinning') {
-					r.stopDelay = 0;
-					r.state = 'slowing';
-					r.speed = r.targetSpeed * 0.5;
-				} else if (r.state === 'slowing') {
-					r.speed = r.speed * 0.3;
-				}
-			});
+			reels.forEach((r) => r.requestStop());
 			return;
 		}
 
