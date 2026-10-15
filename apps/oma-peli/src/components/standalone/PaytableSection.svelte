@@ -1,26 +1,33 @@
 <script lang="ts">
 	import { SYMBOL_PAYTABLE, PAYTABLE_GROUPS, CENTER_WILD_PROBABILITY, MIN_SCATTERS } from '../../game-standalone/mathConfig';
+	import { ACTIVE_MATH } from '../../game-standalone/activeMath';
+	let { payoutMode = 'balanced96' }: { payoutMode?: 'balanced96' | 'legacy' } = $props();
+	const baseScale = $derived(payoutMode === 'balanced96' ? ACTIVE_MATH.baseScale : 1);
+	const freeScale = $derived(payoutMode === 'balanced96' ? ACTIVE_MATH.freeScale : 1);
 </script>
 
 <section class="paytable-section" aria-labelledby="paytable-section-title">
 	<h3 id="paytable-section-title">PAYTABLE (81 WAYS)</h3>
+	{#if payoutMode === 'balanced96'}<p class="summary">TESTIVERSIO 1.7.0 · Teoreettinen RTP 96 %<br />Leikkisaldo, ei oikeaa rahaa.</p>{/if}
 	<p class="summary">Voitot muodostuvat 81 ways -järjestelmällä (vasemmalta oikealle)<br />Vähintään 3 symbolia tarvitaan voittoon</p>
 	<div class="symbol-groups">
 		{#each PAYTABLE_GROUPS as group}
 			<div class="symbol-group" class:premium={group.title === 'PREMIUM SYMBOLS'} class:blue={group.title === 'BLUE SYMBOLS'} class:red={group.title === 'RED SYMBOLS'}>
 				<h4>{group.title}</h4>
 				{#each group.symbols as [key, name]}
-					<p>{name}: 3x={SYMBOL_PAYTABLE[key][3]?.toFixed(2)} | 4x={SYMBOL_PAYTABLE[key][4]?.toFixed(2)} | 5x={SYMBOL_PAYTABLE[key][5]?.toFixed(2)}</p>
+					<p>{name} · Peruspeli: 3x={((SYMBOL_PAYTABLE[key][3] ?? 0) * baseScale).toFixed(4)} | 4x={((SYMBOL_PAYTABLE[key][4] ?? 0) * baseScale).toFixed(4)} | 5x={((SYMBOL_PAYTABLE[key][5] ?? 0) * baseScale).toFixed(4)}</p>
+					{#if payoutMode === 'balanced96'}<p>Vapaapelit: 3x={((SYMBOL_PAYTABLE[key][3] ?? 0) * freeScale).toFixed(4)} | 4x={((SYMBOL_PAYTABLE[key][4] ?? 0) * freeScale).toFixed(4)} | 5x={((SYMBOL_PAYTABLE[key][5] ?? 0) * freeScale).toFixed(4)}</p>{/if}
 				{/each}
 			</div>
 		{/each}
 		<div class="symbol-group special">
 			<h4>SPECIAL SYMBOLS</h4>
-			<p>WILD - Korvaa kaikki muut symbolit (paitsi Scatter). Vain keskikelalla ({CENTER_WILD_PROBABILITY * 100}%).</p>
+			<p>WILD - Korvaa kaikki muut symbolit (paitsi Scatter). Vain keskikelalla ({(CENTER_WILD_PROBABILITY * 100).toFixed(0)}%).</p>
 			<p>SCATTER - Triggeröi {MIN_SCATTERS}-12 FREE SPINS ({MIN_SCATTERS}-12 scatteria)</p>
+			<p>Vapaapeleissä punaisia symboleja ei arvota; premium-symbolien paino kasvaa. Samat scatter-säännöt voivat antaa lisävapaapelejä.</p>
 		</div>
 	</div>
-	<p class="note">Kaikki voitot kerrotaan panoksella (Bet) ja Ways-kertoimella<br /><span>Ways = Symbolien määrä per kela kerrottuna</span></p>
+	<p class="note">Maksuarvot × panos × ways × kierroksen satunnaiskerroin.<br />Peruspelin kerroin 1× / 2× / 3×, vapaapelien 3× / 5× / 10×.<br /><span>Ways = Symbolien määrä per kela kerrottuna. Symbolista maksetaan vain pisin osuma.</span><br />Taulukon arvot ovat näyttöpyöristettyjä; laskenta käyttää täyttä tarkkuutta. Sama koskee kahden desimaalin saldonäyttöä.</p>
 </section>
 
 <style>

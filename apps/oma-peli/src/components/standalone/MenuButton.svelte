@@ -1,10 +1,12 @@
 <script lang="ts">
 	import type { MenuButtonProps } from './controlPanelApi';
+	import { buttonGlare } from './buttonGlare';
 
 	let { controlsPath, gameScale, onTogglePaytable, className = '' }: MenuButtonProps = $props();
 </script>
 
 <button
+	use:buttonGlare
 	class="play-button {className}"
 	onclick={onTogglePaytable}
 	style="

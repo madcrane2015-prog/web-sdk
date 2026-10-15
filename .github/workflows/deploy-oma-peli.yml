@@ -51,6 +51,7 @@ jobs:
         run: |
           pnpm --filter=oma-peli test:reel-stop
           pnpm --filter=oma-peli test:domain
+          test -f apps/oma-peli/build/test/index.html
           
       - name: Verify symbols in build
         run: |

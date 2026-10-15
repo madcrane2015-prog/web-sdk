@@ -1,6 +1,6 @@
 {
 	"name": "oma-peli",
-	"version": "1.6.0",
+	"version": "1.7.0",
 	"private": true,
 	"license": "MIT",
 	"scripts": {
@@ -15,7 +15,9 @@
 		"test:reel-stop": "node --experimental-transform-types scripts/test-reel-stop.mjs",
 		"test:domain": "node scripts/run-domain-tests.mjs",
 		"audit:resources": "node scripts/audit-resources.mjs",
-		"audit:math": "node scripts/run-rtp-audit.mjs"
+		"audit:math": "node scripts/run-rtp-audit.mjs --experimental",
+		"audit:baseline": "node scripts/run-rtp-audit.mjs",
+		"audit:experiment": "node scripts/run-rtp-audit.mjs --experimental"
 	},
 	"type": "module",
 	"devDependencies": {

@@ -68,8 +68,9 @@
 	const lifetime = new Lifetime();
 	import { getReelGeometry, REEL_GEOMETRY } from '../game-standalone/reelGeometry';
 	import type { RoundProvider } from '../game-standalone/roundProvider';
-	let { roundProvider }: { roundProvider?: RoundProvider } = $props();
-	const roundController = new RoundController(untrack(() => roundProvider));
+	import { createActiveRoundProvider } from '../game-standalone/activeMath';
+	let { roundProvider, payoutMode = 'balanced96' }: { roundProvider?: RoundProvider; payoutMode?: 'balanced96' | 'legacy' } = $props();
+	const roundController = new RoundController(untrack(() => roundProvider ?? createActiveRoundProvider()));
 	let activeRoundBet = $state(3);
 	import {
 		createPixiStageTransform,
@@ -1573,7 +1574,7 @@
 				onSetSpinSpeed={(nextSpinSpeed) => (spinSpeed = nextSpinSpeed)}
 			/>
 
-		<PaytableSection />
+		<PaytableSection {payoutMode} />
 
 		<button
 			onclick={() => {

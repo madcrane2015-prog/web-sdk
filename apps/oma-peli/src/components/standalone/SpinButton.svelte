@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { SpinButtonProps } from './controlPanelApi';
+	import { buttonGlare } from './buttonGlare';
 
 	let {
 		controlsPath,
@@ -16,8 +17,9 @@
 	);
 </script>
 
-<div class="play-button-wrapper" class:glare-animate={playButtonGlareActive}>
+<div class="play-button-wrapper">
 	<button
+		use:buttonGlare={playButtonGlareActive}
 		class="play-button"
 		onclick={onPress}
 		{disabled}
@@ -41,29 +43,6 @@
 		border-radius: 50%;
 	}
 
-	.play-button-wrapper::after {
-		content: '';
-		position: absolute;
-		top: -150%;
-		left: -150%;
-		width: 300%;
-		height: 300%;
-		background: linear-gradient(
-			45deg,
-			rgba(255, 255, 255, 0) 40%,
-			rgba(255, 255, 255, 0.55) 50%,
-			rgba(255, 255, 255, 0) 60%
-		);
-		transform: translateX(-100%) translateY(-100%);
-		pointer-events: none;
-		opacity: 0;
-		filter: blur(2px);
-	}
-
-	.play-button-wrapper.glare-animate::after {
-		animation: glareSweep 1.2s ease-out forwards;
-		opacity: 1;
-	}
 
 	.play-button {
 		background-size: cover;
@@ -117,17 +96,4 @@
 		}
 	}
 
-	@keyframes glareSweep {
-		0% {
-			transform: translate(-120%, -120%);
-			opacity: 0;
-		}
-		15% {
-			opacity: 1;
-		}
-		100% {
-			transform: translate(120%, 120%);
-			opacity: 0;
-		}
-	}
 </style>

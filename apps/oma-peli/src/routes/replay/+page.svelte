@@ -8,7 +8,7 @@
 </script>
 
 {#if import.meta.env.DEV}
-	<HelloPixi roundProvider={provider} />
+	<HelloPixi roundProvider={provider} payoutMode="legacy" />
 {:else}
 	<p>Esimerkkipeli on käytettävissä vain paikallisesti.</p>
 {/if}

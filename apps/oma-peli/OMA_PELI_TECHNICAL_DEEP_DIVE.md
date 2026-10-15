@@ -2,6 +2,39 @@
 
 Last investigated: 2026-10-15
 
+Release 1.7.0 promotes balanced-96-v1 to the active HelloPixi default via
+`activeMath.ts`. The low-level RoundController default and DemoRoundProvider
+remain legacy baseline helpers for comparisons; deployed HelloPixi explicitly
+injects the active provider. PaytableSection shows separately scaled base/FS
+pays, multiplier rules and full-precision/display-rounding notes. The `/test`
+route is a public no-password fictional-balance test build, responsive across
+desktop/mobile. `/` retains the password gate. `audit:math` now checks the 96%
+model; `audit:baseline` checks legacy 80.6792%. Pre-promotion source is preserved
+by `backup/rockabilly-pre-96-2026-10-15` and a local ZIP snapshot.
+
+Large experiment verification: `audit:experiment 10000000` completed three
+10M paid-round runs plus all bonus chains (681,961 free spins). Candidate pooled
+RTP was 95.9022903764%, approximate 95% CI 95.5356165353–96.2689642175%;
+paired baseline 80.6066466667%. The analytic candidate remains 96% before
+rounding. Results and limitations: `EXPERIMENTAL_96_SIMULATION_30M.md`.
+
+Parallel math experiment (2026-10-15): `experimentalMath.ts` exports a separate
+demo provider, deriving base/free payout scales from active rules to allocate
+66%/30% RTP, total 96% before currency rounding. Default DemoRoundProvider is
+unchanged. Development-only `/math-lab` injects the candidate into HelloPixi.
+`audit:experiment` verifies 20,000 fixtures and compares identical outcome chains
+for three seeds. Details, limitations and results: `EXPERIMENTAL_96_MODEL.md`.
+This v1 changes payout size, not hit frequency or bonus mechanics.
+
+Button glare (2026-10-15): standalone spin, bet, autoplay, speed and menu
+buttons share the scoped `oma-button-glare` CSS and `buttonGlare` Svelte action.
+A pointer-transparent pseudo-element renders above the PNG background, clips
+to the button bounds and sweeps diagonally using transform/opacity over 1.2s.
+The previous spin-wrapper overlay sat behind the button's z-index and was
+effectively hidden. Pointer entry, focus and click replay the effect; the spin
+prop also triggers each autoplay round. Disabled/reduced-motion buttons skip
+the effect, and action teardown removes listeners. No repeating timers added.
+
 Large-win star enrichment (2026-10-15): star counts are now 8/48/96 for
 small/medium/jackpot. Larger tiers increase star scale and radial spread.
 Staggered waves travel outward from the center and fade, rendered above vinyls

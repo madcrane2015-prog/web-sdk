@@ -1,0 +1,160 @@
+{
+  "model": {
+    "id": "balanced-96-v1",
+    "targetRtp": 0.96,
+    "baseTarget": 0.66,
+    "bonusTarget": 0.3,
+    "baseScale": 1.1183522401025054,
+    "freeScale": 1.3847973860281648,
+    "baselineBaseRtp": 0.5901539571642527,
+    "baselineBonusRtp": 0.21663819055901828,
+    "baselineRtp": 0.8067921477232709,
+    "triggerProbability": 0.004329343270000003,
+    "expectedFreeSpinsPerPaidRound": 0.022747660383684358
+  },
+  "verifiedFixtures": 20000,
+  "scope": "Unit paid bet; complete bonus chains; full precision; no currency rounding; debug grants excluded. Both models use identical outcomes. Return metrics include the entire bonus chain.",
+  "runs": [
+    {
+      "seed": 12345,
+      "paidRounds": 1000000,
+      "triggers": 4417,
+      "freeSpins": 23180,
+      "triggerRate": 0.004417,
+      "completedTriggerGapP50": 156,
+      "completedTriggerGapP95": 691,
+      "baseline": {
+        "rtp": 0.8175395000003343,
+        "confidence95": [
+          0.8011477594043701,
+          0.8339312405962984
+        ],
+        "stddev": 8.363132957124597,
+        "zeroRate": 0.823707,
+        "partialReturnRate": 0.062472,
+        "breakEvenRate": 0.003525,
+        "netWinRate": 0.110296,
+        "p50": 0,
+        "p90": 1.5,
+        "p95": 3.2,
+        "p99": 14,
+        "maxObserved": 2084,
+        "baseRtp": 0.5864504000001121,
+        "bonusRtp": 0.23108909999999802
+      },
+      "experimental": {
+        "rtp": 0.9758697001690733,
+        "confidence95": [
+          0.9535758627113884,
+          0.9981635376267581
+        ],
+        "stddev": 11.374406866165765,
+        "zeroRate": 0.823707,
+        "partialReturnRate": 0.062472,
+        "breakEvenRate": 0,
+        "netWinRate": 0.113821,
+        "p50": 0,
+        "p90": 1.677528360153758,
+        "p95": 3.5787271683280175,
+        "p99": 15.656931361435076,
+        "maxObserved": 2885.9177524826955,
+        "baseRtp": 0.6558581185491357,
+        "bonusRtp": 0.3200115816195984
+      }
+    },
+    {
+      "seed": 741354,
+      "paidRounds": 1000000,
+      "triggers": 4302,
+      "freeSpins": 22574,
+      "triggerRate": 0.004302,
+      "completedTriggerGapP50": 161,
+      "completedTriggerGapP95": 699,
+      "baseline": {
+        "rtp": 0.8031200000003462,
+        "confidence95": [
+          0.7891993648355407,
+          0.8170406351651518
+        ],
+        "stddev": 7.102364880002829,
+        "zeroRate": 0.823584,
+        "partialReturnRate": 0.062427,
+        "breakEvenRate": 0.003505,
+        "netWinRate": 0.110484,
+        "p50": 0,
+        "p90": 1.5,
+        "p95": 3.2,
+        "p99": 14,
+        "maxObserved": 1510,
+        "baseRtp": 0.593194800000136,
+        "bonusRtp": 0.20992519999999848
+      },
+      "experimental": {
+        "rtp": 0.9541046016190814,
+        "confidence95": [
+          0.9353221240909634,
+          0.9728870791471994
+        ],
+        "stddev": 9.582896698019397,
+        "zeroRate": 0.823584,
+        "partialReturnRate": 0.062427,
+        "breakEvenRate": 0,
+        "netWinRate": 0.113989,
+        "p50": 0,
+        "p90": 1.677528360153758,
+        "p95": 3.5787271683280175,
+        "p99": 15.656931361435076,
+        "maxObserved": 2091.044052902529,
+        "baseRtp": 0.6634007333973098,
+        "bonusRtp": 0.29070386822143757
+      }
+    },
+    {
+      "seed": 987654321,
+      "paidRounds": 1000000,
+      "triggers": 4417,
+      "freeSpins": 23211,
+      "triggerRate": 0.004417,
+      "completedTriggerGapP50": 152,
+      "completedTriggerGapP95": 692,
+      "baseline": {
+        "rtp": 0.8125169000003489,
+        "confidence95": [
+          0.7974946628840317,
+          0.8275391371166662
+        ],
+        "stddev": 7.664406691998613,
+        "zeroRate": 0.82352,
+        "partialReturnRate": 0.062597,
+        "breakEvenRate": 0.003631,
+        "netWinRate": 0.110252,
+        "p50": 0,
+        "p90": 1.5,
+        "p95": 3.2,
+        "p99": 14,
+        "maxObserved": 1800,
+        "baseRtp": 0.5873620000001206,
+        "bonusRtp": 0.22515489999999824
+      },
+      "experimental": {
+        "rtp": 0.9686715254229937,
+        "confidence95": [
+          0.948320640826138,
+          0.9890224100198495
+        ],
+        "stddev": 10.383104386150919,
+        "zeroRate": 0.82352,
+        "partialReturnRate": 0.062597,
+        "breakEvenRate": 0,
+        "netWinRate": 0.113883,
+        "p50": 0,
+        "p90": 1.677528360153758,
+        "p95": 3.5787271683280175,
+        "p99": 15.656931361435076,
+        "maxObserved": 2492.6352948506965,
+        "baseRtp": 0.6568776084512227,
+        "bonusRtp": 0.31179391697143044
+      }
+    }
+  ]
+}
