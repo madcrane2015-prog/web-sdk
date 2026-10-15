@@ -681,6 +681,8 @@ Make controls understandable and operable through keyboard, screen readers, and 
 
 Started on 2026-07-05 with a quick low-risk accessibility checkpoint: music and sound toggle buttons now expose `aria-pressed` in both mobile and desktop top-action layouts. A deeper keyboard/focus pass remains for modal focus return, spin-disabled semantics, and spacebar behavior around focused controls.
 
+2026-10-13 checkpoint: `ModalShell.svelte` now moves focus to its close action when opened and restores focus to the connected opener when closed. The global Space shortcut no longer intercepts focused interactive elements, key-repeat events, or open overlays. `SpinButton.svelte` exposes state-aware Spin / Skip spin / Stop autoplay labels and a true disabled state when a new paid spin cannot be afforded. A 1440x1000 browser keyboard pass confirmed initial modal focus, Escape close, focus return to the menu button, and native Space activation of that focused button without starting an extra spin. The production build passed with the known warning set. Phase 09 remains in progress pending the broader keyboard and contrast pass across every control.
+
 ## Phase 10 - Automated Layout Regression Harness
 
 Status: not started  

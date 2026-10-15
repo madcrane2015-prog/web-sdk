@@ -13,7 +13,7 @@ const config = {
 
     // GitHub Pages polku korjattu
     paths: {
-      base: dev ? '' : '/web-sdk/oma-peli'
+      base: dev || process.env.OMA_PELI_BUILD_TARGET === 'stake' ? '' : '/web-sdk/oma-peli'
     },
 
     prerender: {

@@ -1,5 +1,13 @@
 import type { SymbolKey } from './types';
 
+export const CENTER_WILD_PROBABILITY = 0.55;
+export const MIN_SCATTERS = 5;
+export const PAYTABLE_GROUPS = [
+	{ title: 'PREMIUM SYMBOLS', symbols: [['g', 'Rockabilly'], ['e', 'Blonde'], ['f', 'Brunette']] },
+	{ title: 'BLUE SYMBOLS', symbols: [['a', 'Hot Rod'], ['b', 'Jacket'], ['c', 'Roller Skates'], ['d', 'Microphone']] },
+	{ title: 'RED SYMBOLS', symbols: [['i', 'Burger'], ['j', 'Fries'], ['k', 'Milkshake']] },
+] as const;
+
 export const BET_LEVELS = [0.4, 0.8, 1, 1.6, 2, 3, 5, 8, 10, 15, 20, 25, 30, 40, 50, 60, 80, 100];
 
 export const SYMBOL_WEIGHTS_BASE: Record<SymbolKey, number> = {

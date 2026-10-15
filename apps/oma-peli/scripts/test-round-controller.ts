@@ -1,0 +1,55 @@
+import assert from 'node:assert/strict';
+import { RoundController } from '../src/game-standalone/roundController';
+import { BookRoundProvider, type RoundOutcome } from '../src/game-standalone/roundProvider';
+import { getReelGeometry } from '../src/game-standalone/reelGeometry';
+import { getLaunchMode } from '../src/game-standalone/launchMode';
+import { createStandaloneAssetManifest } from '../src/game-standalone/assets';
+import { calculateWins } from '../src/game-standalone/math';
+const symbols = Array(13).fill('emptyslot');
+function result(payout: number, grant = 0): RoundOutcome {
+	return { symbols: [...symbols], wins: payout ? [{symbol:'a',count:3,payout,positions:[0,3,6],multiplier:1}] : [], scatterTrigger: grant ? {scatterPositions:[0,1,2,3,4],freeSpinsTriggered:grant} : null };
+}
+const controller = new RoundController(new BookRoundProvider([result(6,2),result(9,1),result(3),result(0)]));
+assert.equal(controller.start(3)?.wins[0].payout,6);
+assert.equal(controller.snapshot().balance,997);
+assert.equal(controller.start(100),null,'Double click must not consume another result or bet');
+assert.equal(controller.roundBet,3);
+controller.settle();
+assert.equal(controller.snapshot().balance,1003);
+assert.equal(controller.snapshot().freeSpinsTotalWon,0,'Triggering base win is not a free-spin win');
+assert.equal(controller.settle(),null,'Duplicate settle must not credit twice');
+assert.equal(controller.betLocked,true);
+controller.start(100);
+assert.equal(controller.roundBet,3,'Bonus preserves trigger bet despite selected bet change');
+controller.settle();
+assert.equal(controller.snapshot().freeSpinsRemaining,2,'Retrigger adds rather than replaces remaining spins');
+assert.equal(controller.acknowledgeBonusEnd(),false);
+controller.start(1); controller.settle(); controller.start(100); controller.settle();
+assert.equal(controller.snapshot().freeSpinsRemaining,0);
+assert.equal(controller.snapshot().freeSpinsTotalWon,12);
+assert.equal(controller.snapshot().totalWagered,3);
+assert.equal(controller.snapshot().balance,1015);
+assert.equal(controller.acknowledgeBonusEnd(),true);
+assert.equal(controller.betLocked,false);
+const failure = new RoundController({kind:'book',play(){throw new Error('Missing server result');}});
+assert.throws(()=>failure.start(3));
+assert.equal(failure.snapshot().balance,1000);
+assert.equal(failure.betLocked,false);
+const selected = new RoundController(new BookRoundProvider([result(6)]));
+const detached = selected.start(3)!;
+detached.wins[0].payout=100000;
+selected.settle();
+assert.equal(selected.snapshot().balance,1003,'Animation must not mutate the locked paying outcome');
+console.log('PASS: round accounting, frozen bonus bet, retriggers, failure and duplicate commands');
+assert.equal(getLaunchMode(''),'demo');
+assert.equal(getLaunchMode('?sessionID=test&rgs_url=https%3A%2F%2Fexample.invalid'),'stake');
+assert.throws(()=>getLaunchMode('?sessionID=test'),'Partial server launch must not fall back to demo');
+assert.deepEqual(getReelGeometry(6,-15,false),getReelGeometry(6,0,true),'Center aperture must not shift across devices');
+for(const base of ['', '/web-sdk/oma-peli']) {
+	const manifest=createStandaloneAssetManifest(base,{cacheBust:'fixture'});
+	assert.equal(manifest.symbolUrls.h,base+'/symbols/New_Wild.jpg');
+	assert.equal(manifest.controlsPath,base+'/controls');
+}
+const overlapBoard=['a','emptyslot','emptyslot','a','emptyslot','emptyslot','h','a','emptyslot','emptyslot','a','emptyslot','emptyslot'] as const;
+const overlap=calculateWins([...overlapBoard],1,false,()=>.1);
+assert.equal(overlap.wins.reduce((sum,win)=>sum+win.payout,0),8,'Pay longest symbol match only; legacy simulator incorrectly paid 13.5');

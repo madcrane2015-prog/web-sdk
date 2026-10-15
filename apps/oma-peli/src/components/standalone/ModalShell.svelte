@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, type Snippet } from 'svelte';
 	import type { StandaloneUILayoutTokens } from '../../game-standalone/uiLayout';
 
 	interface ModalShellProps {
@@ -7,9 +7,10 @@
 		gameScale: number;
 		uiLayoutTokens: StandaloneUILayoutTokens;
 		onClose: () => void;
+		children: Snippet;
 	}
 
-	let { title, gameScale, uiLayoutTokens, onClose }: ModalShellProps = $props();
+	let { title, gameScale, uiLayoutTokens, onClose, children }: ModalShellProps = $props();
 	let closeButton: HTMLButtonElement;
 
 	onMount(() => {
@@ -72,7 +73,7 @@
 		</header>
 
 		<div class="modal-body">
-			<slot></slot>
+			{@render children()}
 		</div>
 	</section>
 </div>

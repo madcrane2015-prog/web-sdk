@@ -46,6 +46,11 @@ jobs:
         
       - name: Build oma-peli
         run: pnpm run build --filter=oma-peli
+
+      - name: Validate Rockabilly rounds
+        run: |
+          pnpm --filter=oma-peli test:reel-stop
+          pnpm --filter=oma-peli test:domain
           
       - name: Verify symbols in build
         run: |

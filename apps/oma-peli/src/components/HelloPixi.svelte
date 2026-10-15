@@ -1,6 +1,6 @@
 <script lang="ts">
 	// Svelte lifecycle ja routing
-	import { onMount } from 'svelte';
+	import { onMount, untrack } from 'svelte';
 	import { base } from '$app/paths';
 
 	// Game version
@@ -14,15 +14,11 @@
 	import LoadingScreen from './LoadingScreen.svelte';
 	import DebugPanel from './standalone/DebugPanel.svelte';
 	import AutoplayMenu from './standalone/AutoplayMenu.svelte';
-	import ControlPanelFrame from './standalone/ControlPanelFrame.svelte';
-	import DesktopControlPanel from './standalone/DesktopControlPanel.svelte';
 	import DesktopControlBar from './standalone/DesktopControlBar.svelte';
 	import FreeSpinsEndPopup from './standalone/FreeSpinsEndPopup.svelte';
 	import ModalShell from './standalone/ModalShell.svelte';
 	import MenuButton from './standalone/MenuButton.svelte';
-	import MobileControlPanel from './standalone/MobileControlPanel.svelte';
 	import PaytableSection from './standalone/PaytableSection.svelte';
-	import QuickActions from './standalone/QuickActions.svelte';
 	import SettingsSection from './standalone/SettingsSection.svelte';
 	import SpinButton from './standalone/SpinButton.svelte';
 	import StatusMeters from './standalone/StatusMeters.svelte';
@@ -41,29 +37,22 @@
 	} from '../utils/layoutUtils';
 	import { BET_LEVELS } from '../game-standalone/mathConfig';
 	import {
-		calculateWins,
 		getReelIndex,
 		getReelPosition,
 		randomSymbol as getRandomSymbol,
 	} from '../game-standalone/math';
 	import {
-		chooseBackgroundMusicLoop,
 		createStandaloneAssetManifest,
-		type BackgroundMusicLoop,
 		type StandaloneAssetManifest,
 	} from '../game-standalone/assets';
 	import {
-		applyWinAccounting,
 		beginAutoPlaySpin,
-		beginSpinAccounting,
 		decreaseBetIndex,
-		grantTestFreeSpins,
 		increaseBetIndex,
 		maxBetIndex,
 		resetSpinResultState,
 		startAutoPlayState,
 		stopAutoPlayState,
-		triggerFreeSpinsState,
 	} from '../game-standalone/actions';
 	import { createUILayoutCssVars, getUILayoutTokens } from '../game-standalone/uiLayout';
 	import {
@@ -74,6 +63,14 @@
 	} from '../game-standalone/pixiRuntime';
 	import { Reel as StandaloneReel } from '../game-standalone/reel';
 	import { createInitialStandaloneGameState } from '../game-standalone/state';
+	import { RoundController } from '../game-standalone/roundController';
+	import { Lifetime } from '../game-standalone/lifetime';
+	const lifetime = new Lifetime();
+	import { getReelGeometry, REEL_GEOMETRY } from '../game-standalone/reelGeometry';
+	import type { RoundProvider } from '../game-standalone/roundProvider';
+	let { roundProvider }: { roundProvider?: RoundProvider } = $props();
+	const roundController = new RoundController(untrack(() => roundProvider));
+	let activeRoundBet = $state(3);
 	import {
 		createPixiStageTransform,
 		createStageCompositionCssVars,
@@ -97,7 +94,7 @@
 		Text, // Tekstin näyttäminen pelissä
 		TextStyle, // Tekstin tyyliasetukset (fontti, koko, väri jne.)
 	} from 'pixi.js';
-	import { Howl } from 'howler';
+	import { MusicRuntime } from '../game-standalone/musicRuntime';
 
 	// ===== PELIN PERUSKONFIGURAATIO =====
 	// Tämä on WAYS-peli, ei perinteinen paylines-peli!
@@ -131,9 +128,6 @@
 	const isCompactShortLayout = $derived(
 		viewportModel.viewportClass === 'phoneLandscapeCompact',
 	);
-	const showsMobileStatusStrip = $derived(
-		isPhonePortraitLayout,
-	);
 
 	// Kiekkojen koko ja sijainti - uudelle 1445x1000 taustalle
 	const SCALE_MULTIPLIER = 1.8; // Symbolien koko kerroin (1.0 = normaali)
@@ -143,12 +137,11 @@
 	// ReelFrames.png on 1000 px leveä. Nämä viisi X-arvoa asettavat 180 px
 	// symbolit sen aukkoihin; laitekohtainen gameArea.offsetX ei saa siirtää
 	// symboleita erilleen paikallaan pysyvästä kehyskuvasta.
-	const FRAME_X = 250;
-	const FRAME_Y = 200;
+	const FRAME_X = REEL_GEOMETRY.frameX;
+	const FRAME_Y = REEL_GEOMETRY.frameY;
 	// Inner gold-frame opening measured in ReelFrames.png coordinates.
-	const MIDDLE_REEL_APERTURE_TOP = 207;
-	const MIDDLE_REEL_APERTURE_HEIGHT = 158;
-	const REEL_COLUMN_X = [FRAME_X + 25, FRAME_X + 215, FRAME_X + 410, FRAME_X + 600, FRAME_X + 790];
+	const MIDDLE_REEL_APERTURE_TOP = REEL_GEOMETRY.center.top;
+	const MIDDLE_REEL_APERTURE_HEIGHT = REEL_GEOMETRY.center.height;
 
 	// SPIN-napin sijainti (uudelle 1445x1000 taustalle)
 	const BUTTON_X = 720; // Napin X-koordinaatti
@@ -174,7 +167,6 @@
 	const symbolHeight = Math.round(symbolWidth * 0.94); // Sovitettu paremmin reel-raamien ruutuihin
 	const cellSize = symbolWidth; // Ruudun koko (käytetään vanhoissa laskuissa, säilytetty yhteensopivuuden takia)
 	const gap = 4; // Väli symbolien välillä pikseleinä
-	const ROW_HEIGHT = symbolHeight + gap; // Yhden rivin kokonaiskorkeus (symboli + väli)
 	const SYMBOL_FRAME_BLEED_X = 12; // Piilottaa raamin ja symbolien väliin jäävät pikseliraot
 	const SYMBOL_FRAME_BLEED_Y = 14;
 	const SYMBOL_FRAME_Y_NUDGE = -4; // Keskittää symbolitaiteen raamin aukkoihin
@@ -205,10 +197,6 @@
 
 	// ===== MUSIIKKIJÄRJESTELMÄ (v1.0.9) =====
 	// Howler.js-pohjaiset musiikkisoittimet
-	let backgroundMusic: any = null; // Taustamusiikki (rockabilly loop)
-	let freeSpinsMusic: any = null; // Free spins musiikki
-	let drumHitSound: any = null; // Rumpuisku kiekkojen pysähtyessä
-	let winThemeSound: any = null; // Voittoteema
 
 	// BPM-synkronointi
 	const MUSIC_BPM = 130; // Rockabilly tempo (beats per minute)
@@ -217,7 +205,6 @@
 
 	// Musiikin tilanhallinta
 	let musicEnabled = $state(initialGameState.musicEnabled); // Musiikin on/off toggle
-	let musicLoaded = $state(false); // Onko musiikki ladattu
 
 	// ===== CONTROL PANEL TILA (v1.1.0) =====
 	let isFastPlayEnabled = $state(false); // Nopea pelitila
@@ -244,170 +231,21 @@
 	let isSpinInProgress = $state(false);
 	let showSpinSpeedMenu = $state(false); // Näytetäänkö nopeusvalikko
 
-	let currentBackgroundLoop = $state<BackgroundMusicLoop>(
-		chooseBackgroundMusicLoop(assetManifest.musicUrls.backgroundLoops),
-	);
 	const MUSIC_URLS = assetManifest.musicUrls;
 
-	// Alusta musiikkijärjestelmä Howler.js:llä
-	function initializeMusic() {
-		if (typeof window === 'undefined') {
-			return;
-		}
-
-		try {
-			// Taustamusiikki peruspelille (looppaa jatkuvasti)
-			backgroundMusic = new Howl({
-				src: [currentBackgroundLoop.url],
-				loop: true,
-				volume: 0.3, // 30% volume
-				onload: () => {
-					console.log('✅ Background music loaded (loop #' + currentBackgroundLoop.id + ')');
-					musicLoaded = true;
-				},
-				onloaderror: (id: any, error: any) => {
-					console.warn('⚠️ Background music not found:', error);
-				},
-			});
-
-			// Free spins musiikki
-			freeSpinsMusic = new Howl({
-				src: [MUSIC_URLS.freeSpins],
-				loop: true,
-				volume: 0.3,
-				onload: () => console.log('✅ Free spins music loaded'),
-				onloaderror: (id: any, error: any) => console.warn('⚠️ Free spins music not found:', error),
-			});
-
-			// Rumpuisku-efekti (soitetaan kiekkojen pysähtyessä)
-			drumHitSound = new Howl({
-				src: [MUSIC_URLS.drumHit],
-				volume: 0.5,
-				onload: () => console.log('✅ Drum hit sound loaded'),
-				onloaderror: () => console.warn('⚠️ Drum hit sound not found'),
-			});
-
-			// Voittoteema (soitetaan isoille voitoille)
-			winThemeSound = new Howl({
-				src: [MUSIC_URLS.winTheme],
-				volume: 0.6,
-				onload: () => console.log('✅ Win theme loaded'),
-				onloaderror: () => console.warn('⚠️ Win theme not found'),
-			});
-
-			console.log('🎵 Music system initialized (generate music with Suno AI)');
-		} catch (error) {
-			console.error('Failed to initialize music system:', error);
-		}
-	}
-
-	// ===== MUSIIKKIHALLINTAFUNKTIOT =====
-	// Nämä funktiot hallitsevat pelin taustamusiikkia Howler.js:n avulla
-
-	// Käynnistä taustamusiikki (valitaan peruspeli tai free spins musiikki)
-	function startBackgroundMusic() {
-		const currentMusic = isFreeSpinMode ? freeSpinsMusic : backgroundMusic;
-		if (currentMusic && musicEnabled && !currentMusic.playing()) {
-			currentMusic.play();
-			console.log('🎵 ' + (isFreeSpinMode ? 'Free spins' : 'Background') + ' music started');
-		}
-	}
-
-	// Vaihda uusi satunnainen loop peruspelille
-	// Tätä kutsutaan kun pelaaja aloittaa uuden kierroksen
-	function changeBackgroundLoop() {
-		if (isFreeSpinMode) return; // Ei vaihdeta free spins -tilassa
-
-		currentBackgroundLoop = chooseBackgroundMusicLoop(
-			MUSIC_URLS.backgroundLoops,
-			currentBackgroundLoop,
-		);
-
-		console.log('🎵 Changing to loop #' + currentBackgroundLoop.id);
-
-		// Pysäytä vanha musiikki (fade out 200ms)
-		if (backgroundMusic) {
-			if (backgroundMusic.playing()) {
-				backgroundMusic.fade(backgroundMusic.volume(), 0, 200);
-				setTimeout(() => {
-					backgroundMusic.stop();
-					backgroundMusic.unload();
-				}, 200);
-			} else {
-				backgroundMusic.unload();
-			}
-		}
-
-		backgroundMusic = new Howl({
-			src: [currentBackgroundLoop.url],
-			loop: true,
-			volume: 0.3,
-			onload: () => {
-				console.log('✅ New background music loop #' + currentBackgroundLoop.id + ' loaded');
-				if (musicEnabled && !isFreeSpinMode) {
-					// Käynnistä musiikki heti (300ms viive että fade out ehtii)
-					setTimeout(() => {
-						if (backgroundMusic && !backgroundMusic.playing()) {
-							backgroundMusic.play();
-						}
-					}, 300);
-				}
-			},
-			onloaderror: (id: any, error: any) => {
-				console.warn('⚠️ Failed to load loop #' + currentBackgroundLoop.id + ':', error);
-			},
-		});
-	}
-
-	// Pysäytä taustamusiikki
-	function stopBackgroundMusic() {
-		if (backgroundMusic && backgroundMusic.playing()) {
-			backgroundMusic.fade(backgroundMusic.volume(), 0, 500); // Fade out 500ms
-			setTimeout(() => backgroundMusic.stop(), 500);
-		}
-		if (freeSpinsMusic && freeSpinsMusic.playing()) {
-			freeSpinsMusic.fade(freeSpinsMusic.volume(), 0, 500);
-			setTimeout(() => freeSpinsMusic.stop(), 500);
-		}
-	}
-
-	// Vaihda musiikkia free spins -tilan mukaan
-	function switchMusic() {
-		// Pysäytä nykyinen musiikki
-		if (backgroundMusic && backgroundMusic.playing()) {
-			backgroundMusic.fade(backgroundMusic.volume(), 0, 500);
-			setTimeout(() => backgroundMusic.stop(), 500);
-		}
-		if (freeSpinsMusic && freeSpinsMusic.playing()) {
-			freeSpinsMusic.fade(freeSpinsMusic.volume(), 0, 500);
-			setTimeout(() => freeSpinsMusic.stop(), 500);
-		}
-
-		// Aloita uusi musiikki pienen viiveen jälkeen
-		setTimeout(() => {
-			if (musicEnabled) {
-				startBackgroundMusic();
-			}
-		}, 600);
-	}
-
-	// Feidaa musiikki alas kierroksen lopussa
-	function fadeOutMusicAfterSpin() {
-		if (backgroundMusic && backgroundMusic.playing()) {
-			const currentVolume = backgroundMusic.volume();
-			backgroundMusic.fade(currentVolume, 0, 1000); // Fade out 1 second
-			setTimeout(() => {
-				backgroundMusic.stop();
-				backgroundMusic.volume(0.3); // Reset volume for next spin
-			}, 1000);
-		}
-	}
+	const musicRuntime = new MusicRuntime(MUSIC_URLS, () => musicEnabled, () => isFreeSpinMode, () => soundEnabled);
+	function initializeMusic() { musicRuntime.initialize(); }
+	function startBackgroundMusic() { musicRuntime.start(); }
+	function changeBackgroundLoop() { musicRuntime.changeLoop(); }
+	function stopBackgroundMusic() { musicRuntime.stop(); }
+	function switchMusic() { musicRuntime.switchMode(); }
+	function fadeOutMusicAfterSpin() { musicRuntime.finishRound(); }
 
 	// Glare effect for play button
 	let playButtonGlareActive = $state(false);
 	function triggerPlayButtonGlare() {
 		playButtonGlareActive = false;
-		setTimeout(() => {
+		lifetime.timeout(() => {
 			playButtonGlareActive = true;
 		}, 10);
 	}
@@ -439,16 +277,12 @@
 
 	// Soita rumpuisku
 	function playDrumHit() {
-		if (drumHitSound && musicEnabled && soundEnabled) {
-			drumHitSound.play();
-		}
+		musicRuntime.playDrum();
 	}
 
 	// Soita voittoteema
 	function playWinTheme() {
-		if (winThemeSound && musicEnabled && soundEnabled) {
-			winThemeSound.play();
-		}
+		musicRuntime.playWin();
 	}
 
 	// ===== PELIN TILA JA MUUTTUJAT =====
@@ -486,6 +320,7 @@
 
 	// Autoplay-toiminnallisuus
 	let isAutoPlaying = $state(initialGameState.isAutoPlaying);
+	let isDebugFreeSpinsAutoPlay = $state(false);
 	let autoPlayRoundsLeft = $state(initialGameState.autoPlayRoundsLeft);
 	let showAutoPlayMenu = $state(auditMode === 'autoplay' || initialGameState.showAutoPlayMenu);
 	let showDebugPanel = $state(auditMode === 'debug' || initialGameState.showDebugPanel); // Debug-paneelin näkyvyys
@@ -567,17 +402,15 @@
 	// Instantly grants 10 free spins without requiring scatter triggers
 	// Useful for testing free spin mechanics and symbol replacements
 	function triggerTestFreeSpins() {
-		const result = grantTestFreeSpins({ isFreeSpinMode, freeSpinsTriggerCount }, 10);
-
-		if (result.granted) {
-			isFreeSpinMode = result.isFreeSpinMode;
-			freeSpinsRemaining = result.freeSpinsRemaining;
-			freeSpinsTotalWon = result.freeSpinsTotalWon;
-			freeSpinsTriggerCount = result.freeSpinsTriggerCount;
+		if (roundController.grantDemoFreeSpins(10, betAmount)) {
+			syncRoundState();
 			console.log('🎰 TEST MODE: Free spins activated! 10 spins granted.');
 
 			// Vaihda musiikkia free spins -musiikiksi
 			switchMusic();
+			stopAutoPlay();
+			isDebugFreeSpinsAutoPlay = true;
+			startAutoPlay(freeSpinsRemaining);
 		}
 	}
 
@@ -632,33 +465,25 @@
 
 	// Tarkista voitot 81-ways järjestelmällä
 	function checkWins(): WinResult[] {
-		const result = calculateWins(reelData, betAmount, isFreeSpinMode);
+		const wasFreeSpin = isFreeSpinMode;
+		const result = roundController.settle();
+		syncRoundState();
+		if (!wasFreeSpin && isFreeSpinMode) switchMusic();
+		return result?.wins ?? [];
+	}
 
-		if (result.scatterTrigger) {
-			const { scatterPositions, freeSpinsTriggered } = result.scatterTrigger;
-			const freeSpinState = triggerFreeSpinsState(
-				{ isFreeSpinMode, freeSpinsRemaining, freeSpinsTriggerCount },
-				freeSpinsTriggered,
-			);
-
-			isFreeSpinMode = freeSpinState.isFreeSpinMode;
-			freeSpinsRemaining = freeSpinState.freeSpinsRemaining;
-			freeSpinsTriggerCount = freeSpinState.freeSpinsTriggerCount;
-
-			if (freeSpinState.isNewTrigger) {
-				freeSpinsTotalWon = freeSpinState.freeSpinsTotalWon ?? freeSpinsTotalWon;
-				console.log(
-					`🎰 FREE SPINS TRIGGERED! ${scatterPositions.length} scatters = ${freeSpinsTriggered} FREE SPINS!`,
-				);
-				switchMusic();
-			} else {
-				console.log(
-					`🎰 FREE SPINS RETRIGGERED! +${freeSpinsTriggered} FREE SPINS! Total: ${freeSpinsRemaining}`,
-				);
-			}
-		}
-
-		return result.wins;
+	function syncRoundState() {
+		const state = roundController.snapshot();
+		balance = state.balance;
+		totalRounds = state.totalRounds;
+		totalWagered = state.totalWagered;
+		totalWon = state.totalWon;
+		totalWins = state.totalWins;
+		isFreeSpinMode = state.isFreeSpinMode;
+		freeSpinsRemaining = state.freeSpinsRemaining;
+		freeSpinsTotalWon = state.freeSpinsTotalWon;
+		freeSpinsTriggerCount = state.freeSpinsTriggerCount;
+		freeSpinsPlayedCount = state.freeSpinsPlayedCount;
 	}
 
 	// Kokonaisvoitto
@@ -1112,22 +937,9 @@
 
 			// ===== 5) KIEKKOJEN MITAT JA SIJAINNIT =====
 			// Lasketaan kiekkojen mitat taustakuvan mukaan
-			const REEL_WIDTH = symbolWidth; // Kiekon leveys = symbolien leveys
 
 			// ===== 5) KIEKKOJEN LUONTI JA MASKIEN ASETUS =====
 			reels = []; // Tyhjennetään kiekko-array
-			const reelDimensions = {
-				symbolWidth,
-				symbolHeight,
-				rowHeight: ROW_HEIGHT,
-				symbolBleedLeft:
-					viewportModel.viewportClass === 'phoneLandscapeCompact' ? 42 : SYMBOL_FRAME_BLEED_X,
-				symbolBleedRight:
-					viewportModel.viewportClass === 'phoneLandscapeCompact' ? 16 : SYMBOL_FRAME_BLEED_X,
-				symbolBleedTop: SYMBOL_FRAME_BLEED_Y,
-				symbolBleedBottom: SYMBOL_FRAME_BLEED_Y,
-				symbolYOffset: SYMBOL_FRAME_Y_NUDGE,
-			};
 			const reelDependencies = {
 				getSymbol: (reelIndex: number) => reelData[reelIndex],
 				setSymbol: (reelIndex: number, symbol: SymbolKey) => (reelData[reelIndex] = symbol),
@@ -1139,23 +951,14 @@
 			};
 
 			for (let reelIndex = 0; reelIndex < TOTAL_REELS; reelIndex++) {
-				// Laske tämän kiekon sijainti ruudukossa
-				const position = getReelPosition(reelIndex);
-				const col = position.col;
-				const row = position.row;
-
-				// Laske ruudun sijainti näytöllä - uudet koordinaatit 1445x1000 taustalle
-				const baseX = REEL_COLUMN_X[col];
-				const baseY = 250 + row * ROW_HEIGHT; // Alemmas uudella taustalla
-
-				// Kehys ja kiekot käyttävät samaa koordinaatistoa kaikissa näkymissä.
+				const geometry = getReelGeometry(reelIndex, OFFSET_Y, viewportModel.viewportClass === 'phoneLandscapeCompact');
 				const isMiddleReel = reelIndex === 6;
-				const adjustedX = baseX + (isMiddleReel ? 10 : 0);
+				const adjustedX = geometry.x;
 
 				// Luo PixiJS kontti tälle kiekolle
 				const reelCont = new Container();
 				reelCont.x = adjustedX;
-				reelCont.y = isMiddleReel ? FRAME_Y + MIDDLE_REEL_APERTURE_TOP : baseY + OFFSET_Y;
+				reelCont.y = geometry.y;
 
 				const isPhoneLandscape = viewportModel.viewportClass === 'phoneLandscapeCompact';
 				const reelBleedLeft = isMiddleReel ? 0 : isPhoneLandscape ? 42 : SYMBOL_FRAME_BLEED_X;
@@ -1174,48 +977,13 @@
 					.fill({ color: 0x050505, alpha: 1 });
 				gameLayer.addChild(reelBacking);
 
-				// *** POISTETTU: Värillinen tausta ja debug-numerot ***
-				// const colors = [
-				//   0xff0000, 0x00ff00, 0x0000ff,
-				//   0xffff00, 0xff00ff, 0x00ffff,
-				//   0xffa500,
-				//   0x800080, 0x008000, 0x000080,
-				//   0xff8000, 0x8000ff, 0x0080ff
-				// ];
-				// const reelBg = new Graphics()
-				//   .rect(0, 0, symbolWidth, symbolHeight)
-				//   .fill({ color: colors[reelIndex], alpha: 0.3 });
-				// reelBg.x = reelCont.x;
-				// reelBg.y = reelCont.y;
-				// app.stage.addChild(reelBg);
-
-				// const style = new TextStyle({
-				//   fontFamily: 'Arial',
-				//   fontSize: 20,
-				//   fill: 0xffffff,
-				//   fontWeight: 'bold',
-				//   stroke: { color: 0x000000, width: 2 }
-				// });
-				// const reelText = new Text({ text: reelIndex.toString(), style });
-				// reelText.x = reelCont.x + 5;
-				// reelText.y = reelCont.y + 5;
-				// app.stage.addChild(reelText);
-
-				const maskInsets = {
-					left: col === 2 ? 0 : -5,
-					right: col === 2 ? 0 : -5,
-					// Keep the sprite's vertical bleed visible beneath the frame.
-					// A zero inset clips it away and exposes the dark reel backing.
-					top: SYMBOL_FRAME_BLEED_Y - SYMBOL_FRAME_Y_NUDGE,
-					bottom: SYMBOL_FRAME_BLEED_Y + SYMBOL_FRAME_Y_NUDGE,
-				};
 
 				// Luo maski joka rajaa kiekon näkyvän alueen
 				// The gold center frame has a smaller aperture than the side reels.
 				// Anchor its clipping to the frame asset, not device-specific reel y.
 				const mask = isMiddleReel
 					? new Graphics().roundRect(0, 0, visibleSymbolWidth, MIDDLE_REEL_APERTURE_HEIGHT, 10).fill(0xffffff)
-					: createReelMask(visibleSymbolWidth, symbolHeight, maskInsets);
+					: createReelMask(visibleSymbolWidth, symbolHeight, geometry.maskInsets);
 
 				mask.x = reelCont.x; // Sama sijainti kuin kiekko
 				mask.y = isMiddleReel ? FRAME_Y + MIDDLE_REEL_APERTURE_TOP : reelCont.y;
@@ -1232,19 +1000,7 @@
 					new StandaloneReel(
 						reelIndex,
 						reelCont,
-						isMiddleReel
-							? {
-								...reelDimensions,
-								symbolWidth: visibleSymbolWidth,
-								symbolHeight: MIDDLE_REEL_APERTURE_HEIGHT,
-								rowHeight: MIDDLE_REEL_APERTURE_HEIGHT,
-								symbolBleedLeft: 0,
-								symbolBleedRight: 0,
-								symbolBleedTop: 0,
-								symbolBleedBottom: 0,
-								symbolYOffset: 0,
-							}
-							: reelDimensions,
+						geometry.dimensions,
 						reelDependencies,
 					),
 				);
@@ -1317,6 +1073,9 @@
 
 		return () => {
 			destroyed = true;
+			lifetime.dispose();
+			musicRuntime.dispose();
+			Object.values(audioElements).forEach(audio => { audio.pause(); audio.removeAttribute('src'); audio.load(); });
 			cleanupCallbacks.forEach((cleanup) => cleanup());
 			destroyPixiApplication(app);
 		};
@@ -1393,14 +1152,14 @@
 				// Jos autoplay on päällä, odota 1.5s ja sulje popup automaattisesti
 				if (isAutoPlaying && !isProcessingAutoPlay) {
 					isProcessingAutoPlay = true; // Lukitse (estää duplikaattispinit)
-					autoPlayTimeoutId = window.setTimeout(() => {
+					autoPlayTimeoutId = lifetime.timeout(() => {
 						if (isShowingWin && isAutoPlaying) {
 							console.log('Autoplay: Auto-closing win popup after 1.5s');
 							isShowingWin = false;
 							clearWinHighlights();
 						}
 						// Jatka seuraavaan kierrokseen 200ms kuluttua
-						autoPlayTimeoutId = window.setTimeout(() => {
+						autoPlayTimeoutId = lifetime.timeout(() => {
 							isProcessingAutoPlay = false; // Vapauta lukko
 							executeAutoPlay(); // Jatka seuraavaan spiniin
 						}, 200);
@@ -1413,7 +1172,7 @@
 				// Lyhyempi odotus (500ms) kun ei ole voittoja
 				if (isAutoPlaying && !isProcessingAutoPlay) {
 					isProcessingAutoPlay = true; // Lukitse
-					autoPlayTimeoutId = window.setTimeout(() => {
+					autoPlayTimeoutId = lifetime.timeout(() => {
 						isProcessingAutoPlay = false; // Vapauta lukko
 						executeAutoPlay(); // Jatka seuraavaan spiniin
 					}, 500);
@@ -1425,7 +1184,7 @@
 			if (isFreeSpinMode && freeSpinsRemaining === 0) {
 				console.log(`🎰 FREE SPINS ENDED! Total won: ${freeSpinsTotalWon}`);
 				// Näytä vapaaereiden lopetus-popup 2 sekunnin kuluttua
-				setTimeout(() => {
+				lifetime.timeout(() => {
 					freeSpinsEndAmount = freeSpinsTotalWon;
 					showFreeSpinsEndPopup = true;
 					// ÄLÄ nollaa tilaa tässä - odotetaan että käyttäjä painaa "Jatka"
@@ -1461,42 +1220,21 @@
 		triggerPlayButtonGlare();
 
 		// ===== VAPAAERÄT VS PERUSPELI =====
-		const spinAccounting = beginSpinAccounting(
-			{
-				balance,
-				isFreeSpinMode,
-				freeSpinsRemaining,
-				freeSpinsPlayedCount,
-				totalRounds,
-				totalWagered,
-			},
-			betAmount,
-		);
-
-		if (!spinAccounting.canSpin) {
-			if (spinAccounting.reason === 'insufficient_balance') {
-				alert(`Not enough credits! Balance: ${balance}, Bet: ${betAmount}`);
-			}
+		let outcome;
+		try { outcome = roundController.start(betAmount); }
+		catch (error) {
+			errorMessage = error instanceof Error ? error.message : 'Round failed';
 			stopAutoPlay();
 			return;
 		}
-
-		if (spinAccounting.isFreeSpin) {
-			freeSpinsRemaining = spinAccounting.freeSpinsRemaining;
-			freeSpinsPlayedCount = spinAccounting.freeSpinsPlayedCount;
-			console.log(`🎰 FREE SPIN! Remaining: ${freeSpinsRemaining}`);
-
-			// Huom: freeSpinsRemaining tarkistetaan update()-funktiossa spinin jälkeen
-		} else {
-			balance = spinAccounting.balance;
-			totalRounds = spinAccounting.totalRounds;
-			totalWagered = spinAccounting.totalWagered;
-		}
+		if (!outcome) { stopAutoPlay(); return; }
+		activeRoundBet = roundController.roundBet!;
+		syncRoundState();
 
 		// ===== TYHJENNETÄÄN AUTOPLAY TIMEOUT =====
 		// Jos autoplay-ajastin on päällä, tyhjennä se (estetään duplikaattispinit)
 		if (autoPlayTimeoutId !== null) {
-			clearTimeout(autoPlayTimeoutId);
+			lifetime.cancel(autoPlayTimeoutId);
 			autoPlayTimeoutId = null;
 		}
 
@@ -1512,14 +1250,14 @@
 		clearWinHighlights(); // Poista kultaiset kehykset voittosymboleista
 
 		// ===== LUO UUDET SYMBOLIT =====
-		reelData = createReelData(); // Luo 13 uutta satunnaista symbolia (käyttää painotettua jakaumaa)
+		reelData = createReelData(); // Animation padding; paying outcome is already locked.
 
 		// ===== KÄYNNISTÄ KIEKKOJEN PYÖRIMINEN =====
 		// v1.0.9: BPM-synkronoitu pysähtyminen (130 BPM)
 		// Kiekot pysähtyvät rytmisesti musiikin tahtiin
 		// Jokainen ruutu pysähtyy yksi kerrallaan järjestyksessä: 0-1-2-3-4-5-6-7-8-9-10-11-12
 		reels.forEach((r, i) => {
-			r.startSynchronized(i, SPIN_SPEED_CONFIG[spinSpeed]); // Jokainen kiekko pysähtyy eri aikaan (i = beatIndex)
+			r.startWithResult(60 + i * SPIN_SPEED_CONFIG[spinSpeed], outcome.symbols[i]);
 		});
 		isSpinInProgress = true;
 
@@ -1552,17 +1290,17 @@
 			lastWin = v; // Päivitä lastWin joka framella (Svelte päivittää UI automaattisesti)
 
 			if (t < 1) {
-				requestAnimationFrame(tick);
+				lifetime.frame(tick);
 			} else {
 				lastWin = to; // Varmista että lopullinen arvo on tarkka
 				const resolvedWinLabel = document.getElementById('winLabel');
 				if (!resolvedWinLabel) return;
 				resolvedWinLabel.classList.remove('rolling');
 				resolvedWinLabel.classList.add('winHit');
-				setTimeout(() => resolvedWinLabel.classList.remove('winHit'), 450);
+				lifetime.timeout(() => resolvedWinLabel.classList.remove('winHit'), 450);
 			}
 		}
-		requestAnimationFrame(tick);
+		lifetime.frame(tick);
 	}
 
 	// ===================================================================
@@ -1571,30 +1309,22 @@
 	// Käsittelee voiton lisäämisen saldoon ja tilastoihin
 	// @param winAmount - Voiton määrä pistettä
 	function addWinToBalance(winAmount: number) {
-		const winAccounting = applyWinAccounting(
-			{ balance, totalWon, totalWins, freeSpinsTotalWon, isFreeSpinMode },
-			winAmount,
-		);
-		balance = winAccounting.balance; // Lisää voitto pelaajan saldoon
-		totalWon = winAccounting.totalWon; // Päivitä kokonaisvoitot (RTP-tilastot)
 
 		// Animoi WIN-arvon nouseminen edellisestä arvosta uuteen
 		const previousWin = lastWin;
 		lastWin = winAmount; // Tallenna viimeisin voitto (näytetään UI:ssa)
 
 		// Käynnistä rollup-animaatio (erilainen kesto riippuen voiton koosta)
-		const rollupDuration = winAmount > betAmount * 50 ? 2000 : 1400;
+		const rollupDuration = winAmount > activeRoundBet * 50 ? 2000 : 1400;
 		rollupWinAmount(previousWin, winAmount, rollupDuration);
 
 		// Vapaaerille: Seuraa erikseen vapaaeriden yhteisvoittoa
-		freeSpinsTotalWon = winAccounting.freeSpinsTotalWon; // Kumulatiivinen voitto koko vapaaeriäkaudelta
 
 		if (winAmount > 0) {
-			totalWins = winAccounting.totalWins; // Kasvata voittojen määrää (tilastoihin)
 
 			// ===== VOITTOTEEMAN SOITTO ISOILLE VOITOILLE =====
 			// v1.0.9: Soita voittoteema isoille voitoille (yli 10x panos)
-			const winMultiplier = winAmount / betAmount; // Laske voittokerroin
+			const winMultiplier = winAmount / activeRoundBet;
 			if (winMultiplier >= 10) {
 				playWinTheme(); // Soita dramaattinen voittoteema (Win Music)
 			}
@@ -1607,10 +1337,10 @@
 					vinylWinAnimationRef.show();
 				} else if (winMultiplier >= 20) {
 					// KESKISUURI voitto (20x-49x) - 200ms viive
-					setTimeout(() => vinylWinAnimationRef.show(), 200);
+					lifetime.timeout(() => vinylWinAnimationRef.show(), 200);
 				} else if (winMultiplier >= 10) {
 					// PIENI voitto (10x-19x) - 400ms viive
-					setTimeout(() => vinylWinAnimationRef.show(), 400);
+					lifetime.timeout(() => vinylWinAnimationRef.show(), 400);
 				}
 			}
 		}
@@ -1624,16 +1354,19 @@
 
 	// Kasvata panosta seuraavaan tasoon (jos mahdollista)
 	function increaseBet() {
+		if (roundController.betLocked || isAutoPlaying) return;
 		currentBetIndex = increaseBetIndex(currentBetIndex, BET_LEVELS.length); // Siirry seuraavaan panokseen (esim. 0.10 → 0.20)
 	}
 
 	// Vähennä panosta edelliseen tasoon (jos mahdollista)
 	function decreaseBet() {
+		if (roundController.betLocked || isAutoPlaying) return;
 		currentBetIndex = decreaseBetIndex(currentBetIndex); // Siirry edelliseen panokseen (esim. 0.20 → 0.10)
 	}
 
 	// Aseta panos maksimiin (viimeinen BET_LEVELS-arvo)
 	function maxBet() {
+		if (roundController.betLocked || isAutoPlaying) return;
 		currentBetIndex = maxBetIndex(BET_LEVELS.length); // Hyppää suoraan suurimpaan panokseen
 	}
 
@@ -1656,6 +1389,7 @@
 
 	// Pysäytä autoplay kesken kaiken
 	function stopAutoPlay() {
+		isDebugFreeSpinsAutoPlay = false;
 		const autoPlayState = stopAutoPlayState();
 		isAutoPlaying = autoPlayState.isAutoPlaying; // Deaktivoi autoplay-tila
 		autoPlayRoundsLeft = autoPlayState.autoPlayRoundsLeft; // Nollaa jäljellä olevat kierrokset
@@ -1663,7 +1397,7 @@
 
 		// Tyhjennä mahdolliset odottavat ajastimet
 		if (autoPlayTimeoutId !== null) {
-			clearTimeout(autoPlayTimeoutId);
+			lifetime.cancel(autoPlayTimeoutId);
 			autoPlayTimeoutId = null;
 		}
 	}
@@ -1698,7 +1432,9 @@
 	// Tämä funktio kutsuu itseään rekursiivisesti kunnes kierrokset loppuvat
 	function executeAutoPlay() {
 		// Lopeta jos autoplay on pysäytetty TAI kierrokset ovat loppuneet
-		if (!isAutoPlaying || autoPlayRoundsLeft <= 0) {
+		if (!isAutoPlaying || (isDebugFreeSpinsAutoPlay
+			? !isFreeSpinMode || freeSpinsRemaining <= 0
+			: autoPlayRoundsLeft <= 0)) {
 			stopAutoPlay(); // Varmista että kaikki on nollattu
 			return;
 		}
@@ -1706,7 +1442,9 @@
 		// Pyöräytä (update()-funktio jatkaa automaattisesti kun voitot on käsitelty)
 		console.log(`Autoplay: Starting spin ${autoPlayRoundsLeft} rounds left`);
 		spin(); // Käynnistä kiekkojen pyöriminen
-		autoPlayRoundsLeft = beginAutoPlaySpin(autoPlayRoundsLeft); // Vähennä jäljellä olevia kierroksia
+		autoPlayRoundsLeft = isDebugFreeSpinsAutoPlay
+			? freeSpinsRemaining
+			: beginAutoPlaySpin(autoPlayRoundsLeft);
 
 		// HUOM: ÄLÄ kutsu executeAutoPlay() täällä!
 		// update()-funktio kutsuu sitä automaattisesti kun kaikki kiekot ovat pysähtyneet
@@ -1721,6 +1459,7 @@
 	// Pyytää käyttäjältä vahvistuksen ennen kuin tyhjentää kaikki pelitilastot
 	function resetStats() {
 		if (confirm('Reset all statistics?')) {
+			roundController.resetStatistics();
 			totalRounds = 0; // Nollaa pelatut kierrokset
 			totalWagered = 0; // Nollaa panostettu määrä
 			totalWon = 0; // Nollaa voitettu määrä
@@ -1878,8 +1617,8 @@
 		amount={freeSpinsEndAmount}
 		onContinue={() => {
 			showFreeSpinsEndPopup = false;
-			isFreeSpinMode = false;
-			freeSpinsTotalWon = 0;
+			roundController.acknowledgeBonusEnd();
+			syncRoundState();
 			freeSpinsEndAmount = 0;
 			switchMusic();
 		}}
@@ -1959,176 +1698,6 @@
 					onStopAutoplay={stopAutoPlay} onCycleSpinSpeed={cycleSpinSpeed}
 					onTogglePaytable={() => (showPaytable = !showPaytable)}
 				/>
-			{:else}
-			<ControlPanelFrame {controlsPath} {gameScale} {controlPanelPos}>
-				<!-- ===== CONTROL PANEL (v1.1.0) ===== -->
-				<!--
-  Moderni control panel joka skaalautuu reelien kehysten leveyteen.
-  Koostuu kolmesta osasta:
-  - Vasen pää (Control_leftend.png)
-  - Keskikohta (Control_scalablebg.png - skaalautuva)
-  - Oikea pää (Control_rightend.png)
-
-  v1.1.4: Korjattu käyttämään pikselikoordinaatteja zoomin tukemiseksi
-  v1.2.3: Siirretty canvas-kontin sisään oikean skaalauksen varmistamiseksi
--->
-				<!-- Vasen pää -->
-				<div slot="status">
-					{#if showsMobileStatusStrip}
-						<StatusMeters mode="strip" {balance} {betAmount} {lastWin} />
-					{/if}
-				</div>
-
-				<!-- Vasen puoli (BET desktop/landscape, BALANCE, tai Menu portrait) -->
-				<div
-					style="flex: 1; display: flex; align-items: center; justify-content: space-around; min-width: 0;"
-				>
-					<!-- Menu nappi (näkyy vain mobiilissa, vasemmalla) -->
-					<div
-						class="hide-on-desktop"
-						style="display: none; align-items: center; justify-content: center; margin-right: {10 *
-							gameScale}px;"
-					>
-						<MenuButton
-							{controlsPath}
-							{gameScale}
-							onTogglePaytable={() => (showPaytable = !showPaytable)}
-						/>
-					</div>
-
-					<!-- BET kontrollit (vain desktop) -->
-					{#if deviceType() === 'desktop'}
-						<DesktopControlPanel
-							{controlsPath}
-							{gameScale}
-							{betAmount}
-							onDecreaseBet={decreaseBet}
-							onIncreaseBet={increaseBet}
-						/>
-					{/if}
-
-					<!-- Divider -->
-					<img
-						class="hide-on-mobile"
-						src="{controlsPath}/Control_divider.png"
-						alt="Divider"
-						style="height: {controlPanelPos.height * 0.8}px; flex-shrink: 0;"
-					/>
-
-					<!-- BALANCE näyttö -->
-					<div class="hide-on-mobile">
-						<StatusMeters
-							mode="single"
-							label="BALANCE"
-							value={balance}
-							{balance}
-							{betAmount}
-							{lastWin}
-							{gameScale}
-						/>
-					</div>
-
-					<!-- Divider -->
-					<img
-						class="hide-on-mobile"
-						src="{controlsPath}/Control_divider.png"
-						alt="Divider"
-						style="height: {controlPanelPos.height * 0.8}px; flex-shrink: 0;"
-					/>
-				</div>
-
-				<!-- Keskiosan tyhjä tila Play-buttonille -->
-				<div style="flex-shrink: 0; width: {130 * gameScale}px;"></div>
-
-				<!-- PLAY nappi (keskellä, iso - tulee paneelin yli) -->
-				<div
-					style="position: absolute; left: 50%; transform: translateX(-50%); display: flex; align-items: center; justify-content: center; z-index: 10;"
-				>
-					<SpinButton
-						{controlsPath}
-						{gameScale}
-						{isAutoPlaying}
-						{isSpinInProgress}
-						disabled={!isAutoPlaying && !isSpinInProgress && !isFreeSpinMode && balance < betAmount}
-						{playButtonGlareActive}
-						onPress={pressSpinButton}
-					/>
-				</div>
-
-				<!-- Oikea puoli (BET mobiili, Autoplay, Spin Speed, WIN, Menu) -->
-				<div
-					style="flex: 1; display: flex; align-items: center; justify-content: space-around; min-width: 0;"
-				>
-					<!-- BET kontrollit (kaikki mobiilitilat) -->
-					{#if deviceType() !== 'desktop'}
-						<MobileControlPanel
-							{controlsPath}
-							{gameScale}
-							{betAmount}
-							onDecreaseBet={decreaseBet}
-							onIncreaseBet={increaseBet}
-						/>
-					{/if}
-
-					<QuickActions
-						{controlsPath}
-						{gameScale}
-						{isAutoPlaying}
-						{spinSpeed}
-						onToggleAutoplayMenu={() => (showAutoPlayMenu = !showAutoPlayMenu)}
-						onStopAutoplay={stopAutoPlay}
-						onCycleSpinSpeed={cycleSpinSpeed}
-					>
-						<img
-							slot="afterAutoplay"
-							class="hide-on-mobile"
-							src="{controlsPath}/Control_divider.png"
-							alt="Divider"
-							style="height: {controlPanelPos.height * 0.8}px; flex-shrink: 0;"
-						/>
-						<img
-							slot="afterSpeed"
-							class="hide-on-mobile"
-							src="{controlsPath}/Control_divider.png"
-							alt="Divider"
-							style="height: {controlPanelPos.height * 0.8}px; flex-shrink: 0;"
-						/>
-					</QuickActions>
-
-					<!-- WIN osio -->
-					<div class="hide-on-mobile">
-						<StatusMeters
-							mode="single"
-							label="WIN"
-							value={lastWin}
-							{balance}
-							{betAmount}
-							{lastWin}
-							{gameScale}
-						/>
-					</div>
-
-					<!-- Divider -->
-					<img
-						class="hide-on-mobile"
-						src="{controlsPath}/Control_divider.png"
-						alt="Divider"
-						style="height: {controlPanelPos.height * 0.8}px; flex-shrink: 0;"
-					/>
-
-					<!-- Menu nappi -->
-					<div
-						class="hide-on-mobile"
-						style="display: flex; align-items: center; justify-content: center;"
-					>
-						<MenuButton
-							{controlsPath}
-							{gameScale}
-							onTogglePaytable={() => (showPaytable = !showPaytable)}
-						/>
-					</div>
-				</div>
-			</ControlPanelFrame>
 			{/if}
 			<!-- Suljetaan control panel -->
 
@@ -2239,6 +1808,7 @@
 			onDownloadWinLog={downloadWinLog}
 			onClearWinLog={clearWinLog}
 			onTriggerTestFreeSpins={triggerTestFreeSpins}
+			onClose={() => (showDebugPanel = false)}
 		/>
 	</div>
 	<!-- Päätä skaalautuva wrapper -->
@@ -2568,14 +2138,8 @@
 		cursor: pointer;
 	}
 
-	.hide-on-mobile {
-		display: flex !important;
-	}
 
 	/* Piilota tietyt elementit desktopilla */
-	.hide-on-desktop {
-		display: none !important;
-	}
 
 	/* Mobiili portrait-tila - pelialue isompi, kontrollit alareunaan */
 	/* HUOM: Sijainti tulee nyt layoutConfig.ts:stä - CSS ei enää ylikirjoita */
@@ -2593,14 +2157,8 @@
 		}
 
 		/* Piilota BALANCE, Autoplay, Spin Speed, WIN mobiilissa */
-		.hide-on-mobile {
-			display: none !important;
-		}
 
 		/* Näytä Menu vasemmalla mobiilissa */
-		.hide-on-desktop {
-			display: none !important;
-		}
 
 		.portrait-menu-fab {
 			position: fixed;
@@ -2618,9 +2176,6 @@
 			min-height: 23px;
 		}
 
-		:global(.control-panel-mobile) {
-			display: none !important;
-		}
 
 		.portrait-status-row {
 			display: none;
@@ -2699,14 +2254,8 @@
 		}
 
 		/* Piilota BALANCE, Autoplay, Spin Speed, WIN mobiilissa */
-		.hide-on-mobile {
-			display: none !important;
-		}
 
 		/* Näytä Menu vasemmalla mobiilissa */
-		.hide-on-desktop {
-			display: flex !important;
-		}
 
 		.portrait-menu-fab {
 			position: fixed;

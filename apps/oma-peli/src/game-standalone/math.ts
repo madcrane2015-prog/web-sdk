@@ -1,5 +1,7 @@
 import {
 	MULTIPLIER_DISTRIBUTIONS,
+	CENTER_WILD_PROBABILITY,
+	MIN_SCATTERS,
 	SYMBOL_PAYTABLE,
 	SYMBOL_WEIGHTS_BASE,
 	SYMBOL_WEIGHTS_FS,
@@ -14,7 +16,7 @@ export function randomSymbol(
 	rng: Rng = Math.random,
 ): SymbolKey {
 	if (reelIndex === 6) {
-		return rng() < 0.55 ? 'h' : 'emptyslot';
+		return rng() < CENTER_WILD_PROBABILITY ? 'h' : 'emptyslot';
 	}
 
 	const symbolWeights = isFreeSpinMode ? SYMBOL_WEIGHTS_FS : SYMBOL_WEIGHTS_BASE;
@@ -85,7 +87,7 @@ export function calculateWins(
 	}
 
 	const scatterTrigger =
-		scatterPositions.length >= 5
+		scatterPositions.length >= MIN_SCATTERS
 			? { scatterPositions, freeSpinsTriggered: scatterPositions.length }
 			: null;
 
