@@ -133,8 +133,9 @@ target_architecture:
 
 progress:
   active_phase: 'architecture_implementation'
-  active_step: 'math.02_parallel_96_percent_experiment'
+  active_step: 'release.17_promote_96_test_build'
   completed_steps:
+    - 'release.17_promote_96_test_build'
     - 'math.03_experimental_30m_simulation'
     - 'math.02_parallel_96_percent_experiment'
     - 'ui.15_button_glare_sweep'
@@ -211,6 +212,20 @@ progress:
     - 'ui.12.02_center_reel_horizontal_alignment'
   blocked_steps: []
   agent_journal:
+    - date: '2026-10-15'
+      author: 'Codex'
+      note: >-
+        Preserved old default in GitHub tag backup/rockabilly-pre-96-2026-10-15
+        (c42bd672) and local full-source ZIP. Promoted balanced-96-v1 to HelloPixi
+        default via activeMath.ts, kept legacy provider available for audits.
+        Version 1.7.0 paytable shows scaled base/free pays and rounding rules.
+        Added public responsive /test/ with real prerendered index.html;
+        root password gate remains. Domain tests include 4,000 paired active
+        provider checks and frozen bonus/settlement guards. All domain and
+        27 reel-stop scenarios passed; production build passed with existing
+        environment/tsconfig warnings. Browser checked paid spin completion,
+        new paytable and mobile portrait/landscape. No new 30M run needed:
+        paying model is identical to the audited candidate. get_errors unavailable.
     - date: '2026-10-15'
       author: 'Codex'
       note: >-

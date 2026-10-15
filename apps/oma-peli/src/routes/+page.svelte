@@ -3,7 +3,7 @@
 	import HelloPixi from '../components/HelloPixi.svelte';
 	import PasswordProtection from '../components/PasswordProtection.svelte';
 	import { getLaunchMode } from '../game-standalone/launchMode';
-	let stakeLaunch = false;
+	let stakeLaunch = $state(false);
 	if (browser) {
 		try { stakeLaunch = getLaunchMode(window.location.search) === 'stake'; }
 		catch { stakeLaunch = true; }

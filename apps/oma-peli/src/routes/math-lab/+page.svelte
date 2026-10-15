@@ -10,7 +10,7 @@
 		<strong>KOKEILUMALLI · 96 % teoreettinen RTP</strong>
 		<span>Peruspeli 66 % + vapaapelit 30 %. Nykyiset osumatiheydet säilyvät.</span>
 		<details><summary>Kokeilun voittotaulu</summary>
-			<p>Pelin tavallisen voittotaulun maksuarvot kerrotaan peruspelissä {model.baseScale.toFixed(6)}:lla ja vapaapeleissä {model.freeScale.toFixed(6)}:lla. Nämä korotukset sisältyvät maksettuihin voittoihin. Näytön summat ovat pyöristettyjä; malli laskee täydellä tarkkuudella.</p>
+			<p>Vanhan mallin maksuarvoihin verrattuna korotus on peruspelissä {model.baseScale.toFixed(6)}× ja vapaapeleissä {model.freeScale.toFixed(6)}×. Pelin voittotaulu näyttää jo korotetut maksuarvot. Näytön summat ovat pyöristettyjä; malli laskee täydellä tarkkuudella.</p>
 			<p>Ei oikeaa rahaa. Ei uusi bonusmekaniikka: ensimmäinen versio vertaa voitonjaon painotusta.</p>
 		</details>
 	</aside>

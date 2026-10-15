@@ -2,6 +2,16 @@
 
 Last investigated: 2026-10-15
 
+Release 1.7.0 promotes balanced-96-v1 to the active HelloPixi default via
+`activeMath.ts`. The low-level RoundController default and DemoRoundProvider
+remain legacy baseline helpers for comparisons; deployed HelloPixi explicitly
+injects the active provider. PaytableSection shows separately scaled base/FS
+pays, multiplier rules and full-precision/display-rounding notes. The `/test`
+route is a public no-password fictional-balance test build, responsive across
+desktop/mobile. `/` retains the password gate. `audit:math` now checks the 96%
+model; `audit:baseline` checks legacy 80.6792%. Pre-promotion source is preserved
+by `backup/rockabilly-pre-96-2026-10-15` and a local ZIP snapshot.
+
 Large experiment verification: `audit:experiment 10000000` completed three
 10M paid-round runs plus all bonus chains (681,961 free spins). Candidate pooled
 RTP was 95.9022903764%, approximate 95% CI 95.5356165353–96.2689642175%;

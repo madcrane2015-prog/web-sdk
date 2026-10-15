@@ -12,7 +12,7 @@ catch { esbuild=createRequire(require.resolve('vite/package.json'))('esbuild'); 
 const {build}=esbuild;
 const temp=fs.mkdtempSync(path.join(os.tmpdir(),'rockabilly-tests-'));
 try {
-	for(const name of ['test-round-controller','test-stake-session']) {
+	for(const name of ['test-round-controller','test-stake-session','test-active-math']) {
 		const entry=path.join(appRoot,'scripts',name+'.ts');
 		const output=path.join(temp,name+'.mjs');
 		await build({entryPoints:[entry],outfile:output,bundle:true,platform:'node',format:'esm'});
