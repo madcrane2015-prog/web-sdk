@@ -2,6 +2,14 @@
 
 Last investigated: 2026-10-15
 
+Debug free-spin autoplay (2026-10-15): a successful Test Free Spins grant
+starts the existing autoplay scheduler in a bonus-only mode. Its continuation
+condition uses the current free-spin balance, including retriggers, rather than
+a fixed ten-round budget. Closing the debug panel does not alter that mode.
+The stop action cancels it; bonus completion cannot start a paid round.
+`DebugPanel` exposes an explicit close callback/button, since top toggles are
+hidden while debug is open. Closing only changes panel visibility.
+
 Local version-loading fix (2026-10-15): `src/version.ts` must not import
 `../package.json` into the browser module graph. Vite's development file allow
 list rejected that request, causing a failed dynamic page import and a 500

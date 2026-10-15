@@ -133,8 +133,9 @@ target_architecture:
 
 progress:
   active_phase: 'architecture_implementation'
-  active_step: 'architecture.04_local_version_loading'
+  active_step: 'debug.01_free_spins_autoplay'
   completed_steps:
+    - 'debug.01_free_spins_autoplay'
     - 'architecture.04_local_version_loading'
     - 'architecture.03_active_math_audit_and_validation'
     - 'math.01_measure_active_rtp'
@@ -205,6 +206,17 @@ progress:
     - 'ui.12.02_center_reel_horizontal_alignment'
   blocked_steps: []
   agent_journal:
+    - date: '2026-10-15'
+      author: 'Codex'
+      note: >-
+        Test Free Spins now starts bonus-only autoplay using remaining free
+        spins, including retriggers; stop clears the test autoplay flag.
+        Added an explicit accessible Close debug panel button because the
+        top debug toggle is hidden while the panel is open. Closing changes
+        visibility only. Browser verified test grant, automatic first spin
+        and active autoplay after closing; complete bonus playback was not
+        observed. Domain suites passed. Production build validated with
+        existing warnings; get_errors unavailable. No math changes.
     - date: '2026-10-15'
       author: 'Codex'
       note: >-

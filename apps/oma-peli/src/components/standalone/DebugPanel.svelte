@@ -16,6 +16,7 @@
 		onDownloadWinLog: () => void;
 		onClearWinLog: () => void;
 		onTriggerTestFreeSpins: () => void;
+		onClose: () => void;
 	}
 
 	let {
@@ -35,6 +36,7 @@
 		onDownloadWinLog,
 		onClearWinLog,
 		onTriggerTestFreeSpins,
+		onClose,
 	}: Props = $props();
 </script>
 
@@ -42,6 +44,7 @@
 	<div class="debug-panel">
 		<div class="title">RTP MONITOR</div>
 		<div class="version">v{gameVersion}</div>
+		<button class="close" aria-label="Close debug panel" onclick={onClose}>Sulje</button>
 		<div class="row"><span>Rounds:</span><strong>{totalRounds.toLocaleString()}</strong></div>
 		<div class="row">
 			<span>Wagered:</span><strong class="bad">{totalWagered.toLocaleString()}</strong>
@@ -67,6 +70,14 @@
 {/if}
 
 <style>
+	.close {
+		position: absolute;
+		top: 8px;
+		right: 8px;
+		width: auto;
+		min-height: 36px;
+	}
+
 	.debug-panel {
 		position: absolute;
 		top: 20px;

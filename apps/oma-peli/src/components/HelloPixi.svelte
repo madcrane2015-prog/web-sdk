@@ -320,6 +320,7 @@
 
 	// Autoplay-toiminnallisuus
 	let isAutoPlaying = $state(initialGameState.isAutoPlaying);
+	let isDebugFreeSpinsAutoPlay = $state(false);
 	let autoPlayRoundsLeft = $state(initialGameState.autoPlayRoundsLeft);
 	let showAutoPlayMenu = $state(auditMode === 'autoplay' || initialGameState.showAutoPlayMenu);
 	let showDebugPanel = $state(auditMode === 'debug' || initialGameState.showDebugPanel); // Debug-paneelin näkyvyys
@@ -407,6 +408,9 @@
 
 			// Vaihda musiikkia free spins -musiikiksi
 			switchMusic();
+			stopAutoPlay();
+			isDebugFreeSpinsAutoPlay = true;
+			startAutoPlay(freeSpinsRemaining);
 		}
 	}
 
@@ -1385,6 +1389,7 @@
 
 	// Pysäytä autoplay kesken kaiken
 	function stopAutoPlay() {
+		isDebugFreeSpinsAutoPlay = false;
 		const autoPlayState = stopAutoPlayState();
 		isAutoPlaying = autoPlayState.isAutoPlaying; // Deaktivoi autoplay-tila
 		autoPlayRoundsLeft = autoPlayState.autoPlayRoundsLeft; // Nollaa jäljellä olevat kierrokset
@@ -1427,7 +1432,9 @@
 	// Tämä funktio kutsuu itseään rekursiivisesti kunnes kierrokset loppuvat
 	function executeAutoPlay() {
 		// Lopeta jos autoplay on pysäytetty TAI kierrokset ovat loppuneet
-		if (!isAutoPlaying || autoPlayRoundsLeft <= 0) {
+		if (!isAutoPlaying || (isDebugFreeSpinsAutoPlay
+			? !isFreeSpinMode || freeSpinsRemaining <= 0
+			: autoPlayRoundsLeft <= 0)) {
 			stopAutoPlay(); // Varmista että kaikki on nollattu
 			return;
 		}
@@ -1435,7 +1442,9 @@
 		// Pyöräytä (update()-funktio jatkaa automaattisesti kun voitot on käsitelty)
 		console.log(`Autoplay: Starting spin ${autoPlayRoundsLeft} rounds left`);
 		spin(); // Käynnistä kiekkojen pyöriminen
-		autoPlayRoundsLeft = beginAutoPlaySpin(autoPlayRoundsLeft); // Vähennä jäljellä olevia kierroksia
+		autoPlayRoundsLeft = isDebugFreeSpinsAutoPlay
+			? freeSpinsRemaining
+			: beginAutoPlaySpin(autoPlayRoundsLeft);
 
 		// HUOM: ÄLÄ kutsu executeAutoPlay() täällä!
 		// update()-funktio kutsuu sitä automaattisesti kun kaikki kiekot ovat pysähtyneet
@@ -1799,6 +1808,7 @@
 			onDownloadWinLog={downloadWinLog}
 			onClearWinLog={clearWinLog}
 			onTriggerTestFreeSpins={triggerTestFreeSpins}
+			onClose={() => (showDebugPanel = false)}
 		/>
 	</div>
 	<!-- Päätä skaalautuva wrapper -->
