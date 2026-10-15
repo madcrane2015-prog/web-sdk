@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { buttonGlare } from './buttonGlare';
 	interface Props {
 		controlsPath: string;
 		gameScale: number;
@@ -16,6 +17,7 @@
 	</div>
 	<div class="row" style:gap="{5 * gameScale}px" style:height="{44 * gameScale}px">
 		<button
+			use:buttonGlare
 			onclick={onDecreaseBet}
 			class="bet-button"
 			style:width="{40 * gameScale}px"
@@ -28,6 +30,7 @@
 			{betAmount.toFixed(2)}
 		</div>
 		<button
+			use:buttonGlare
 			onclick={onIncreaseBet}
 			class="bet-button"
 			style:width="{40 * gameScale}px"

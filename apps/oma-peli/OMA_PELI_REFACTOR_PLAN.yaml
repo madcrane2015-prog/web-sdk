@@ -133,8 +133,11 @@ target_architecture:
 
 progress:
   active_phase: 'architecture_implementation'
-  active_step: 'ui.14_richer_large_win_stars'
+  active_step: 'math.02_parallel_96_percent_experiment'
   completed_steps:
+    - 'math.03_experimental_30m_simulation'
+    - 'math.02_parallel_96_percent_experiment'
+    - 'ui.15_button_glare_sweep'
     - 'ui.14_richer_large_win_stars'
     - 'ui.13_svg_win_animation_reference'
     - 'debug.01_free_spins_autoplay'
@@ -208,6 +211,38 @@ progress:
     - 'ui.12.02_center_reel_horizontal_alignment'
   blocked_steps: []
   agent_journal:
+    - date: '2026-10-15'
+      author: 'Codex'
+      note: >-
+        Completed three 10M paid-round candidate/baseline comparisons with
+        complete bonus chains and 20,000 fixture checks. Pooled candidate
+        RTP 95.9023%, approximate 95% CI 95.5356-96.2690%; baseline 80.6066%.
+        Preserved the old 3M report and the new 30M report separately, with
+        pooled summary and EXPERIMENTAL_96_SIMULATION_30M.md. No rules changed.
+    - date: '2026-10-15'
+      author: 'Codex'
+      note: >-
+        Added balanced-96-v1 as a separate provider and dev-only /math-lab.
+        Analytic payout budgets are 66% base plus 30% complete bonus chains;
+        full precision, no new bonus mechanic or hit-frequency changes.
+        audit:experiment verified 20,000 calculator/provider fixtures, frozen
+        bonus bet and three million paid rounds using paired outcomes.
+        Observed candidate RTP 97.5870%, 95.4105%, 96.8672%; exact target 96%.
+        Documented increased absolute volatility, unchanged zero rate and
+        currency-rounding limitations in EXPERIMENTAL_96_MODEL.md.
+        Existing domain suites and production build passed with known warnings.
+        get_errors unavailable. Default math and GitHub release unchanged.
+    - date: '2026-10-15'
+      author: 'Codex'
+      note: >-
+        Replaced the hidden spin-wrapper glare with a shared CSS/action overlay
+        on spin, bet, autoplay, speed and menu buttons. Uses transform/opacity
+        for a 1.2s diagonal sweep above the PNG, clipped to button bounds.
+        Replays on pointer entry, focus, click and each spin prop trigger;
+        disabled and reduced-motion controls skip it. Event listeners clean up
+        on destroy. Browser verified bet response and computed sweep animation.
+        Production build and diff checks passed with existing warnings.
+        No math changes. get_errors unavailable.
     - date: '2026-10-15'
       author: 'Codex'
       note: >-

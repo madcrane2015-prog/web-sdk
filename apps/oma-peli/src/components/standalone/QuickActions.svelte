@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { QuickActionsProps } from './controlPanelApi';
+	import { buttonGlare } from './buttonGlare';
 
 	let {
 		controlsPath,
@@ -25,6 +26,7 @@
 
 <div class="quick-action hide-on-mobile">
 	<button
+		use:buttonGlare
 		onclick={() => {
 			if (isAutoPlaying) {
 				onStopAutoplay();
@@ -52,6 +54,7 @@
 
 <div class="quick-action hide-on-mobile">
 	<button
+		use:buttonGlare
 		onclick={onCycleSpinSpeed}
 		style="
 			width: {50 * gameScale}px;
