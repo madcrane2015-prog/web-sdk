@@ -1,45 +1,26 @@
+<script lang="ts">
+	import { SYMBOL_PAYTABLE, PAYTABLE_GROUPS, CENTER_WILD_PROBABILITY, MIN_SCATTERS } from '../../game-standalone/mathConfig';
+</script>
+
 <section class="paytable-section" aria-labelledby="paytable-section-title">
 	<h3 id="paytable-section-title">PAYTABLE (81 WAYS)</h3>
-
-	<p class="summary">
-		Voitot muodostuvat 81 ways -järjestelmällä (vasemmalta oikealle)<br />
-		Vähintään 3 symbolia tarvitaan voittoon
-	</p>
-
+	<p class="summary">Voitot muodostuvat 81 ways -järjestelmällä (vasemmalta oikealle)<br />Vähintään 3 symbolia tarvitaan voittoon</p>
 	<div class="symbol-groups">
-		<div class="symbol-group premium">
-			<h4>PREMIUM SYMBOLS</h4>
-			<p>Rockabilly: 3x=7.00 | 4x=15.00 | 5x=50.00</p>
-			<p>Blonde: 3x=5.00 | 4x=10.00 | 5x=25.00</p>
-			<p>Brunette: 3x=3.00 | 4x=8.00 | 5x=20.00</p>
-		</div>
-
-		<div class="symbol-group blue">
-			<h4>BLUE SYMBOLS</h4>
-			<p>Hot Rod: 3x=1.50 | 4x=4.00 | 5x=8.00</p>
-			<p>Jacket: 3x=1.50 | 4x=4.00 | 5x=8.00</p>
-			<p>Roller Skates: 3x=0.80 | 4x=2.00 | 5x=5.00</p>
-			<p>Microphone: 3x=0.80 | 4x=2.00 | 5x=5.00</p>
-		</div>
-
-		<div class="symbol-group red">
-			<h4>RED SYMBOLS</h4>
-			<p>Burger: 3x=0.40 | 4x=1.00 | 5x=2.50</p>
-			<p>Fries: 3x=0.40 | 4x=1.00 | 5x=2.50</p>
-			<p>Milkshake: 3x=0.20 | 4x=0.60 | 5x=1.50</p>
-		</div>
-
+		{#each PAYTABLE_GROUPS as group}
+			<div class="symbol-group" class:premium={group.title === 'PREMIUM SYMBOLS'} class:blue={group.title === 'BLUE SYMBOLS'} class:red={group.title === 'RED SYMBOLS'}>
+				<h4>{group.title}</h4>
+				{#each group.symbols as [key, name]}
+					<p>{name}: 3x={SYMBOL_PAYTABLE[key][3]?.toFixed(2)} | 4x={SYMBOL_PAYTABLE[key][4]?.toFixed(2)} | 5x={SYMBOL_PAYTABLE[key][5]?.toFixed(2)}</p>
+				{/each}
+			</div>
+		{/each}
 		<div class="symbol-group special">
 			<h4>SPECIAL SYMBOLS</h4>
-			<p>WILD - Korvaa kaikki muut symbolit (paitsi Scatter). Vain keskikelalla (50%).</p>
-			<p>SCATTER - Triggeröi 5-12 FREE SPINS (5-12 scatteria)</p>
+			<p>WILD - Korvaa kaikki muut symbolit (paitsi Scatter). Vain keskikelalla ({CENTER_WILD_PROBABILITY * 100}%).</p>
+			<p>SCATTER - Triggeröi {MIN_SCATTERS}-12 FREE SPINS ({MIN_SCATTERS}-12 scatteria)</p>
 		</div>
 	</div>
-
-	<p class="note">
-		Kaikki voitot kerrotaan panoksella (Bet) ja Ways-kertoimella<br />
-		<span>Ways = Symbolien määrä per kela kerrottuna</span>
-	</p>
+	<p class="note">Kaikki voitot kerrotaan panoksella (Bet) ja Ways-kertoimella<br /><span>Ways = Symbolien määrä per kela kerrottuna</span></p>
 </section>
 
 <style>

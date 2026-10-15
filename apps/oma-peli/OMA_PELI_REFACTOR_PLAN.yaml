@@ -2,7 +2,7 @@ schema_version: 1
 document_type: oma_peli_refactor_plan
 status: active
 created: '2026-07-05'
-last_updated: '2026-10-14'
+last_updated: '2026-10-15'
 master_document: 'apps/oma-peli/OMA_PELI_TECHNICAL_DEEP_DIVE.md'
 agent_rules: 'apps/oma-peli/AGENTS.md'
 phase_runner: 'apps/oma-peli/agentic-refactor/Invoke-OmaPeliCopilotRefactor.ps1'
@@ -132,9 +132,13 @@ target_architecture:
       responsibility: 'Paytable/menu, win popup, free-spin outro, debug panel, and modal overlays.'
 
 progress:
-  active_phase: 'reel_stop_regression'
-  active_step: 'reel.04_center_wild_in_gold_aperture'
+  active_phase: 'architecture_implementation'
+  active_step: 'architecture.04_local_version_loading'
   completed_steps:
+    - 'architecture.04_local_version_loading'
+    - 'architecture.03_active_math_audit_and_validation'
+    - 'math.01_measure_active_rtp'
+    - 'architecture.01_inventory_and_cleanup_plan'
     - 'reel.04_center_wild_in_gold_aperture'
     - 'reel.03_initialize_skipped_stop'
     - 'ui.10.05_mobile_validation_and_1_5_3_release'
@@ -201,6 +205,59 @@ progress:
     - 'ui.12.02_center_reel_horizontal_alignment'
   blocked_steps: []
   agent_journal:
+    - date: '2026-10-15'
+      author: 'Codex'
+      note: >-
+        Fixed localhost 500 / failed dynamic page import: version.ts imported
+        package.json outside Vite's development serving allow list. Vite config
+        now reads the package version server-side and injects a string constant.
+        Stopped duplicate app servers and retained one background server.
+        Browser verified login, completed loading and visible v1.6.0 canvas;
+        screenshot saved under .codex-screenshots/localhost-fixed-1.6.0.png.
+        Production build completed with existing warnings. get_errors unavailable.
+    - date: '2026-10-15'
+      author: 'Codex'
+      note: >-
+        Resumed the interrupted architecture work at the active math audit.
+        Replaced copied Wild/scatter constants with mathConfig imports, made
+        report dates reflect Helsinki time, and rejected unsafe or sub-two
+        sample counts to prevent invalid variance reports. Domain suites now
+        fail on missing test entries. Updated README and master architecture
+        checkpoint; synchronized the esbuild dependency in pnpm-lock.yaml.
+        Validation: domain suites passed, reel-stop suite passed all 27 skip
+        scenarios, 20,000 runtime math fixtures and three million paid rounds
+        passed. Exact RTP remains 80.6792147723%; no payout changes applied.
+        Production build passed with warnings for tsconfig, public environment
+        exports, unused imports and non-reactive stakeLaunch. get_errors is
+        unavailable; no browser/device validation was repeated in this step.
+        Live Stake verification still requires service fixtures/test access;
+        the architecture migration is not marked complete.
+    - date: '2026-10-14'
+      author: 'Codex'
+      note: >-
+        Audited active standalone math without changing probabilities/pays.
+        Exact fixed-bet RTP is 80.6792147723%, consisting of 59.0153957164%
+        base and 21.6638190559% complete free-spin/retrigger contribution.
+        Three million seeded paid rounds confirm the result; accelerated
+        calculation matched 20,000 runtime calculateWins fixtures.
+        Created ACTIVE_MATH_AUDIT.md, scripts/audit-active-rtp.ts and JSON report.
+        Found betAmount is not frozen during a round/bonus; trigger-base wins
+        may also be classified as free-spin wins in accounting. These must
+        be addressed before publishing a calibrated RTP. A uniform payout
+        scale of 1.1775027839336993 is documented as a 95% proposal only.
+    - date: '2026-10-14'
+      author: 'Codex'
+      note: >-
+        Created ARCHITECTURE_CLEANUP_PLAN.md and ARCHITECTURE_INVENTORY.json.
+        Mapped the deployed local demo, separate SDK event path, current
+        RGS wrappers, copied assets and generated publication snapshots.
+        Recorded file-level retain/merge/archive proposals and stages A-H
+        with acceptance criteria toward a shared renderer and demo/RGS providers.
+        Found the visible Wild 50% description conflicts with active 55% math,
+        and simulator/SDK config documentation needs a contract comparison.
+        No gameplay code, assets, release versions or deployment settings changed.
+        Full historical-version execution and physical device tests are outside
+        this inventory. Archive proposals do not authorize deletion.
     - date: '2026-10-14'
       author: 'Codex'
       note: >-

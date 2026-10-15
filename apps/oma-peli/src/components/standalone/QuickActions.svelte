@@ -49,7 +49,6 @@
 	/>
 </div>
 
-<slot name="afterAutoplay"></slot>
 
 <div class="quick-action hide-on-mobile">
 	<button
@@ -65,7 +64,6 @@
 	<img src="{controlsPath}/{speedBarAsset}" alt="Speed bar" style="height: {10 * gameScale}px;" />
 </div>
 
-<slot name="afterSpeed"></slot>
 
 <style>
 	.quick-action {

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { type Snippet } from 'svelte';
 	import { GlobalStyle } from 'components-ui-html';
-	import { Authenticate, LoadI18n, AndroidLayoutFix } from 'components-shared';
+	import { LoadI18n, AndroidLayoutFix } from 'components-shared';
 
 	import messagesMap from '../i18n/messagesMap';
 
@@ -40,9 +40,7 @@
 <AndroidLayoutFix />
 
 <GlobalStyle>
-	<Authenticate>
-		<LoadI18n {messagesMap}>
-			{@render props.children()}
-		</LoadI18n>
-	</Authenticate>
+	<LoadI18n {messagesMap}>
+		{@render props.children()}
+	</LoadI18n>
 </GlobalStyle>

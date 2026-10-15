@@ -1,0 +1,4337 @@
+{
+  "date": "2026-10-14",
+  "limitations": "Literal/manifest usage map; dynamic URL construction, external consumers and historical deployments require review. No asset is automatically safe to delete.",
+  "imports": [
+    {
+      "source": "apps/oma-peli/src/components/Anticipation.svelte",
+      "specifier": "pixi-svelte",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/Anticipation.svelte",
+      "specifier": "state-shared",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/Anticipation.svelte",
+      "specifier": "../game/context",
+      "resolved": "apps/oma-peli/src/game/context.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/Anticipation.svelte",
+      "specifier": "../game/stateGame.svelte",
+      "resolved": "apps/oma-peli/src/game/stateGame.svelte.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/Anticipation.svelte",
+      "specifier": "../game/constants",
+      "resolved": "apps/oma-peli/src/game/constants.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/Anticipations.svelte",
+      "specifier": "components-shared",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/Anticipations.svelte",
+      "specifier": "constants-shared/time",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/Anticipations.svelte",
+      "specifier": "../game/context",
+      "resolved": "apps/oma-peli/src/game/context.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/Anticipations.svelte",
+      "specifier": "./Anticipation.svelte",
+      "resolved": "apps/oma-peli/src/components/Anticipation.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/Background.svelte",
+      "specifier": "pixi-svelte",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/Background.svelte",
+      "specifier": "../game/context",
+      "resolved": "apps/oma-peli/src/game/context.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/Board.svelte",
+      "specifier": "pixi-svelte",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/Board.svelte",
+      "specifier": "../game/context",
+      "resolved": "apps/oma-peli/src/game/context.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/BoardBase.svelte",
+      "specifier": "./ReelSymbol.svelte",
+      "resolved": "apps/oma-peli/src/components/ReelSymbol.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/BoardBase.svelte",
+      "specifier": "../game/context",
+      "resolved": "apps/oma-peli/src/game/context.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/BoardContainer.svelte",
+      "specifier": "svelte",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/BoardContainer.svelte",
+      "specifier": "pixi-svelte",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/BoardContainer.svelte",
+      "specifier": "../game/context",
+      "resolved": "apps/oma-peli/src/game/context.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/BoardFrame.svelte",
+      "specifier": "pixi-svelte",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/BoardFrame.svelte",
+      "specifier": "../game/context",
+      "resolved": "apps/oma-peli/src/game/context.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/BoardMask.svelte",
+      "specifier": "pixi-svelte",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/BoardMask.svelte",
+      "specifier": "../game/context",
+      "resolved": "apps/oma-peli/src/game/context.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/BoardMask.svelte",
+      "specifier": "../game/constants",
+      "resolved": "apps/oma-peli/src/game/constants.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/EnableGameActor.svelte",
+      "specifier": "svelte",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/EnableGameActor.svelte",
+      "specifier": "pixi-svelte",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/EnableGameActor.svelte",
+      "specifier": "../game/actor",
+      "resolved": "apps/oma-peli/src/game/actor.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/EnableGameActor.svelte",
+      "specifier": "../game/context",
+      "resolved": "apps/oma-peli/src/game/context.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/EnableSound.svelte",
+      "specifier": "svelte",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/EnableSound.svelte",
+      "specifier": "pixi-svelte",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/EnableSound.svelte",
+      "specifier": "../game/context",
+      "resolved": "apps/oma-peli/src/game/context.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/EnableSound.svelte",
+      "specifier": "../game/sound",
+      "resolved": "apps/oma-peli/src/game/sound.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/FreeSpinAnimation.svelte",
+      "specifier": "svelte",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/FreeSpinAnimation.svelte",
+      "specifier": "pixi-svelte",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/FreeSpinAnimation.svelte",
+      "specifier": "components-layout",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/FreeSpinAnimation.svelte",
+      "specifier": "../game/context",
+      "resolved": "apps/oma-peli/src/game/context.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/FreeSpinAnimation.svelte",
+      "specifier": "../game/constants",
+      "resolved": "apps/oma-peli/src/game/constants.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/FreeSpinCounter.svelte",
+      "specifier": "components-layout",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/FreeSpinCounter.svelte",
+      "specifier": "components-pixi",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/FreeSpinCounter.svelte",
+      "specifier": "../game/context",
+      "resolved": "apps/oma-peli/src/game/context.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/FreeSpinCounter.svelte",
+      "specifier": "../game/constants",
+      "resolved": "apps/oma-peli/src/game/constants.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/FreeSpinCounter.svelte",
+      "specifier": "pixi-svelte",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/FreeSpinIntro.svelte",
+      "specifier": "components-layout",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/FreeSpinIntro.svelte",
+      "specifier": "state-shared",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/FreeSpinIntro.svelte",
+      "specifier": "components-pixi",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/FreeSpinIntro.svelte",
+      "specifier": "utils-shared/wait",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/FreeSpinIntro.svelte",
+      "specifier": "pixi-svelte",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/FreeSpinIntro.svelte",
+      "specifier": "../game/context",
+      "resolved": "apps/oma-peli/src/game/context.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/FreeSpinIntro.svelte",
+      "specifier": "./PressToContinue.svelte",
+      "resolved": "apps/oma-peli/src/components/PressToContinue.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/FreeSpinIntro.svelte",
+      "specifier": "./FreeSpinAnimation.svelte",
+      "resolved": "apps/oma-peli/src/components/FreeSpinAnimation.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/FreeSpinOutro.svelte",
+      "specifier": "../game/winLevelMap",
+      "resolved": "apps/oma-peli/src/game/winLevelMap.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/FreeSpinOutro.svelte",
+      "specifier": "pixi-svelte",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/FreeSpinOutro.svelte",
+      "specifier": "components-pixi",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/FreeSpinOutro.svelte",
+      "specifier": "utils-shared/amount",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/FreeSpinOutro.svelte",
+      "specifier": "utils-shared/wait",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/FreeSpinOutro.svelte",
+      "specifier": "components-layout",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/FreeSpinOutro.svelte",
+      "specifier": "components-shared",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/FreeSpinOutro.svelte",
+      "specifier": "state-shared",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/FreeSpinOutro.svelte",
+      "specifier": "../game/context",
+      "resolved": "apps/oma-peli/src/game/context.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/FreeSpinOutro.svelte",
+      "specifier": "./FreeSpinAnimation.svelte",
+      "resolved": "apps/oma-peli/src/components/FreeSpinAnimation.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/FreeSpinOutro.svelte",
+      "specifier": "./PressToContinue.svelte",
+      "resolved": "apps/oma-peli/src/components/PressToContinue.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/FreeSpinOutro.svelte",
+      "specifier": "./WinCoins.svelte",
+      "resolved": "apps/oma-peli/src/components/WinCoins.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/Game.svelte",
+      "specifier": "svelte",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/Game.svelte",
+      "specifier": "components-pixi",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/Game.svelte",
+      "specifier": "components-shared",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/Game.svelte",
+      "specifier": "components-layout",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/Game.svelte",
+      "specifier": "pixi-svelte",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/Game.svelte",
+      "specifier": "state-shared",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/Game.svelte",
+      "specifier": "components-ui-pixi",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/Game.svelte",
+      "specifier": "components-ui-html",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/Game.svelte",
+      "specifier": "../game/context",
+      "resolved": "apps/oma-peli/src/game/context.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/Game.svelte",
+      "specifier": "../version",
+      "resolved": "apps/oma-peli/src/version.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/Game.svelte",
+      "specifier": "./EnableSound.svelte",
+      "resolved": "apps/oma-peli/src/components/EnableSound.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/Game.svelte",
+      "specifier": "./EnableGameActor.svelte",
+      "resolved": "apps/oma-peli/src/components/EnableGameActor.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/Game.svelte",
+      "specifier": "./ResumeBet.svelte",
+      "resolved": "apps/oma-peli/src/components/ResumeBet.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/Game.svelte",
+      "specifier": "./Sound.svelte",
+      "resolved": "apps/oma-peli/src/components/Sound.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/Game.svelte",
+      "specifier": "./Background.svelte",
+      "resolved": "apps/oma-peli/src/components/Background.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/Game.svelte",
+      "specifier": "./LoadingScreen.svelte",
+      "resolved": "apps/oma-peli/src/components/LoadingScreen.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/Game.svelte",
+      "specifier": "./BoardFrame.svelte",
+      "resolved": "apps/oma-peli/src/components/BoardFrame.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/Game.svelte",
+      "specifier": "./Board.svelte",
+      "resolved": "apps/oma-peli/src/components/Board.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/Game.svelte",
+      "specifier": "./Anticipations.svelte",
+      "resolved": "apps/oma-peli/src/components/Anticipations.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/Game.svelte",
+      "specifier": "./Win.svelte",
+      "resolved": "apps/oma-peli/src/components/Win.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/Game.svelte",
+      "specifier": "./FreeSpinIntro.svelte",
+      "resolved": "apps/oma-peli/src/components/FreeSpinIntro.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/Game.svelte",
+      "specifier": "./FreeSpinCounter.svelte",
+      "resolved": "apps/oma-peli/src/components/FreeSpinCounter.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/Game.svelte",
+      "specifier": "./FreeSpinOutro.svelte",
+      "resolved": "apps/oma-peli/src/components/FreeSpinOutro.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/Game.svelte",
+      "specifier": "./Transition.svelte",
+      "resolved": "apps/oma-peli/src/components/Transition.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/Game.svelte",
+      "specifier": "./I18nTest.svelte",
+      "resolved": "apps/oma-peli/src/components/I18nTest.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/GameBackground.svelte",
+      "specifier": "$app/paths",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/GameBackground.svelte",
+      "specifier": "../config/layoutConfig",
+      "resolved": "apps/oma-peli/src/config/layoutConfig.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/GlobalMultiplier.svelte",
+      "specifier": "svelte/motion",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/GlobalMultiplier.svelte",
+      "specifier": "pixi-svelte",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/GlobalMultiplier.svelte",
+      "specifier": "components-pixi",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/GlobalMultiplier.svelte",
+      "specifier": "state-shared",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/GlobalMultiplier.svelte",
+      "specifier": "utils-shared/wait",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/GlobalMultiplier.svelte",
+      "specifier": "./BoardContainer.svelte",
+      "resolved": "apps/oma-peli/src/components/BoardContainer.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/GlobalMultiplier.svelte",
+      "specifier": "../game/context",
+      "resolved": "apps/oma-peli/src/game/context.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/GlobalMultiplier.svelte",
+      "specifier": "../game/constants",
+      "resolved": "apps/oma-peli/src/game/constants.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/HelloPixi.svelte",
+      "specifier": "svelte",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/HelloPixi.svelte",
+      "specifier": "$app/paths",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/HelloPixi.svelte",
+      "specifier": "../version",
+      "resolved": "apps/oma-peli/src/version.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/HelloPixi.svelte",
+      "specifier": "./VinylWinAnimation.svelte",
+      "resolved": "apps/oma-peli/src/components/VinylWinAnimation.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/HelloPixi.svelte",
+      "specifier": "./LoadingScreen.svelte",
+      "resolved": "apps/oma-peli/src/components/LoadingScreen.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/HelloPixi.svelte",
+      "specifier": "./standalone/DebugPanel.svelte",
+      "resolved": "apps/oma-peli/src/components/standalone/DebugPanel.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/HelloPixi.svelte",
+      "specifier": "./standalone/AutoplayMenu.svelte",
+      "resolved": "apps/oma-peli/src/components/standalone/AutoplayMenu.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/HelloPixi.svelte",
+      "specifier": "./standalone/DesktopControlBar.svelte",
+      "resolved": "apps/oma-peli/src/components/standalone/DesktopControlBar.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/HelloPixi.svelte",
+      "specifier": "./standalone/FreeSpinsEndPopup.svelte",
+      "resolved": "apps/oma-peli/src/components/standalone/FreeSpinsEndPopup.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/HelloPixi.svelte",
+      "specifier": "./standalone/ModalShell.svelte",
+      "resolved": "apps/oma-peli/src/components/standalone/ModalShell.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/HelloPixi.svelte",
+      "specifier": "./standalone/MenuButton.svelte",
+      "resolved": "apps/oma-peli/src/components/standalone/MenuButton.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/HelloPixi.svelte",
+      "specifier": "./standalone/PaytableSection.svelte",
+      "resolved": "apps/oma-peli/src/components/standalone/PaytableSection.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/HelloPixi.svelte",
+      "specifier": "./standalone/SettingsSection.svelte",
+      "resolved": "apps/oma-peli/src/components/standalone/SettingsSection.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/HelloPixi.svelte",
+      "specifier": "./standalone/SpinButton.svelte",
+      "resolved": "apps/oma-peli/src/components/standalone/SpinButton.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/HelloPixi.svelte",
+      "specifier": "./standalone/StatusMeters.svelte",
+      "resolved": "apps/oma-peli/src/components/standalone/StatusMeters.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/HelloPixi.svelte",
+      "specifier": "./standalone/TopToggles.svelte",
+      "resolved": "apps/oma-peli/src/components/standalone/TopToggles.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/HelloPixi.svelte",
+      "specifier": "./standalone/WinPopup.svelte",
+      "resolved": "apps/oma-peli/src/components/standalone/WinPopup.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/HelloPixi.svelte",
+      "specifier": "../utils/layoutUtils",
+      "resolved": "apps/oma-peli/src/utils/layoutUtils.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/HelloPixi.svelte",
+      "specifier": "../game-standalone/mathConfig",
+      "resolved": "apps/oma-peli/src/game-standalone/mathConfig.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/HelloPixi.svelte",
+      "specifier": "../game-standalone/math",
+      "resolved": "apps/oma-peli/src/game-standalone/math.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/HelloPixi.svelte",
+      "specifier": "../game-standalone/assets",
+      "resolved": "apps/oma-peli/src/game-standalone/assets.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/HelloPixi.svelte",
+      "specifier": "../game-standalone/actions",
+      "resolved": "apps/oma-peli/src/game-standalone/actions.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/HelloPixi.svelte",
+      "specifier": "../game-standalone/uiLayout",
+      "resolved": "apps/oma-peli/src/game-standalone/uiLayout.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/HelloPixi.svelte",
+      "specifier": "../game-standalone/pixiRuntime",
+      "resolved": "apps/oma-peli/src/game-standalone/pixiRuntime.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/HelloPixi.svelte",
+      "specifier": "../game-standalone/reel",
+      "resolved": "apps/oma-peli/src/game-standalone/reel.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/HelloPixi.svelte",
+      "specifier": "../game-standalone/state",
+      "resolved": "apps/oma-peli/src/game-standalone/state.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/HelloPixi.svelte",
+      "specifier": "../game-standalone/roundController",
+      "resolved": "apps/oma-peli/src/game-standalone/roundController.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/HelloPixi.svelte",
+      "specifier": "../game-standalone/lifetime",
+      "resolved": "apps/oma-peli/src/game-standalone/lifetime.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/HelloPixi.svelte",
+      "specifier": "../game-standalone/reelGeometry",
+      "resolved": "apps/oma-peli/src/game-standalone/reelGeometry.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/HelloPixi.svelte",
+      "specifier": "../game-standalone/roundProvider",
+      "resolved": "apps/oma-peli/src/game-standalone/roundProvider.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/HelloPixi.svelte",
+      "specifier": "../game-standalone/stageComposition",
+      "resolved": "apps/oma-peli/src/game-standalone/stageComposition.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/HelloPixi.svelte",
+      "specifier": "../game-standalone/types",
+      "resolved": "apps/oma-peli/src/game-standalone/types.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/HelloPixi.svelte",
+      "specifier": "pixi.js",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/HelloPixi.svelte",
+      "specifier": "../game-standalone/musicRuntime",
+      "resolved": "apps/oma-peli/src/game-standalone/musicRuntime.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/I18nTest.svelte",
+      "specifier": "pixi-svelte",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/I18nTest.svelte",
+      "specifier": "../game/context",
+      "resolved": "apps/oma-peli/src/game/context.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/LoadingScreen.svelte",
+      "specifier": "$app/paths",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/LoadingScreen.svelte",
+      "specifier": "svelte",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/PasswordProtection.svelte",
+      "specifier": "svelte",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/PressToContinue.svelte",
+      "specifier": "components-layout",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/PressToContinue.svelte",
+      "specifier": "components-shared",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/PressToContinue.svelte",
+      "specifier": "state-shared",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/PressToContinue.svelte",
+      "specifier": "pixi-svelte",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/PressToContinue.svelte",
+      "specifier": "../game/context",
+      "resolved": "apps/oma-peli/src/game/context.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/ReelSymbol.svelte",
+      "specifier": "./Symbol.svelte",
+      "resolved": "apps/oma-peli/src/components/Symbol.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/ReelSymbol.svelte",
+      "specifier": "./SymbolWrap.svelte",
+      "resolved": "apps/oma-peli/src/components/SymbolWrap.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/ReelSymbol.svelte",
+      "specifier": "../game/utils",
+      "resolved": "apps/oma-peli/src/game/utils.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/ReelSymbol.svelte",
+      "specifier": "../game/stateGame.svelte",
+      "resolved": "apps/oma-peli/src/game/stateGame.svelte.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/ResumeBet.svelte",
+      "specifier": "state-shared",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/ResumeBet.svelte",
+      "specifier": "../game/context",
+      "resolved": "apps/oma-peli/src/game/context.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/ResumeBet.svelte",
+      "specifier": "svelte",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/Sound.svelte",
+      "specifier": "../game/sound",
+      "resolved": "apps/oma-peli/src/game/sound.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/Sound.svelte",
+      "specifier": "svelte",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/Sound.svelte",
+      "specifier": "utils-shared/wait",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/Sound.svelte",
+      "specifier": "constants-shared/time",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/Sound.svelte",
+      "specifier": "state-shared",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/Sound.svelte",
+      "specifier": "../game/context",
+      "resolved": "apps/oma-peli/src/game/context.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/standalone/AutoplayMenu.svelte",
+      "specifier": "../../game-standalone/uiLayout",
+      "resolved": "apps/oma-peli/src/game-standalone/uiLayout.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/standalone/controlPanelApi.ts",
+      "specifier": "../../game-standalone/types",
+      "resolved": "apps/oma-peli/src/game-standalone/types.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/standalone/controlPanelApi.ts",
+      "specifier": "../../utils/layoutUtils",
+      "resolved": "apps/oma-peli/src/utils/layoutUtils.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/standalone/DesktopControlBar.svelte",
+      "specifier": "./BetControls.svelte",
+      "resolved": "apps/oma-peli/src/components/standalone/BetControls.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/standalone/DesktopControlBar.svelte",
+      "specifier": "./StatusMeters.svelte",
+      "resolved": "apps/oma-peli/src/components/standalone/StatusMeters.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/standalone/DesktopControlBar.svelte",
+      "specifier": "./SpinButton.svelte",
+      "resolved": "apps/oma-peli/src/components/standalone/SpinButton.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/standalone/DesktopControlBar.svelte",
+      "specifier": "./QuickActions.svelte",
+      "resolved": "apps/oma-peli/src/components/standalone/QuickActions.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/standalone/DesktopControlBar.svelte",
+      "specifier": "./MenuButton.svelte",
+      "resolved": "apps/oma-peli/src/components/standalone/MenuButton.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/standalone/DesktopControlBar.svelte",
+      "specifier": "../../utils/layoutUtils",
+      "resolved": "apps/oma-peli/src/utils/layoutUtils.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/standalone/DesktopControlBar.svelte",
+      "specifier": "../../game-standalone/types",
+      "resolved": "apps/oma-peli/src/game-standalone/types.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/standalone/MenuButton.svelte",
+      "specifier": "./controlPanelApi",
+      "resolved": "apps/oma-peli/src/components/standalone/controlPanelApi.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/standalone/ModalShell.svelte",
+      "specifier": "svelte",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/standalone/ModalShell.svelte",
+      "specifier": "../../game-standalone/uiLayout",
+      "resolved": "apps/oma-peli/src/game-standalone/uiLayout.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/standalone/PaytableSection.svelte",
+      "specifier": "../../game-standalone/mathConfig",
+      "resolved": "apps/oma-peli/src/game-standalone/mathConfig.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/standalone/QuickActions.svelte",
+      "specifier": "./controlPanelApi",
+      "resolved": "apps/oma-peli/src/components/standalone/controlPanelApi.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/standalone/SettingsSection.svelte",
+      "specifier": "../../game-standalone/types",
+      "resolved": "apps/oma-peli/src/game-standalone/types.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/standalone/SpinButton.svelte",
+      "specifier": "./controlPanelApi",
+      "resolved": "apps/oma-peli/src/components/standalone/controlPanelApi.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/standalone/StatusMeters.svelte",
+      "specifier": "./controlPanelApi",
+      "resolved": "apps/oma-peli/src/components/standalone/controlPanelApi.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/standalone/WinPopup.svelte",
+      "specifier": "../../game-standalone/types",
+      "resolved": "apps/oma-peli/src/game-standalone/types.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/Symbol.svelte",
+      "specifier": "./SymbolSpine.svelte",
+      "resolved": "apps/oma-peli/src/components/SymbolSpine.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/Symbol.svelte",
+      "specifier": "./SymbolSprite.svelte",
+      "resolved": "apps/oma-peli/src/components/SymbolSprite.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/Symbol.svelte",
+      "specifier": "../game/utils",
+      "resolved": "apps/oma-peli/src/game/utils.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/Symbol.svelte",
+      "specifier": "../game/types",
+      "resolved": "apps/oma-peli/src/game/types.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/Symbol.svelte",
+      "specifier": "../game/context",
+      "resolved": "apps/oma-peli/src/game/context.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/Symbol.svelte",
+      "specifier": "pixi-svelte",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/SymbolSpine.svelte",
+      "specifier": "pixi-svelte",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/SymbolSpine.svelte",
+      "specifier": "../game/constants",
+      "resolved": "apps/oma-peli/src/game/constants.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/SymbolSpine.svelte",
+      "specifier": "../game/utils",
+      "resolved": "apps/oma-peli/src/game/utils.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/SymbolSpine.svelte",
+      "specifier": "./SymbolSpineMain.svelte",
+      "resolved": "apps/oma-peli/src/components/SymbolSpineMain.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/SymbolSpineMain.svelte",
+      "specifier": "pixi-svelte",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/SymbolSpineMain.svelte",
+      "specifier": "state-shared",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/SymbolSpineMain.svelte",
+      "specifier": "../game/utils",
+      "resolved": "apps/oma-peli/src/game/utils.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/SymbolSpineMain.svelte",
+      "specifier": "../game/constants",
+      "resolved": "apps/oma-peli/src/game/constants.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/SymbolSprite.svelte",
+      "specifier": "pixi-svelte",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/SymbolSprite.svelte",
+      "specifier": "../game/utils",
+      "resolved": "apps/oma-peli/src/game/utils.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/SymbolSprite.svelte",
+      "specifier": "../game/constants",
+      "resolved": "apps/oma-peli/src/game/constants.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/SymbolSprite.svelte",
+      "specifier": "svelte",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/SymbolWrap.svelte",
+      "specifier": "svelte",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/SymbolWrap.svelte",
+      "specifier": "pixi-svelte",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/SymbolWrap.svelte",
+      "specifier": "components-shared",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/SymbolWrap.svelte",
+      "specifier": "../game/constants",
+      "resolved": "apps/oma-peli/src/game/constants.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/Transition.svelte",
+      "specifier": "utils-shared/wait",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/Transition.svelte",
+      "specifier": "./TransitionAnimation.svelte",
+      "resolved": "apps/oma-peli/src/components/TransitionAnimation.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/Transition.svelte",
+      "specifier": "../game/context",
+      "resolved": "apps/oma-peli/src/game/context.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/TransitionAnimation.svelte",
+      "specifier": "pixi-svelte",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/TransitionAnimation.svelte",
+      "specifier": "../game/context",
+      "resolved": "apps/oma-peli/src/game/context.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/VinylWinAnimation.svelte",
+      "specifier": "svelte",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/Win.svelte",
+      "specifier": "../game/winLevelMap",
+      "resolved": "apps/oma-peli/src/game/winLevelMap.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/Win.svelte",
+      "specifier": "pixi-svelte",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/Win.svelte",
+      "specifier": "components-pixi",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/Win.svelte",
+      "specifier": "utils-shared/wait",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/Win.svelte",
+      "specifier": "utils-shared/amount",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/Win.svelte",
+      "specifier": "components-layout",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/Win.svelte",
+      "specifier": "components-shared",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/Win.svelte",
+      "specifier": "./WinCoins.svelte",
+      "resolved": "apps/oma-peli/src/components/WinCoins.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/Win.svelte",
+      "specifier": "./WinAnimation.svelte",
+      "resolved": "apps/oma-peli/src/components/WinAnimation.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/Win.svelte",
+      "specifier": "./PressToContinue.svelte",
+      "resolved": "apps/oma-peli/src/components/PressToContinue.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/components/Win.svelte",
+      "specifier": "../game/constants",
+      "resolved": "apps/oma-peli/src/game/constants.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/Win.svelte",
+      "specifier": "../game/context",
+      "resolved": "apps/oma-peli/src/game/context.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/WinAnimation.svelte",
+      "specifier": "svelte",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/WinAnimation.svelte",
+      "specifier": "pixi-svelte",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/WinAnimation.svelte",
+      "specifier": "../game/context",
+      "resolved": "apps/oma-peli/src/game/context.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/WinCoins.svelte",
+      "specifier": "pixi-svelte",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/WinCoins.svelte",
+      "specifier": "components-layout",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/WinCoins.svelte",
+      "specifier": "constants-shared/particleConfig",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/WinCoins.svelte",
+      "specifier": "constants-shared/particleCoin",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/components/WinCoins.svelte",
+      "specifier": "../game/context",
+      "resolved": "apps/oma-peli/src/game/context.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/components/WinCoins.svelte",
+      "specifier": "../game/winLevelMap",
+      "resolved": "apps/oma-peli/src/game/winLevelMap.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/examples/IntegrationExample.ts",
+      "specifier": "../utils/layoutUtils",
+      "resolved": "apps/oma-peli/src/utils/layoutUtils.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/examples/IntegrationExample.ts",
+      "specifier": "./GameBackground.svelte",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/examples/IntegrationExample.ts",
+      "specifier": "../utils/layoutUtils",
+      "resolved": "apps/oma-peli/src/utils/layoutUtils.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/examples/IntegrationExample.ts",
+      "specifier": "../utils/layoutUtils",
+      "resolved": "apps/oma-peli/src/utils/layoutUtils.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/examples/IntegrationExample.ts",
+      "specifier": "./GameBackground.svelte",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/game/actor.ts",
+      "specifier": "lodash",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/game/actor.ts",
+      "specifier": "state-shared",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/game/actor.ts",
+      "specifier": "utils-book",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/game/actor.ts",
+      "specifier": "utils-xstate",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/game/actor.ts",
+      "specifier": "./typesBookEvent",
+      "resolved": "apps/oma-peli/src/game/typesBookEvent.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game/actor.ts",
+      "specifier": "./stateXstate",
+      "resolved": "apps/oma-peli/src/game/stateXstate.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game/actor.ts",
+      "specifier": "./utils",
+      "resolved": "apps/oma-peli/src/game/utils.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game/actor.ts",
+      "specifier": "./stateGame.svelte",
+      "resolved": "apps/oma-peli/src/game/stateGame.svelte.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game/actor.ts",
+      "specifier": "./config",
+      "resolved": "apps/oma-peli/src/game/config.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game/bookEventHandlerMap.ts",
+      "specifier": "utils-book",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/game/bookEventHandlerMap.ts",
+      "specifier": "state-shared",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/game/bookEventHandlerMap.ts",
+      "specifier": "utils-shared/sequence",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/game/bookEventHandlerMap.ts",
+      "specifier": "./eventEmitter",
+      "resolved": "apps/oma-peli/src/game/eventEmitter.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game/bookEventHandlerMap.ts",
+      "specifier": "./utils",
+      "resolved": "apps/oma-peli/src/game/utils.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game/bookEventHandlerMap.ts",
+      "specifier": "./winLevelMap",
+      "resolved": "apps/oma-peli/src/game/winLevelMap.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game/bookEventHandlerMap.ts",
+      "specifier": "./stateGame.svelte",
+      "resolved": "apps/oma-peli/src/game/stateGame.svelte.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game/bookEventHandlerMap.ts",
+      "specifier": "./typesBookEvent",
+      "resolved": "apps/oma-peli/src/game/typesBookEvent.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game/bookEventHandlerMap.ts",
+      "specifier": "./types",
+      "resolved": "apps/oma-peli/src/game/types.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game/bookEventHandlerMap.ts",
+      "specifier": "./config",
+      "resolved": "apps/oma-peli/src/game/config.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game/constants.ts",
+      "specifier": "lodash",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/game/constants.ts",
+      "specifier": "./types",
+      "resolved": "apps/oma-peli/src/game/types.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game/context.ts",
+      "specifier": "utils-event-emitter",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/game/context.ts",
+      "specifier": "utils-xstate",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/game/context.ts",
+      "specifier": "utils-layout",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/game/context.ts",
+      "specifier": "pixi-svelte",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/game/context.ts",
+      "specifier": "./eventEmitter",
+      "resolved": "apps/oma-peli/src/game/eventEmitter.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game/context.ts",
+      "specifier": "./stateXstate",
+      "resolved": "apps/oma-peli/src/game/stateXstate.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game/context.ts",
+      "specifier": "./stateLayout",
+      "resolved": "apps/oma-peli/src/game/stateLayout.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game/context.ts",
+      "specifier": "./stateApp",
+      "resolved": "apps/oma-peli/src/game/stateApp.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game/context.ts",
+      "specifier": "./stateGame.svelte",
+      "resolved": "apps/oma-peli/src/game/stateGame.svelte.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game/context.ts",
+      "specifier": "../i18n/i18nDerived",
+      "resolved": "apps/oma-peli/src/i18n/i18nDerived.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game/eventEmitter.ts",
+      "specifier": "utils-event-emitter",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/game/eventEmitter.ts",
+      "specifier": "components-shared",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/game/eventEmitter.ts",
+      "specifier": "components-ui-pixi",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/game/eventEmitter.ts",
+      "specifier": "components-ui-html",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/game/eventEmitter.ts",
+      "specifier": "./typesEmitterEvent",
+      "resolved": "apps/oma-peli/src/game/typesEmitterEvent.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game/math-config.json",
+      "specifier": ": ",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/game/math-config.json",
+      "specifier": ": ",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/game/sound.ts",
+      "specifier": "utils-sound",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/game/stateApp.ts",
+      "specifier": "pixi-svelte",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/game/stateApp.ts",
+      "specifier": "./assets",
+      "resolved": "apps/oma-peli/src/game/assets.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game/stateGame.svelte.ts",
+      "specifier": "lodash",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/game/stateGame.svelte.ts",
+      "specifier": "svelte/motion",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/game/stateGame.svelte.ts",
+      "specifier": "state-shared",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/game/stateGame.svelte.ts",
+      "specifier": "utils-slots",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/game/stateGame.svelte.ts",
+      "specifier": "utils-shared/winLevel",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/game/stateGame.svelte.ts",
+      "specifier": "./types",
+      "resolved": "apps/oma-peli/src/game/types.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game/stateGame.svelte.ts",
+      "specifier": "./stateLayout",
+      "resolved": "apps/oma-peli/src/game/stateLayout.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game/stateGame.svelte.ts",
+      "specifier": "./winLevelMap",
+      "resolved": "apps/oma-peli/src/game/winLevelMap.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game/stateGame.svelte.ts",
+      "specifier": "./eventEmitter",
+      "resolved": "apps/oma-peli/src/game/eventEmitter.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game/stateGame.svelte.ts",
+      "specifier": "./constants",
+      "resolved": "apps/oma-peli/src/game/constants.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game/stateLayout.ts",
+      "specifier": "utils-layout",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/game/stateXstate.ts",
+      "specifier": "utils-xstate",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/game/types.ts",
+      "specifier": "utils-slots",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/game/types.ts",
+      "specifier": "./config",
+      "resolved": "apps/oma-peli/src/game/config.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game/typesBookEvent.ts",
+      "specifier": "rgs-requests",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/game/typesBookEvent.ts",
+      "specifier": "./types",
+      "resolved": "apps/oma-peli/src/game/types.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game/typesEmitterEvent.ts",
+      "specifier": "../components/Board.svelte",
+      "resolved": "apps/oma-peli/src/components/Board.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/game/typesEmitterEvent.ts",
+      "specifier": "../components/BoardFrame.svelte",
+      "resolved": "apps/oma-peli/src/components/BoardFrame.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/game/typesEmitterEvent.ts",
+      "specifier": "../components/FreeSpinIntro.svelte",
+      "resolved": "apps/oma-peli/src/components/FreeSpinIntro.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/game/typesEmitterEvent.ts",
+      "specifier": "../components/FreeSpinCounter.svelte",
+      "resolved": "apps/oma-peli/src/components/FreeSpinCounter.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/game/typesEmitterEvent.ts",
+      "specifier": "../components/FreeSpinOutro.svelte",
+      "resolved": "apps/oma-peli/src/components/FreeSpinOutro.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/game/typesEmitterEvent.ts",
+      "specifier": "../components/Win.svelte",
+      "resolved": "apps/oma-peli/src/components/Win.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/game/typesEmitterEvent.ts",
+      "specifier": "../components/Sound.svelte",
+      "resolved": "apps/oma-peli/src/components/Sound.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/game/typesEmitterEvent.ts",
+      "specifier": "../components/Transition.svelte",
+      "resolved": "apps/oma-peli/src/components/Transition.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/game/utils.ts",
+      "specifier": "lodash",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/game/utils.ts",
+      "specifier": "state-shared",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/game/utils.ts",
+      "specifier": "utils-book",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/game/utils.ts",
+      "specifier": "utils-slots",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/game/utils.ts",
+      "specifier": "./constants",
+      "resolved": "apps/oma-peli/src/game/constants.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game/utils.ts",
+      "specifier": "./eventEmitter",
+      "resolved": "apps/oma-peli/src/game/eventEmitter.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game/utils.ts",
+      "specifier": "./typesBookEvent",
+      "resolved": "apps/oma-peli/src/game/typesBookEvent.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game/utils.ts",
+      "specifier": "./bookEventHandlerMap",
+      "resolved": "apps/oma-peli/src/game/bookEventHandlerMap.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game/utils.ts",
+      "specifier": "./types",
+      "resolved": "apps/oma-peli/src/game/types.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game/winLevelMap.ts",
+      "specifier": "constants-shared/time",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/game-standalone/actions.ts",
+      "specifier": "./state",
+      "resolved": "apps/oma-peli/src/game-standalone/state.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game-standalone/assets.ts",
+      "specifier": "./types",
+      "resolved": "apps/oma-peli/src/game-standalone/types.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game-standalone/bookAdapter.ts",
+      "specifier": "./types",
+      "resolved": "apps/oma-peli/src/game-standalone/types.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game-standalone/bookAdapter.ts",
+      "specifier": "./math",
+      "resolved": "apps/oma-peli/src/game-standalone/math.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game-standalone/bookAdapter.ts",
+      "specifier": "./roundProvider",
+      "resolved": "apps/oma-peli/src/game-standalone/roundProvider.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game-standalone/math.ts",
+      "specifier": "./mathConfig",
+      "resolved": "apps/oma-peli/src/game-standalone/mathConfig.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game-standalone/math.ts",
+      "specifier": "./types",
+      "resolved": "apps/oma-peli/src/game-standalone/types.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game-standalone/mathConfig.ts",
+      "specifier": "./types",
+      "resolved": "apps/oma-peli/src/game-standalone/types.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game-standalone/musicRuntime.ts",
+      "specifier": "howler",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/game-standalone/musicRuntime.ts",
+      "specifier": "./assets",
+      "resolved": "apps/oma-peli/src/game-standalone/assets.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game-standalone/pixiRuntime.ts",
+      "specifier": "pixi.js",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/game-standalone/reel.ts",
+      "specifier": "pixi.js",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/game-standalone/reel.ts",
+      "specifier": "./types",
+      "resolved": "apps/oma-peli/src/game-standalone/types.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game-standalone/reelGeometry.ts",
+      "specifier": "./math",
+      "resolved": "apps/oma-peli/src/game-standalone/math.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game-standalone/roundController.ts",
+      "specifier": "./state",
+      "resolved": "apps/oma-peli/src/game-standalone/state.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game-standalone/roundController.ts",
+      "specifier": "./roundProvider",
+      "resolved": "apps/oma-peli/src/game-standalone/roundProvider.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game-standalone/roundProvider.ts",
+      "specifier": "./math",
+      "resolved": "apps/oma-peli/src/game-standalone/math.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game-standalone/roundProvider.ts",
+      "specifier": "./types",
+      "resolved": "apps/oma-peli/src/game-standalone/types.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game-standalone/stageComposition.ts",
+      "specifier": "../utils/layoutUtils",
+      "resolved": "apps/oma-peli/src/utils/layoutUtils.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game-standalone/stakeTransport.ts",
+      "specifier": "rgs-requests",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/game-standalone/stakeTransport.ts",
+      "specifier": "./stakeSession",
+      "resolved": "apps/oma-peli/src/game-standalone/stakeSession.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game-standalone/state.ts",
+      "specifier": "./types",
+      "resolved": "apps/oma-peli/src/game-standalone/types.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/game-standalone/uiLayout.ts",
+      "specifier": "../utils/layoutUtils",
+      "resolved": "apps/oma-peli/src/utils/layoutUtils.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/i18n/i18nDerived.ts",
+      "specifier": "state-shared",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/i18n/i18nDerived.ts",
+      "specifier": "components-ui-pixi",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/i18n/i18nDerived.ts",
+      "specifier": "components-ui-html",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/i18n/messagesMap/index.ts",
+      "specifier": "utils-shared/i18n",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/i18n/messagesMap/index.ts",
+      "specifier": "components-ui-pixi",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/i18n/messagesMap/index.ts",
+      "specifier": "components-ui-html",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/i18n/messagesMap/index.ts",
+      "specifier": "./en",
+      "resolved": "apps/oma-peli/src/i18n/messagesMap/en.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/i18n/messagesMap/index.ts",
+      "specifier": "./zh",
+      "resolved": "apps/oma-peli/src/i18n/messagesMap/zh.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/routes/+layout.svelte",
+      "specifier": "svelte",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/routes/+layout.svelte",
+      "specifier": "components-ui-html",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/routes/+layout.svelte",
+      "specifier": "components-shared",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/routes/+layout.svelte",
+      "specifier": "../i18n/messagesMap",
+      "resolved": "apps/oma-peli/src/i18n/messagesMap/index.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/routes/+page.svelte",
+      "specifier": "$app/environment",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/routes/+page.svelte",
+      "specifier": "../components/HelloPixi.svelte",
+      "resolved": "apps/oma-peli/src/components/HelloPixi.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/routes/+page.svelte",
+      "specifier": "../components/PasswordProtection.svelte",
+      "resolved": "apps/oma-peli/src/components/PasswordProtection.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/routes/+page.svelte",
+      "specifier": "../game-standalone/launchMode",
+      "resolved": "apps/oma-peli/src/game-standalone/launchMode.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/stories/ComponentsGame.stories.svelte",
+      "specifier": "@storybook/addon-svelte-csf",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/stories/ComponentsGame.stories.svelte",
+      "specifier": "components-storybook",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/stories/ComponentsGame.stories.svelte",
+      "specifier": "../game/stateGame.svelte",
+      "resolved": "apps/oma-peli/src/game/stateGame.svelte.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/stories/ComponentsGame.stories.svelte",
+      "specifier": "../components/Game.svelte",
+      "resolved": "apps/oma-peli/src/components/Game.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/stories/ComponentsGame.stories.svelte",
+      "specifier": "../game/context",
+      "resolved": "apps/oma-peli/src/game/context.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/stories/ComponentsGame.stories.svelte",
+      "specifier": "../game/eventEmitter",
+      "resolved": "apps/oma-peli/src/game/eventEmitter.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/stories/ComponentsGame.stories.svelte",
+      "specifier": "../game/config",
+      "resolved": "apps/oma-peli/src/game/config.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/stories/ComponentsSymbol.stories.svelte",
+      "specifier": "@storybook/addon-svelte-csf",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/stories/ComponentsSymbol.stories.svelte",
+      "specifier": "pixi-svelte",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/stories/ComponentsSymbol.stories.svelte",
+      "specifier": "components-storybook",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/stories/ComponentsSymbol.stories.svelte",
+      "specifier": "../components/Symbol.svelte",
+      "resolved": "apps/oma-peli/src/components/Symbol.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/stories/ComponentsSymbol.stories.svelte",
+      "specifier": "../game/types",
+      "resolved": "apps/oma-peli/src/game/types.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/stories/ComponentsSymbol.stories.svelte",
+      "specifier": "../game/assets",
+      "resolved": "apps/oma-peli/src/game/assets.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/stories/ModeBaseBook.stories.svelte",
+      "specifier": "@storybook/addon-svelte-csf",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/stories/ModeBaseBook.stories.svelte",
+      "specifier": "components-storybook",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/stories/ModeBaseBook.stories.svelte",
+      "specifier": "utils-shared/random",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/stories/ModeBaseBook.stories.svelte",
+      "specifier": "../components/Game.svelte",
+      "resolved": "apps/oma-peli/src/components/Game.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/stories/ModeBaseBook.stories.svelte",
+      "specifier": "../game/context",
+      "resolved": "apps/oma-peli/src/game/context.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/stories/ModeBaseBook.stories.svelte",
+      "specifier": "../game/utils",
+      "resolved": "apps/oma-peli/src/game/utils.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/stories/ModeBaseBook.stories.svelte",
+      "specifier": "./data/base_books",
+      "resolved": "apps/oma-peli/src/stories/data/base_books.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/stories/ModeBaseBookEvent.stories.svelte",
+      "specifier": "@storybook/addon-svelte-csf",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/stories/ModeBaseBookEvent.stories.svelte",
+      "specifier": "components-storybook",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/stories/ModeBaseBookEvent.stories.svelte",
+      "specifier": "../components/Game.svelte",
+      "resolved": "apps/oma-peli/src/components/Game.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/stories/ModeBaseBookEvent.stories.svelte",
+      "specifier": "../game/context",
+      "resolved": "apps/oma-peli/src/game/context.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/stories/ModeBaseBookEvent.stories.svelte",
+      "specifier": "../game/utils",
+      "resolved": "apps/oma-peli/src/game/utils.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/stories/ModeBaseBookEvent.stories.svelte",
+      "specifier": "./data/base_events",
+      "resolved": "apps/oma-peli/src/stories/data/base_events.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/stories/ModeBonusBook.stories.svelte",
+      "specifier": "@storybook/addon-svelte-csf",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/stories/ModeBonusBook.stories.svelte",
+      "specifier": "components-storybook",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/stories/ModeBonusBook.stories.svelte",
+      "specifier": "utils-shared/random",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/stories/ModeBonusBook.stories.svelte",
+      "specifier": "../components/Game.svelte",
+      "resolved": "apps/oma-peli/src/components/Game.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/stories/ModeBonusBook.stories.svelte",
+      "specifier": "../game/context",
+      "resolved": "apps/oma-peli/src/game/context.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/stories/ModeBonusBook.stories.svelte",
+      "specifier": "../game/utils",
+      "resolved": "apps/oma-peli/src/game/utils.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/stories/ModeBonusBook.stories.svelte",
+      "specifier": "./data/bonus_books",
+      "resolved": "apps/oma-peli/src/stories/data/bonus_books.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/stories/ModeBonusBookEvent.stories.svelte",
+      "specifier": "@storybook/addon-svelte-csf",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/stories/ModeBonusBookEvent.stories.svelte",
+      "specifier": "components-storybook",
+      "resolved": null
+    },
+    {
+      "source": "apps/oma-peli/src/stories/ModeBonusBookEvent.stories.svelte",
+      "specifier": "../components/Game.svelte",
+      "resolved": "apps/oma-peli/src/components/Game.svelte"
+    },
+    {
+      "source": "apps/oma-peli/src/stories/ModeBonusBookEvent.stories.svelte",
+      "specifier": "../game/context",
+      "resolved": "apps/oma-peli/src/game/context.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/stories/ModeBonusBookEvent.stories.svelte",
+      "specifier": "../game/utils",
+      "resolved": "apps/oma-peli/src/game/utils.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/stories/ModeBonusBookEvent.stories.svelte",
+      "specifier": "./data/bonus_events",
+      "resolved": "apps/oma-peli/src/stories/data/bonus_events.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/utils/layoutUtils.ts",
+      "specifier": "../config/layoutConfig",
+      "resolved": "apps/oma-peli/src/config/layoutConfig.ts"
+    },
+    {
+      "source": "apps/oma-peli/src/version.ts",
+      "specifier": "../package.json",
+      "resolved": "apps/oma-peli/package.json"
+    }
+  ],
+  "activeRouteReachable": [
+    "apps/oma-peli/package.json",
+    "apps/oma-peli/src/components/HelloPixi.svelte",
+    "apps/oma-peli/src/components/LoadingScreen.svelte",
+    "apps/oma-peli/src/components/PasswordProtection.svelte",
+    "apps/oma-peli/src/components/VinylWinAnimation.svelte",
+    "apps/oma-peli/src/components/standalone/AutoplayMenu.svelte",
+    "apps/oma-peli/src/components/standalone/BetControls.svelte",
+    "apps/oma-peli/src/components/standalone/DebugPanel.svelte",
+    "apps/oma-peli/src/components/standalone/DesktopControlBar.svelte",
+    "apps/oma-peli/src/components/standalone/FreeSpinsEndPopup.svelte",
+    "apps/oma-peli/src/components/standalone/MenuButton.svelte",
+    "apps/oma-peli/src/components/standalone/ModalShell.svelte",
+    "apps/oma-peli/src/components/standalone/PaytableSection.svelte",
+    "apps/oma-peli/src/components/standalone/QuickActions.svelte",
+    "apps/oma-peli/src/components/standalone/SettingsSection.svelte",
+    "apps/oma-peli/src/components/standalone/SpinButton.svelte",
+    "apps/oma-peli/src/components/standalone/StatusMeters.svelte",
+    "apps/oma-peli/src/components/standalone/TopToggles.svelte",
+    "apps/oma-peli/src/components/standalone/WinPopup.svelte",
+    "apps/oma-peli/src/components/standalone/controlPanelApi.ts",
+    "apps/oma-peli/src/config/layoutConfig.ts",
+    "apps/oma-peli/src/game-standalone/actions.ts",
+    "apps/oma-peli/src/game-standalone/assets.ts",
+    "apps/oma-peli/src/game-standalone/launchMode.ts",
+    "apps/oma-peli/src/game-standalone/lifetime.ts",
+    "apps/oma-peli/src/game-standalone/math.ts",
+    "apps/oma-peli/src/game-standalone/mathConfig.ts",
+    "apps/oma-peli/src/game-standalone/musicRuntime.ts",
+    "apps/oma-peli/src/game-standalone/pixiRuntime.ts",
+    "apps/oma-peli/src/game-standalone/reel.ts",
+    "apps/oma-peli/src/game-standalone/reelGeometry.ts",
+    "apps/oma-peli/src/game-standalone/roundController.ts",
+    "apps/oma-peli/src/game-standalone/roundProvider.ts",
+    "apps/oma-peli/src/game-standalone/stageComposition.ts",
+    "apps/oma-peli/src/game-standalone/state.ts",
+    "apps/oma-peli/src/game-standalone/types.ts",
+    "apps/oma-peli/src/game-standalone/uiLayout.ts",
+    "apps/oma-peli/src/i18n/messagesMap/en.ts",
+    "apps/oma-peli/src/i18n/messagesMap/index.ts",
+    "apps/oma-peli/src/i18n/messagesMap/zh.ts",
+    "apps/oma-peli/src/routes/+layout.svelte",
+    "apps/oma-peli/src/routes/+page.svelte",
+    "apps/oma-peli/src/utils/layoutUtils.ts",
+    "apps/oma-peli/src/version.ts"
+  ],
+  "assets": [
+    {
+      "path": "apps/oma-peli/static/.htaccess",
+      "sha256": "58e2d90a336aa46b82c404bdbafd7c6292b5bac1d71c2ebf6078176c7cc67d95",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/.nojekyll",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/audio/sounds.ac3",
+      "sha256": "1224f2f07f6b965a21a726201caaea8e5c8294b9336fb3c5e8706000ae9af195",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/audio/sounds.json",
+      "sha256": "0e9db696e232c25f8098aac5f9427dca725ce2c2a71a9812dfde55d406c86dc1",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/audio/sounds.m4a",
+      "sha256": "d5d4749c94a2b533d1d76f33301b8cd0c38e7f24448e46c34b3c7ff184bef6c1",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/audio/sounds.mp3",
+      "sha256": "f4430e11dde80d0c0940de8ad40785fb71a1f0644d3305012e13008f8e3e5333",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/audio/sounds.ogg",
+      "sha256": "4326d53307a2844b7f7455a787b793b137fd46338b556467ce889919f936e036",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/fonts/goldBlur/index.ts",
+      "sha256": "64757953468a36f593d6d37b10974e8f0355d3c32382bb2fb375f57041bdd3ac",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/fonts/goldBlur/miningfont_gold_blur.json",
+      "sha256": "2d5d415555f9d7ffffe80572ba5d3eb330e8726e4da43fc7f2762016aa01bf91",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/fonts/goldBlur/miningfont_gold_blur.png",
+      "sha256": "46f343e39d7fb9a74471efca907a9256a10b15bb5181c3937693f253fd35c8c8",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/fonts/goldBlur/miningfont_gold_blur.webp",
+      "sha256": "cad796bda2415781bc808e3afc807dff40d9d78725fb04ce86b0c657ba0b033d",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/fonts/goldBlur/miningfont_gold_blur.xml",
+      "sha256": "39b74a4ed77d658fc62c32f9baae43380dfb6236cfa21321472f3ec878ce0959",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/fonts/goldFont/index.ts",
+      "sha256": "afa30c60e4997da3bc5d64f44131f424db23f9a6669fce10a06455d5de61d4e8",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/fonts/goldFont/mm_gold.json",
+      "sha256": "10df5e12f320c589688d6eecfce17cd14d469b3f3e6eea10de2814f860314d5a",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/fonts/goldFont/mm_gold.png",
+      "sha256": "106e0b89037127e89b9d267e1f7eab2b9d4d395fcdd3a0c68464cd7c0c89cf91",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/fonts/goldFont/mm_gold.webp",
+      "sha256": "720bbf00c74fe22cc4c0e8f3047a2cefa3faad38deda6565eff7135e74751eb9",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/fonts/goldFont/mm_gold.xml",
+      "sha256": "33535f7749a831f21f6c47662d800ba97415109a1763383298c0293b8fbb1a8c",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/fonts/purpleFont/index.ts",
+      "sha256": "cb5d3da1ee42f0d600bcdabbdd29050b23d227f9e54dbe2a10d15ccacc0cf601",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/fonts/purpleFont/mm_purple.json",
+      "sha256": "9c196079c17c0a23025b4348285066e12a45eb4672b836070d7eb8d0e0bf3135",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/fonts/purpleFont/mm_purple.png",
+      "sha256": "306020b7f57ec52b09f3eee9ac0e1af2587f8808b906fb3cc6f1b43ab95db26e",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/fonts/purpleFont/mm_purple.xml",
+      "sha256": "fe1cfb96fb02fa312551c000093d1633cdbca951e3024e9e392d62f36445557c",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/fonts/silverFont/index.ts",
+      "sha256": "1603bc134ac57e001dd880e276e18509af91af09d25a4ff59a013922d1f3f7bc",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/fonts/silverFont/mm_silver.json",
+      "sha256": "e4e6c3efa5d8afe91b7219becddd4fb30ce52a1bc42493319b0cd1e46cc2fecb",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/fonts/silverFont/mm_silver.png",
+      "sha256": "6793c66aee837e9e67fdcb508ad8b60be50be3d5653c0cd29960c83d0048d779",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/fonts/silverFont/mm_silver.xml",
+      "sha256": "8d559a3c25bfa82012d95cf5ecb3024359eafab9210094073c01423da0768aa5",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/anticipation/anticipation.atlas",
+      "sha256": "71fa925d81a9c9a162c97db3d2ffef41b106eb4ae54281890c1621f675afa528",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/anticipation/anticipation.json",
+      "sha256": "8cc6f3a8ab7e5fb7ca40c20ad89a313dc965158478553e9353a1d5e1a3f8016e",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/anticipation/anticipation.png",
+      "sha256": "2456fc367a19908c42f5bda9346bfe5af5405a9342fcf80f2cd62bfbf6f7e8a0",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/anticipation/anticipation.webp",
+      "sha256": "cea7964f9feffdc2d753575b86a7822f9a083fa57d63cdc842e049a163e719e5",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/anticipation/index.ts",
+      "sha256": "38cf5a4b00b365d069289ff29f381e9f1be8eceee5a32cd3fd431fe7826d8d38",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/bigwin/big_wins.atlas",
+      "sha256": "50ebea3c9a05708ff625f2b2a9b929829c5c3996f347efcf3026cefcc7be55c6",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/bigwin/big_wins.png",
+      "sha256": "5c93458b6922d13ceab6f6259f3dc3c28ca2ffbbd05114133348a06434081b3d",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/bigwin/big_wins.webp",
+      "sha256": "0645786a267239a0a7d441da0b3b54ff0a7d9eeb3dc2d9e4497242006ba34ddc",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/bigwin/index.ts",
+      "sha256": "54abc6a5337c1ee9ad293ac4d609f29426eafbe4e2d3e35fca598768d4a9a1ea",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/bigwin/mm_bigwin.json",
+      "sha256": "d1072de7d6d474736171d1a9bb2c54a5d429ff5ffc311f30fa0b1851f8e48423",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/bonusButton/2.0/buy_button.atlas",
+      "sha256": "2bbe96823d3c259764828356caec4836cc85a5e04133bf466b9542d2de092012",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/bonusButton/2.0/buy_button.json",
+      "sha256": "48ef4f09ff444ecfeda37734b65783d7bbc9d7c6d3d095abc179e0873a922f29",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/bonusButton/2.0/buy_button.png",
+      "sha256": "c1f549575cdc966b117217eb33245ad134c0bcb4480f914bea04d474724f5e62",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/bonusButton/2.0/buy_button.webp",
+      "sha256": "5ce1954ba41f1c0c2ab8f25d6fc038be0f47a217a3b8b5ad21f0397b96301b20",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/bonusButton/buy_button.atlas",
+      "sha256": "8b6528362fb54bcf068b668c6c3c2392006a5c581228d9973fce105e0d137d31",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/bonusButton/buy_button.json",
+      "sha256": "eb4b272c2dad195bb73bb5fbe9c1a64a416ffd046aa54a84db6182db23c75626",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/bonusButton/buy_button.png",
+      "sha256": "07a9175900cc72de3ef312fcf620bf3919e2417975ff405273c749f40fe5073f",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/bonusButton/buy_button.webp",
+      "sha256": "2bb5fe9ab624affc31100ab9c22a052f86113633914c4f32f550aa2e6460c84e",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/bonusButton/index.ts",
+      "sha256": "87fc72e50a93a7a37d78755819d4df791ce413ce26b3e70f1c8254ca972f62fa",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/clusterWin/clusterpay.atlas",
+      "sha256": "807488b720ffdaf656e696bc0878a1a56e61dd2899d1b07b12bbaee143c077a4",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/clusterWin/clusterpay.json",
+      "sha256": "16e74b4b4fd44f1ad1fa9f423df6c7a318faf5118b93566b84bad4a8a10860e6",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/clusterWin/clusterpay.png",
+      "sha256": "6f976a7e53509d8564c7eded4b4659a00dd306ef8c17fa2766fbc770f45be957",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/clusterWin/clusterpay.webp",
+      "sha256": "a8755a3da56b73f6488fb953a2889684411173dfbbbd9a6a844a86747e9e67d9",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/clusterWin/index.ts",
+      "sha256": "a4acf49b734e17792c65ccc00e9b01e2617da30305752a58e2b262784284efab",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/foregroundAnimation/index.ts",
+      "sha256": "88323c0c25f13370c82bcb1bc1ffe48d44363aaf214fd63dc67d3b511716e5d3",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/foregroundAnimation/mm_bg.atlas",
+      "sha256": "4735ccd6e33ac89a3f72e3e0abc31d0e9a4f508f889ed1320ea4f7c152d2676d",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/foregroundAnimation/mm_bg.json",
+      "sha256": "479e46fa3167b1359b6fdcb0c65a60bcfe64267c52d52ddda71ef0b0473a1b99",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/foregroundAnimation/mm_bg.png",
+      "sha256": "c79d2adbea11ea438238221383b46eafe404cdd8b74946abaef0698304270728",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/foregroundAnimation/mm_bg.webp",
+      "sha256": "ebef6a540ab7588b58348e03d54498a211990f1fcf095c6660de4cb4fd465d54",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/foregroundFeatureAnimation/index.ts",
+      "sha256": "8436a370c17a45d855d69bb48dfdeae11aedcbdbdd44cd0e88b811981bbff40f",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/foregroundFeatureAnimation/mm_bg_feature.atlas",
+      "sha256": "b04ca2ad025cecf84f656f868d7c5e53074d1a34740e861d72aca5790a9f17d9",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/foregroundFeatureAnimation/mm_bg_feature.json",
+      "sha256": "ed6ea20006d9396da86e25c2cd1b0a4ba8cb0ab2f0b586e84b2dca8da5a12871",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/foregroundFeatureAnimation/mm_bg_feature.png",
+      "sha256": "a8c7d25fe54ecd6be1249ed4a1bc7abb729593a16d75556a0f1af6605a2ecb94",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/foregroundFeatureAnimation/mm_bg_feature.webp",
+      "sha256": "c590c5e68324040a084fd122ef976760c7f4baa99c97c3b81b637c75d1b34d81",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/fsIntro/fs_screen.atlas",
+      "sha256": "1bea43bb73880b5f4d2f7b8138a6d20f4e6013ea3873791114c8560f9176bc2f",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/fsIntro/fs_screen.json",
+      "sha256": "7eaa18fd44aeb9f5c3148049bb68400cb452d1e753df8bda90967ac21d863bf9",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/fsIntro/fs_screen.png",
+      "sha256": "3df7419244d0af05c03f5e0e43df27235249e65608a173cac83fa5f20bd54a52",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/fsIntro/fs_screen.webp",
+      "sha256": "4f7dda1240e2bcf03ebfca44723183e915580965517245efe84e72c854fe8e9c",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/fsIntro/fs_screen_number.json",
+      "sha256": "2b5d98df4c6d94f530b90b7f56c3e4a6d539cee31edaecbe462fea521048c282",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/fsIntro/fs_total_number.json",
+      "sha256": "0de2e04942c0e1d53f15a8667cd61c1385017069172eee92eeab3fad2da24341",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/fsIntro/index.ts",
+      "sha256": "ac97a76f5a16a17123da42732071501b706fe58101675f0331cb885185cb69ef",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/globalMultiplier/index.ts",
+      "sha256": "34bdff75ab3baf8c7056a14eea7c7b3212695f9d79331d5b9dedb0b9f13da682",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/globalMultiplier/multiframe.atlas",
+      "sha256": "1e5ea3db38b2717934fc8720b2fea20348da71a511d8c48215afd159d9b3092d",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/globalMultiplier/multiframe.json",
+      "sha256": "be85cde8bb0402f0d2c8916c0510548aa0f5cb7f9331aa12e6ca4fd17e88f50e",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/globalMultiplier/multiframe.png",
+      "sha256": "982ce9a21cf560ea482c49245d2e635b3b8953829b05e844eff6dc59676a80b7",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/globalMultiplier/multiframe.webp",
+      "sha256": "b00300fd0d78c658b41598432edfd95489c9f286acf6445ae9230820aba3cc50",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/loader/index.ts",
+      "sha256": "ce81434667e045115359b0c0f52973cd63cd65c80211d7b1557d2e14f75dcb63",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/loader/loader.atlas",
+      "sha256": "9a1f3b04ba90ffbadec4abcb3b1eddf9fe340ed30bd5302745f2c5e24d03e5c8",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/loader/loader.json",
+      "sha256": "1bd25d9bbdf5d7b635a768f402e212f50feae704eaff6965cccfd0c10d6fc682",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/loader/loader.png",
+      "sha256": "066cf86d376c43b7e7d10fc9caa267ace57811e1509c422850680a662f517ce8",
+      "references": [
+        "apps/oma-peli/src/components/LoadingScreen.svelte"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/loader/loader.webp",
+      "sha256": "690dc2d75574c91dd767a48815d51589dd3e81423b33e2dffab1851278fbc78d",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/reelhouse/index.ts",
+      "sha256": "13ea8946e72dfac5a9596d93569dbe6e75a5ff9d6f89217ce9f82bb636a89b54",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/reelhouse/reelhouse_glow.atlas",
+      "sha256": "34c62cc063e9acac9f6a177427a093d00f10941e0f9f267be1d79974b99c6e0d",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/reelhouse/reelhouse_glow.json",
+      "sha256": "5fee57a561e8ac4f9c81604410752c6fa3fc158f0b7420f305f4e4d837cff8fe",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/reelhouse/reelhouse_glow.png",
+      "sha256": "a65a1049d534346043de9a9d12b6dc6ca1dcfac9d03d345c80581a1e0470a51e",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/reelhouse/reelhouse_glow.webp",
+      "sha256": "4b700a156c84943f25303e41e519739391ae47a4e4afa3c10f229907d3352813",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/symbols/h1.json",
+      "sha256": "6d57a92f8a7a8358967d14c4a0d636195afd9935e2fc49177bb5cb91e5c3c53f",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/symbols/h2.json",
+      "sha256": "fc2869d9d2563714c189ea91a63f7c995efc50b94f1d4fb75c8a43414495d5be",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/symbols/h3.json",
+      "sha256": "85a09833a4613daf9b9b9e034c9b523cada86b6bd17600d1c8e93404db532714",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/symbols/h4.json",
+      "sha256": "411d0dbde604abacf0b2755d73ebbec9e342f10f18855707a57f361ff178529a",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/symbols/h5.json",
+      "sha256": "041517c5acea329a5a195fceac916b31026f84fd91ed7a0d9e000247c1f768bf",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/symbols/index.ts",
+      "sha256": "05ccde9912b9a06137f5b528d88fddae79ce46d1e059b4812c601797f4177e0e",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/symbols/l1.json",
+      "sha256": "abf7a6e5db0e4fed4c72769f0ee997feb33d64c8884c27fef532169c310fc9d0",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/symbols/l2.json",
+      "sha256": "1dcc671e3ea07a68cec4bed13b1a100bbc85218e11fb90cce5b303789cbbd048",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/symbols/l3.json",
+      "sha256": "e27e6286efce15cab0bae56717abc0a76a6073c4b507a8a9a5cc4f574d5a6936",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/symbols/l4.json",
+      "sha256": "5ecbad22022f10712b5497f594cefe7fcbb3a01b56e48de774e975bf3a4aaa70",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/symbols/symbols.atlas",
+      "sha256": "fd7112da1c6c320fcc3ea55beb5d1132e3bac40d9a87a50e541ed95b00dc3654",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/symbols/symbols.png",
+      "sha256": "32ba3abb3d76eb7a1ff993aa837f0d70a8c5d40782ef478d9614b9af5d04b280",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/symbols/symbols.webp",
+      "sha256": "aa59de6d53532a7465a9562d2a93ef091d7ed481e4bcdd705814415df8fc8234",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/symbols2/index.ts",
+      "sha256": "f092c7f80fc24a192dbbbf2e4e43a348fdd79f185651ff056f75aaf56a264b28",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/symbols2/M.json",
+      "sha256": "845784ee1475a7edf15dae6ac9a79c39aff903f9be6a98e9f200979ba9d81737",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/symbols2/S.json",
+      "sha256": "1852c7728a571712a71df45f1a3d7d06432d98b03f66762a48dac5d3778b2b34",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/symbols2/symbols2.atlas",
+      "sha256": "28f2ca14080b3535a51df1a8c9647bbb526e52b1d10810a018d3de101f77de72",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/symbols2/symbols2.png",
+      "sha256": "2c14c2e490103d76ce53310d7d9d3849ea2d5cbdd7e34cb5f9a19283267e2aa5",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/symbols2/symbols2.webp",
+      "sha256": "66b7680076f008c2654982a12cdcddb6a154ac183ec7611526a3fc1356e6b8ee",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/symbols3/explosion.json",
+      "sha256": "87735051a54b873ca370f67cf742a8dd65892a483662bba2a05b59eb3b13abda",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/symbols3/index.ts",
+      "sha256": "d9ac3bee706e4b4709a6f9291684e2c6437a61b568fa179d62f9fcb9cf153116",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/symbols3/symbols3.atlas",
+      "sha256": "22e9965f005eb2add87dfa5bc8c449d1491d13d99a74cd805b310501228b7968",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/symbols3/symbols3.png",
+      "sha256": "9b696fb6d0974a15ce031368e6a45a67cc776a9b7f4ab8c723e4406c38d79cbc",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/symbols3/symbols3.webp",
+      "sha256": "729a5b7d4e1be6959135ea410b565c008ea89f13a918e5c1e91a16d1b7ccaa29",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/symbols3/W.json",
+      "sha256": "7ee7f7862fa6ad8cfe6206279e7a4dfa918611b66968fa041167a9d2fc984c64",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/transition/index.ts",
+      "sha256": "52c8045769b441d00d57554a8e0cc45173b4dfa9935409ca1f6dc464aa37df23",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/transition/transition.atlas",
+      "sha256": "79fec40d1236abadb98e45179efe11cca99d9f656d0341156a47afb88de6ff7a",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/transition/transition.json",
+      "sha256": "ac64bd6919679a3f1afc17f2c116e6995fc4937b753596637264d3d12587e253",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/transition/transition.png",
+      "sha256": "6e3208ef1e7946e08bd901455747209119f21cdbf2cdca92e1ecdc38364049cb",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/transition/transition.webp",
+      "sha256": "2841884a5be5e77e552143e5b916f7064b89411e82f78c5f06fb47efcd04c010",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/tumbleWin/index.ts",
+      "sha256": "681a5f48f20cb21db4d568fbde24b85b72205ac92e30ca7b1a610c1b929135e3",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/tumbleWin/tumble_multiplier.json",
+      "sha256": "88dbd60a4379edcf35d5cca964745011cbf153a7ba3afb74cde60d4a1e6415e3",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/tumbleWin/tumble_win.atlas",
+      "sha256": "7c3e080ed7c6b63928fe04468d666f11743ca2424f026b6e0f5058208272eefa",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/tumbleWin/tumble_win.json",
+      "sha256": "1d22106ac882af8c6b7502313037729fcadf5c2b2c9c3e5cd6081b835f05f339",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/tumbleWin/tumble_win.png",
+      "sha256": "3ca67b090ab3f69a7c83213e0b20c3dcf6803a6d8475e04ad8a8cbc065e00ee8",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/tumbleWin/tumble_win.webp",
+      "sha256": "f9ed1bab2906e95cf3890462e3869915d7fcc6287ff69700c5da3df78ab877a2",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/winMeterExplosion/index.ts",
+      "sha256": "146724cea8ca7d732c104d276cbb5018db9f1baed2e841884f0e83a46b84eed6",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/winMeterExplosion/ui_explosion.atlas",
+      "sha256": "a05331773949a553ba9331ac114f6c330d43e901857cfba832135281eaad6e87",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/winMeterExplosion/ui_explosion.json",
+      "sha256": "d1ef126bb3e66b2b365a8864f71d43f60662318b98b0784aa2d9ddeae5b89f17",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/spines/winMeterExplosion/ui_explosion.png",
+      "sha256": "525160b54095098ac422b73c9597d13f01e5e2829a3ccaeb964cd5dc6b15122f",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/sprites/coin/SD2_Coin.json",
+      "sha256": "29590772959b90e7ee83d867309f55faa6bfb067b7599afe84967aef557ea11f",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/sprites/coin/SD2_Coin.png",
+      "sha256": "dc96a0c37d8ff0d6001bd50220b618100039d4b24edf8a7d7398ec5028aa7e32",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/sprites/freeSpins/freeSpins.json",
+      "sha256": "a2c7f8181c52ceee5dd257cf84e618302ce8c9c5f9bed1c51c203f05812874de",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/sprites/freeSpins/freeSpins.png",
+      "sha256": "070a151ceca8a26791cf3c3d3bce28e239878c45bed5a3ddd70b0667149656d8",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/sprites/freeSpins/freeSpins.webp",
+      "sha256": "ff1f5f81e6772bbe31dbf183ddd581e66dbd7ffce571ec2a0a41df2b6226c608",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/sprites/freeSpins/index.ts",
+      "sha256": "48953bdb18969342c9b1d7fbb16bc0ea6c8e26316bf37c548785b4b1b1ce04ba",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/sprites/payFrame/index.ts",
+      "sha256": "052ec245277b09e7a095e4c24df4905ff08c2873f1363ebdabdf2872d1dc97e6",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/sprites/payFrame/payFrame.png",
+      "sha256": "95c6cdadc0bfe2f5d0e3d80c298232c35b85cd986540a85e011249e4300bec8b",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/sprites/pressToContinueText/index.ts",
+      "sha256": "8c5c891e6f3c2dad7a2b0b3b4b8aa9b807dd94c5531b17bc62f0e2249c5cadd1",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/sprites/pressToContinueText/MM_pressanywhere.json",
+      "sha256": "bd247c3fe3e1e1c1d3ae9d396df3a75c8a676ad3368c14754e7d2f56b5118ef2",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/sprites/pressToContinueText/MM_pressanywhere.png",
+      "sha256": "022acd0a59306cf889d10f882b955091b9e03242a7690d3bea0e16ddc5059b0c",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/sprites/pressToContinueText/MM_pressanywhere.webp",
+      "sha256": "ce1332e17a008ccb02bd15387ea84db5d8d3b7338d29ac45598a65d398168d16",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/sprites/progressBar/index.ts",
+      "sha256": "5f34027702c2572f1bb8acaefcaf94641b1b2d7b2afdb4ab4b941d262396ba88",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/sprites/progressBar/progressBar.json",
+      "sha256": "5e74b9525abb256daf823099cd3984a8c5f1f9cbdc944887a1dc2e1d601e30d7",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/sprites/progressBar/progressBar.png",
+      "sha256": "645cd5dd43a500450da07bb2ef231beed325601ac4f2526e17804dccb40213a1",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/sprites/progressBar/progressBar.webp",
+      "sha256": "ad6d3f4f13dfed6e724e908c9745268c44eb8b44eb3d33afc8ca56b0da329cef",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/sprites/reelsFrame/index.ts",
+      "sha256": "ae30c706e705ff2098298b7b98cedc41f738c136aef570ab30420792c5f68519",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/sprites/reelsFrame/reels_frame.json",
+      "sha256": "dc84688205c51fe446790611a58c8428174b0505efb62ac618770f016a7ea252",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/sprites/reelsFrame/reels_frame.png",
+      "sha256": "cfc63f24c79f85582b0204e28d60942b3d54a9746514302e05b9f7f8055b7a38",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/sprites/symbolsStatic/index.ts",
+      "sha256": "ca7beea6c31b15aabcfe9d0c09ffd66b01ed4fa319420b4c8d12e599b70400d2",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/sprites/symbolsStatic/symbolsStatic.json",
+      "sha256": "ef1338f739a25575273361ec5fddca6b9d4d6e82a73fc2c17a13c239ccd4de15",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/sprites/symbolsStatic/symbolsStatic.png",
+      "sha256": "24678af0caa9a17add1a30d5522eea78b27f29ae02cf3a949da97d855820eb72",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/sprites/symbolsStatic/symbolsStatic.webp",
+      "sha256": "def5848f4bf679ccd1d8f7a9354e26b88d3dd49709e30e5e633bafc8bac52bf2",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/sprites/uiSlotsAssetsBespoke/autospin_active.png",
+      "sha256": "bc8b827d01ff23d0494ed8638f36465a353db57cd84cfcaa9f03e57f065e72b0",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/sprites/uiSlotsAssetsBespoke/autospin_active.webp",
+      "sha256": "6fc382da0cc173956cd95b738f8b169b9173eac325e853d4fa3158e99de69b1c",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/sprites/uiSlotsAssetsBespoke/autospin_active_hover.png",
+      "sha256": "ba453f62c46bcb43ff13f6667ffc1e6ef9ba5aa00841b210e6474f367e1181ac",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/sprites/uiSlotsAssetsBespoke/autospin_active_hover.webp",
+      "sha256": "dfa3eb718b3361c0448bcc502e15e212b8cd1a181e0d00734e9f72a92ca27bf0",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/sprites/uiSlotsAssetsBespoke/index.ts",
+      "sha256": "f1f720df3dc7692fb64f860dcdb47fc76cda39eee9aa40592e221b34ee7f5e94",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/sprites/uiSlotsAssetsBespoke/turbo_active.png",
+      "sha256": "992f42462b5d5b93375423f63cca2d977f0807d413ffef6a6ba962b6485b9a94",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/sprites/uiSlotsAssetsBespoke/turbo_active.webp",
+      "sha256": "95e1ec1e73577c9e63ddd27b3012689ba568cbf18ac6b9d69c6739d6dea09aae",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/sprites/uiSlotsAssetsBespoke/turbo_active_hover.png",
+      "sha256": "c062c89470388e0b928eadce93f2f12da07a82e4f1aaf385aa695503ca619f42",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/sprites/uiSlotsAssetsBespoke/turbo_active_hover.webp",
+      "sha256": "164d043637a1a88b299061df31c95c5901b02d06dba2d64098a63eba4e701bd1",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/sprites/winSmall/index.ts",
+      "sha256": "8f4c47b699f120d7a35a57250ae60da4469755411861f923e041201e89a28611",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/sprites/winSmall/MM_Localisation_winsmall.json",
+      "sha256": "e329935182d42ace40dfb197f8cb8b0a9979ccfe469793952e8893ebc44fd3a4",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/sprites/winSmall/MM_Localisation_winsmall.png",
+      "sha256": "2418ea09a9d61463c89d30d489fc07ece67480e6fa5eea6f8a358090de3ec8b1",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/assets/sprites/winSmall/MM_Localisation_winsmall.webp",
+      "sha256": "b9e4ea52bb9808607c695c36b70defef922dcdd58e3895dbedc021057700f9ef",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/background/bg_base.jpg",
+      "sha256": "7155b3850c80955fdeee09c8df4a86c687221172160f728cf7221fd5261d2839",
+      "references": [
+        "apps/oma-peli/src/components/HelloPixi.svelte",
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/background/bg_base_old.jpg",
+      "sha256": "a7ffd6b6041592d4140089c39158fdb3ec1dd3ce17127660fca66e208506f39e",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/background/bg_base_old2.jpg",
+      "sha256": "f530ab4b3a2d7b4264516c72357fae41704e812f06abe13d3dcfc9fe34703d3c",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/background/jukebox00.png",
+      "sha256": "ffea94594d42b7c8b1c135e76c67bfcc1592df14510ac35b7052f1f831316480",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/background/ReelFrames.png",
+      "sha256": "bfcba5ebe9025408d28f84943409e85cd672cb47de77556658ccdbc83f59665e",
+      "references": [
+        "apps/oma-peli/src/components/HelloPixi.svelte",
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/background/RockABillyReels_logo.png",
+      "sha256": "1a57f4703f0e935cee4c4eead561d85c6900f56424bab544577101e5611899be",
+      "references": [
+        "apps/oma-peli/src/components/HelloPixi.svelte",
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/controls/Control_autoplay_select.png",
+      "sha256": "3aecd47c04029724330779768a42d61f1859755f83b4faa716688415a7d0deec",
+      "references": [
+        "apps/oma-peli/src/components/standalone/QuickActions.svelte"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/controls/Control_autoplay_stop.png",
+      "sha256": "905eaeb8083df1b839c0e5b08f5bef5e4399aac184a97680483987878a61f35d",
+      "references": [
+        "apps/oma-peli/src/components/standalone/QuickActions.svelte"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/controls/Control_bar_deselect.png",
+      "sha256": "a7d25c174e08d6505f491c073fbd3b1bd63e676007fb236b2431789a7d16aa73",
+      "references": [
+        "apps/oma-peli/src/components/standalone/QuickActions.svelte"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/controls/Control_bar_select.png",
+      "sha256": "f0f64c128dec864c24f945943d1ca4d52a242590983207e57eb8fb48bbcf4224",
+      "references": [
+        "apps/oma-peli/src/components/standalone/QuickActions.svelte"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/controls/Control_divider.png",
+      "sha256": "5c1d0a93922000e5db3c1566d98356da440d08ae34b09ca5cc640de7e520fbed",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/controls/Control_fastplay_deselect.png",
+      "sha256": "767bbb5bb73d093dfedc435dbb64fdb4c7e4a4b2a862c370334ef55883fa74fc",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/controls/Control_fastplay_select.png",
+      "sha256": "767bbb5bb73d093dfedc435dbb64fdb4c7e4a4b2a862c370334ef55883fa74fc",
+      "references": [
+        "apps/oma-peli/src/components/standalone/QuickActions.svelte"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/controls/Control_half_bar_select.png",
+      "sha256": "2b2ebdee16771d698bb37027ce32c373a6f5c6617c8d7430e575136e57a9657d",
+      "references": [
+        "apps/oma-peli/src/components/standalone/QuickActions.svelte"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/controls/Control_leftend.png",
+      "sha256": "4cb55bc3118e883dc2420798ccf64081f91470b1bf04f59eca1feb3f5d95bb85",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/controls/Control_lowerbet_deselect.png",
+      "sha256": "b91bca725b45e834a0fcd7f2698ced26cd7ba76847c9cdba3e359a2680536dd8",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/controls/Control_lowerbet_select.png",
+      "sha256": "6dad63fb51c4b1ac143acd6270bb9da49275e6fa89ea37e2daff56b250954bf1",
+      "references": [
+        "apps/oma-peli/src/components/HelloPixi.svelte",
+        "apps/oma-peli/src/components/standalone/BetControls.svelte"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/controls/Control_menubar.png",
+      "sha256": "a38d013dabeb6fb3729e8f4b4d921036bbcb0f319f63f8a22b204268806b6ac0",
+      "references": [
+        "apps/oma-peli/src/components/standalone/MenuButton.svelte"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/controls/Control_playbutton.png",
+      "sha256": "b0ccda1f8cfeb87e023b3030b069d9e81c721a517563d2c96ebd99017124026d",
+      "references": [
+        "apps/oma-peli/src/components/standalone/SpinButton.svelte"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/controls/Control_playbutton_pause.png",
+      "sha256": "a22b2b0070ec0a2f5b2a19812abcc49ac992975efa62107819007e74723c8531",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/controls/Control_playbutton_stop.png",
+      "sha256": "c82a45ccd0d2262380e97239765aa9d3bc1f570f1a2169624ad450e411c9283d",
+      "references": [
+        "apps/oma-peli/src/components/standalone/SpinButton.svelte"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/controls/Control_rightend.png",
+      "sha256": "a3a87d3da39e08bb66029f9d574b0ca18d920c445fc9699a22c0d9b8865aff5e",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/controls/Control_scalablebg.png",
+      "sha256": "5dd1d3147d3a9f07aad8b6d0faf242f5235790c39a14ac67d308e0c96422df64",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/controls/Control_upperbet_deselect.png",
+      "sha256": "5e58230af3b45eadeedfaf9d4042308aea612e549344b0447b6dff3dfefe4838",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/controls/Control_upperbet_select.png",
+      "sha256": "d3d4b7bb92c9d9bf1a1407ccf6b49e0fd5494692beee462c772de59f89cc6402",
+      "references": [
+        "apps/oma-peli/src/components/HelloPixi.svelte",
+        "apps/oma-peli/src/components/standalone/BetControls.svelte"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/controls/music_off.png",
+      "sha256": "e53bdbc71fec7bb7cfe542f6b3ea1f7ceb352b41d63c58812bcff930369d0940",
+      "references": [
+        "apps/oma-peli/src/components/standalone/TopToggles.svelte"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/controls/music_on.png",
+      "sha256": "1dd3d171109658262b7edb7bafd213fb663374793267741c6f3c83ae85e1d155",
+      "references": [
+        "apps/oma-peli/src/components/standalone/TopToggles.svelte"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/controls/sounds_off.png",
+      "sha256": "344b8b50c9757b248609c85b6304f42ab928bd78f83bb59bdbdc1425ea665f4b",
+      "references": [
+        "apps/oma-peli/src/components/standalone/TopToggles.svelte"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/controls/sounds_on.png",
+      "sha256": "d6f99bdfa3633a212361d8851efc57504ca8394692e26b64d29586363142cc57",
+      "references": [
+        "apps/oma-peli/src/components/standalone/TopToggles.svelte"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/favicon.svg",
+      "sha256": "adbff7f9d435b682d32366c5a32493898339255c0feae17b0142d739927abd75",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/loader.gif",
+      "sha256": "298a7a5799f3ab78a95d37c8bde5c3f1ba63959e726f9f5733f73dc708f7fd24",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/loading_screen/MadCraneLogo.jpg",
+      "sha256": "e15d4d509bcfa51bbbf65cafa8914dadab6f56ed46a93b8854a27fc1f161af20",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/loading_screen/madcrane_loader.png",
+      "sha256": "83a69aeb55a4d20bd600c4809b9f0e06dc16bddd3e6b665ff512d86c82e3e69b",
+      "references": [
+        "apps/oma-peli/src/components/LoadingScreen.svelte"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/loading_screen/Splash_screen_RockabillyReels.jpeg",
+      "sha256": "7113fa64e35011fb790e31e849b161a74b73f6da751b9a014ae3ef0b61672a8a",
+      "references": [
+        "apps/oma-peli/src/components/LoadingScreen.svelte"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/music/drum-hit.mp3",
+      "sha256": "206f63c03016d8be1f7f68df66d0592c13ac05b1226976e0a2bf905b634a3020",
+      "references": [
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/music/README.md",
+      "sha256": "d194547ad639d817231a74a5e13e787b2fce0f3c8e07f5c2d2fd2171ee1e1384",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/music/rockabilly reels loop 1.mp3",
+      "sha256": "595c202996bb56dff8c01c8fa5afde3792c452e78c88ac17c81bedb8cf91c0a9",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/music/rockabilly reels loop 10.mp3",
+      "sha256": "5745890dadc38fab44081a09aa7d987edc8ba4ef3a31ffabb26302f21cd64a5b",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/music/rockabilly reels loop 11.mp3",
+      "sha256": "8a019515df146c7f01d0791ebc1ab21cfc5b920a6415b100453af573329e39eb",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/music/rockabilly reels loop 12.mp3",
+      "sha256": "ccd8d65896ec4fec8bcaec9f33a72d591ed7afcacacb33a5743bb50b060ef017",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/music/rockabilly reels loop 13.mp3",
+      "sha256": "434a82bf84c04f1577a675a1506afb52708bd6dccec064d5ce7eb10d0fc17511",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/music/rockabilly reels loop 15.mp3",
+      "sha256": "96af9e2b242843a9177a2f3aba56585c02fff2dd80afb3ddf05e1630598277b0",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/music/rockabilly reels loop 16.mp3",
+      "sha256": "edda6e40f40f2586ec1c3b2bdf07b5cff44f86b0c4a95b443acde98555bf47a2",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/music/rockabilly reels loop 17.mp3",
+      "sha256": "abd63f3954fa7b513bb56faf68a7e241bd44c96ce2a32a34712067a80f4ae3cb",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/music/rockabilly reels loop 18.mp3",
+      "sha256": "61bb65226384ffa2412754b8b382d40ac8632e6507669c4b20a86e0f3f4db530",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/music/rockabilly reels loop 19.mp3",
+      "sha256": "2cd0da123816c88f91d6dd063b2007980c85cfe57f0cedeb1c654333067c43d7",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/music/rockabilly reels loop 2.mp3",
+      "sha256": "ce9da76c3b7ce34766989ff0910d905b6d45990822fc060467947f72e381f487",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/music/rockabilly reels loop 20.mp3",
+      "sha256": "c3b2ab5cf274a127e1f2cf99b49742bc0c338a3c1a972eb68e2b3515e70d022e",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/music/rockabilly reels loop 3.mp3",
+      "sha256": "f7be1af5411ae078df85d522e25e5323e54d53bd588f5cf358beb8935a8d7bb5",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/music/rockabilly reels loop 4.mp3",
+      "sha256": "f0a03b740ff788e44ebb85490a070f51589609b76b6877419a1b220bc34a8227",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/music/rockabilly reels loop 5.mp3",
+      "sha256": "95432a40a036ed986426582f3d456b88f1df3177558e4862acc35331c05107c9",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/music/rockabilly reels loop 6.mp3",
+      "sha256": "096010abb11d768002f3c94f5f39f5a02d4a8cd48baff34f2d43e76f37cb24a2",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/music/rockabilly reels loop 7.mp3",
+      "sha256": "0f58478341f353bf74617aac44db58de745916109a22eaa6a7909b236427c6ce",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/music/rockabilly reels loop 8.mp3",
+      "sha256": "27fa71f43deb3889eb03803b3c782111499593f2df05a27403bd21d743941dc8",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/music/rockabilly reels loop 9.mp3",
+      "sha256": "facf8da0be169bd9fae604cef3dd72e0f0851eb112c63c65e10b213f678eb3d8",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/music/rockabilly-loop.mp3",
+      "sha256": "6775b286ebe532cc54c95f3151c01422c934da9af6302a97f2bf1a77c96a5622",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/music/rockabilly-loop_long-old.mp3",
+      "sha256": "0d76943a0f116661629b7cb7480450541eeedd9089738e8a5028dffb29c23a10",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/music/rockabilly-loop_long.mp3",
+      "sha256": "6956627e253f0b2fef5cc2a35457f4292f6c3d11e8b9e53f982a03251d817266",
+      "references": [
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/music/rockabilly-loop_long_väärä.mp3",
+      "sha256": "e44b43958cba200322b8acf2a98fc4631f318c221a14ab2c625ab737ccb093c7",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/music/win-stinger.mp3",
+      "sha256": "d28bcb507b9f1f0ced0b2336312af25698681a3c013e194b03cc6e3380fa3d97",
+      "references": [
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/music/win-stinger_old.mp3",
+      "sha256": "272ce0dd0dad94e2f06ab175939fb59456db0fcbc6cb0a9596238b5e009a5631",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/robots.txt",
+      "sha256": "133e4db054e73a10017a1f429c80c35cd5bfa9c3a1aba581b364ecc459c48a4b",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/sounds/placeholder.md",
+      "sha256": "464f2d027be7da853d2c36bf0de303d2b2102095966a846cd6694d26db8a3454",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/sounds/spin.mp3",
+      "sha256": "f5b8e6e1175a886b2f57391c85eea344eecb71e61e571ba25433f8ef5b91540e",
+      "references": [
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/sounds/stop.mp3",
+      "sha256": "8a5b2577c752cbcbc8f17b58549450b1c41c0dd65f382b9b3acab84fd40ee6dc",
+      "references": [
+        "apps/oma-peli/src/components/HelloPixi.svelte",
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/sounds/stopVANHA.mp3",
+      "sha256": "fa098c37aa6cb68520ca8e37707cd0d5ec3b24549a495fb018b6ae57bcaad3ec",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/sounds/win.mp3",
+      "sha256": "06099c05672b4a018ff06dce5ff4dd1e53240ec78bdb8096900ec634edcc8282",
+      "references": [
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/stake-engine-loader.gif",
+      "sha256": "ac3511a4856a2a50a058185834dc4ee70c56afbd38756c5a8cc815441b4da082",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/svg/WhatsApp Image 2025-12-23 at 15.04.31.jpeg",
+      "sha256": "e40ba65e0d30b59c368aad02218e05684c822340fd2272091bc5ff1bb669d3bf",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols/bg_base.jpg",
+      "sha256": "f530ab4b3a2d7b4264516c72357fae41704e812f06abe13d3dcfc9fe34703d3c",
+      "references": [
+        "apps/oma-peli/src/components/HelloPixi.svelte",
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols/bg_large.jpg",
+      "sha256": "f530ab4b3a2d7b4264516c72357fae41704e812f06abe13d3dcfc9fe34703d3c",
+      "references": [
+        "apps/oma-peli/src/game/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols/Blue_hotrod.jpg",
+      "sha256": "6f5ffa2f6cfff25eeafddc8f18bc06bfa8b7b813a4eef0a16990806dd59b18e2",
+      "references": [
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols/Blue_jacket.jpg",
+      "sha256": "ed66f42fffb193f5c930340f81ac148628c36dc08ac3011a2e3e47dc818907c9",
+      "references": [
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols/Blue_rollers.jpg",
+      "sha256": "5d0fb9b1d49f8b479e920de506a8dc1e50aac35d260b51e327f5591e2f90f765",
+      "references": [
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols/Blue_speakers.jpg",
+      "sha256": "ce1d9137f0adc66cde4c6d257a29a2e90de4a73dc595f21c9ccf21212bbc91be",
+      "references": [
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols/Emptyslot.jpg",
+      "sha256": "05b1cf7c782211d36fce6a02749d453ad95d612926af29b37a3c7f0181f5a639",
+      "references": [
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols/fries.jpg",
+      "sha256": "942e0b999bc5a1cd900ade435694df44ee7704e0ae48a448925f1c74aa661102",
+      "references": [
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols/New_Wild.jpg",
+      "sha256": "7dd87e78ef5154403681051c4e9781853a16d59f99256a709f51de6e73af97ac",
+      "references": [
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols/Premium_blonde.jpg",
+      "sha256": "db54d9914c2209686b26db8cea8d98613734747b7027c6430f6104df299c046a",
+      "references": [
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols/Premium_brunette.jpg",
+      "sha256": "e944bac76aa747e53cb5842ddc444d7e30170b9f09d98968ad11317192b20f95",
+      "references": [
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols/Premium_rocker.jpg",
+      "sha256": "db607b20e1732af8633ae57c1aaa2a1952bdf17ab3b3aa7f4ea97de20aaac47b",
+      "references": [
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols/Red_burger.jpg",
+      "sha256": "6ff7eecc4fd2d0a5aed6698ea055b46f9d6c59ed00caf4063912cd0faf604599",
+      "references": [
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols/Red_fries.jpg",
+      "sha256": "d4a4197cfd43d27741d4ba946ac6e692241001b6c1ee993f124e85a8c3ef0b4b",
+      "references": [
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols/Red_milkshake.jpg",
+      "sha256": "0dc2bb5b6c3a251ff3a88caf819e10dde8a7e5a160e2a32072c91a4e050c9fe9",
+      "references": [
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols/ReelFrames.png",
+      "sha256": "d330f36ddeaddafc124c64b0e7022ec96da9a5ef7c089f63ad4d58b1c5a84e73",
+      "references": [
+        "apps/oma-peli/src/components/HelloPixi.svelte",
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols/RockABillyReels_logo.png",
+      "sha256": "fe586ce728643c3e4f15833a19cb8cbdaafe387fb4641d3eaab6cfc841b4181f",
+      "references": [
+        "apps/oma-peli/src/components/HelloPixi.svelte",
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols/Scatter.jpg",
+      "sha256": "14f28c37078bde0bc0cc50c738285191756f5b10890056a66f13140c48d1bcc1",
+      "references": [
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols/vanhat/a.png",
+      "sha256": "5424891861bb98c2fb0042537e2004d29361e9598f0eb734d533f941c9372508",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols/vanhat/b.png",
+      "sha256": "b4fc4c3db2aee5faf177d04dd7fac031ba7d279a149202ed32d81b155615f566",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols/vanhat/bg.jpg",
+      "sha256": "efde3cdd7b31b6eb1a41bb7b12a5a2254b5363d2f46be0fb8a41f4bfbf5b94e0",
+      "references": [
+        "apps/oma-peli/src/components/GameBackground.svelte",
+        "apps/oma-peli/src/examples/IntegrationExample.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols/vanhat/bg_base_old.jpg",
+      "sha256": "a7ffd6b6041592d4140089c39158fdb3ec1dd3ce17127660fca66e208506f39e",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols/vanhat/bubblegum.jpg",
+      "sha256": "0e69bbce1dc74b94a29155cf540d2341bd1a4f3ca331f995b495c647a776ef22",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols/vanhat/burger.jpg",
+      "sha256": "c8a4387a646abe56044264fb4469cb8d323f1486e4409047c9f5563b1d418c65",
+      "references": [
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols/vanhat/c.png",
+      "sha256": "9c22ba58129745915a049b08b0e4271c7f6184abe29e81c610c74bb480fab0f5",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols/vanhat/d.png",
+      "sha256": "e7ad6a206685c52ed310c613e7207cb1fde9c03944ef5deac08a37dd688ee2b5",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols/vanhat/e.png",
+      "sha256": "36c0e543c881bd9d71776e9c2618a223f718f7ae1f52b7ab6dc06dbe2331a23a",
+      "references": [
+        "apps/oma-peli/src/components/BoardFrame.svelte"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols/vanhat/elvar.jpg",
+      "sha256": "ac30df72a411da8e698732376ada604b414fb356f350ec9939a7cb04e2f18a9e",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols/vanhat/EmptyslotVANHA.jpg",
+      "sha256": "b8e021c8ff462c778667d19fd8e589b82ef6aef44ba04a8af2320785c053b3db",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols/vanhat/f.png",
+      "sha256": "d736d069bb621404d4890b1f3bc1f1ac149bff65c55f26571d1d0fdf5d1dacb7",
+      "references": [
+        "apps/oma-peli/src/components/standalone/TopToggles.svelte"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols/vanhat/g.png",
+      "sha256": "b4fc4c3db2aee5faf177d04dd7fac031ba7d279a149202ed32d81b155615f566",
+      "references": [
+        "apps/oma-peli/src/components/BoardFrame.svelte"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols/vanhat/hotrod.jpg",
+      "sha256": "081d1af7932b130a76583cd1c78e32ecac1e731942c7a58545f5bd952065e35b",
+      "references": [
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols/vanhat/lucy.jpg",
+      "sha256": "8ee76e9603be5c10ccc74c06600be37af32e248b1a75d50744eda030288d4d9e",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols/vanhat/marska.jpg",
+      "sha256": "5dfbba744a8841631353470e69d787dbdf90198a0d931698e1635a71aaeb7e83",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols/vanhat/microfones.jpg",
+      "sha256": "254093a67acb389d1db5f8876d8671fb2c84bbb0b6a780a3a1d339799b25c59f",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols/vanhat/ReelFrames.png",
+      "sha256": "d330f36ddeaddafc124c64b0e7022ec96da9a5ef7c089f63ad4d58b1c5a84e73",
+      "references": [
+        "apps/oma-peli/src/components/HelloPixi.svelte",
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols/vanhat/ReelFrames_ROSKATEST.png",
+      "sha256": "268013b4d6d527b062945a4fa4e880037c11a89d9b93fb234631bfe95eca4583",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols/vanhat/rockabilly.jpg",
+      "sha256": "3e365c61f4e02005136ab26e9e946f821f88bd772cf67f365ec910c4fc99c23f",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols/vanhat/RockABillyReels_logo.png",
+      "sha256": "fe586ce728643c3e4f15833a19cb8cbdaafe387fb4641d3eaab6cfc841b4181f",
+      "references": [
+        "apps/oma-peli/src/components/HelloPixi.svelte",
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols/vanhat/RockABillyReels_logoVANHA.png",
+      "sha256": "1a57f4703f0e935cee4c4eead561d85c6900f56424bab544577101e5611899be",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols/vanhat/shake.jpg",
+      "sha256": "650e93d41239fd74b841b0b9d9bc87d1e5474bd42b6f878c212490c0c875b0ae",
+      "references": [
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols/vanhat/single.jpg",
+      "sha256": "b04080d0927eac17e0e2166612a71e9c44f237b8440ec9935237fd7675792f98",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols/vanhat/skateroller.jpg",
+      "sha256": "512d88e245db8183bfb8d309e7c8677e7ad60b5d3fdf3f80a56b5154da51af88",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols/vanhat/vanhaWILD.jpg",
+      "sha256": "714f9e70722e063782f71ec757b55fdca1b4ae2313e92a4e2fbf5bf0126294e5",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols – kopio/bg_base.jpg",
+      "sha256": "f530ab4b3a2d7b4264516c72357fae41704e812f06abe13d3dcfc9fe34703d3c",
+      "references": [
+        "apps/oma-peli/src/components/HelloPixi.svelte",
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols – kopio/bg_large.jpg",
+      "sha256": "f530ab4b3a2d7b4264516c72357fae41704e812f06abe13d3dcfc9fe34703d3c",
+      "references": [
+        "apps/oma-peli/src/game/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols – kopio/Blue_hotrod.jpg",
+      "sha256": "6f5ffa2f6cfff25eeafddc8f18bc06bfa8b7b813a4eef0a16990806dd59b18e2",
+      "references": [
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols – kopio/Blue_jacket.jpg",
+      "sha256": "ed66f42fffb193f5c930340f81ac148628c36dc08ac3011a2e3e47dc818907c9",
+      "references": [
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols – kopio/Blue_rollers.jpg",
+      "sha256": "5d0fb9b1d49f8b479e920de506a8dc1e50aac35d260b51e327f5591e2f90f765",
+      "references": [
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols – kopio/Blue_speakers.jpg",
+      "sha256": "ce1d9137f0adc66cde4c6d257a29a2e90de4a73dc595f21c9ccf21212bbc91be",
+      "references": [
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols – kopio/Emptyslot.jpg",
+      "sha256": "05b1cf7c782211d36fce6a02749d453ad95d612926af29b37a3c7f0181f5a639",
+      "references": [
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols – kopio/fries.jpg",
+      "sha256": "942e0b999bc5a1cd900ade435694df44ee7704e0ae48a448925f1c74aa661102",
+      "references": [
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols – kopio/New_Wild.jpg",
+      "sha256": "7dd87e78ef5154403681051c4e9781853a16d59f99256a709f51de6e73af97ac",
+      "references": [
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols – kopio/Premium_blonde.jpg",
+      "sha256": "db54d9914c2209686b26db8cea8d98613734747b7027c6430f6104df299c046a",
+      "references": [
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols – kopio/Premium_brunette.jpg",
+      "sha256": "e944bac76aa747e53cb5842ddc444d7e30170b9f09d98968ad11317192b20f95",
+      "references": [
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols – kopio/Premium_rocker.jpg",
+      "sha256": "db607b20e1732af8633ae57c1aaa2a1952bdf17ab3b3aa7f4ea97de20aaac47b",
+      "references": [
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols – kopio/Red_burger.jpg",
+      "sha256": "6ff7eecc4fd2d0a5aed6698ea055b46f9d6c59ed00caf4063912cd0faf604599",
+      "references": [
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols – kopio/Red_fries.jpg",
+      "sha256": "d4a4197cfd43d27741d4ba946ac6e692241001b6c1ee993f124e85a8c3ef0b4b",
+      "references": [
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols – kopio/Red_milkshake.jpg",
+      "sha256": "0dc2bb5b6c3a251ff3a88caf819e10dde8a7e5a160e2a32072c91a4e050c9fe9",
+      "references": [
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols – kopio/ReelFrames.png",
+      "sha256": "d330f36ddeaddafc124c64b0e7022ec96da9a5ef7c089f63ad4d58b1c5a84e73",
+      "references": [
+        "apps/oma-peli/src/components/HelloPixi.svelte",
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols – kopio/RockABillyReels_logo.png",
+      "sha256": "38aa6c5ad5cb677369f384062222f20ecde20e3832d2efa4718d24a15c764bb0",
+      "references": [
+        "apps/oma-peli/src/components/HelloPixi.svelte",
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols – kopio/Scatter.jpg",
+      "sha256": "14f28c37078bde0bc0cc50c738285191756f5b10890056a66f13140c48d1bcc1",
+      "references": [
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols – kopio/vanhat/a.png",
+      "sha256": "5424891861bb98c2fb0042537e2004d29361e9598f0eb734d533f941c9372508",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols – kopio/vanhat/b.png",
+      "sha256": "b4fc4c3db2aee5faf177d04dd7fac031ba7d279a149202ed32d81b155615f566",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols – kopio/vanhat/bg.jpg",
+      "sha256": "efde3cdd7b31b6eb1a41bb7b12a5a2254b5363d2f46be0fb8a41f4bfbf5b94e0",
+      "references": [
+        "apps/oma-peli/src/components/GameBackground.svelte",
+        "apps/oma-peli/src/examples/IntegrationExample.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols – kopio/vanhat/bg_base_old.jpg",
+      "sha256": "a7ffd6b6041592d4140089c39158fdb3ec1dd3ce17127660fca66e208506f39e",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols – kopio/vanhat/bubblegum.jpg",
+      "sha256": "0e69bbce1dc74b94a29155cf540d2341bd1a4f3ca331f995b495c647a776ef22",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols – kopio/vanhat/burger.jpg",
+      "sha256": "c8a4387a646abe56044264fb4469cb8d323f1486e4409047c9f5563b1d418c65",
+      "references": [
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols – kopio/vanhat/c.png",
+      "sha256": "9c22ba58129745915a049b08b0e4271c7f6184abe29e81c610c74bb480fab0f5",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols – kopio/vanhat/d.png",
+      "sha256": "e7ad6a206685c52ed310c613e7207cb1fde9c03944ef5deac08a37dd688ee2b5",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols – kopio/vanhat/e.png",
+      "sha256": "36c0e543c881bd9d71776e9c2618a223f718f7ae1f52b7ab6dc06dbe2331a23a",
+      "references": [
+        "apps/oma-peli/src/components/BoardFrame.svelte"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols – kopio/vanhat/elvar.jpg",
+      "sha256": "ac30df72a411da8e698732376ada604b414fb356f350ec9939a7cb04e2f18a9e",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols – kopio/vanhat/EmptyslotVANHA.jpg",
+      "sha256": "b8e021c8ff462c778667d19fd8e589b82ef6aef44ba04a8af2320785c053b3db",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols – kopio/vanhat/f.png",
+      "sha256": "d736d069bb621404d4890b1f3bc1f1ac149bff65c55f26571d1d0fdf5d1dacb7",
+      "references": [
+        "apps/oma-peli/src/components/standalone/TopToggles.svelte"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols – kopio/vanhat/g.png",
+      "sha256": "b4fc4c3db2aee5faf177d04dd7fac031ba7d279a149202ed32d81b155615f566",
+      "references": [
+        "apps/oma-peli/src/components/BoardFrame.svelte"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols – kopio/vanhat/hotrod.jpg",
+      "sha256": "081d1af7932b130a76583cd1c78e32ecac1e731942c7a58545f5bd952065e35b",
+      "references": [
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols – kopio/vanhat/lucy.jpg",
+      "sha256": "8ee76e9603be5c10ccc74c06600be37af32e248b1a75d50744eda030288d4d9e",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols – kopio/vanhat/marska.jpg",
+      "sha256": "5dfbba744a8841631353470e69d787dbdf90198a0d931698e1635a71aaeb7e83",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols – kopio/vanhat/microfones.jpg",
+      "sha256": "254093a67acb389d1db5f8876d8671fb2c84bbb0b6a780a3a1d339799b25c59f",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols – kopio/vanhat/ReelFrames.png",
+      "sha256": "d330f36ddeaddafc124c64b0e7022ec96da9a5ef7c089f63ad4d58b1c5a84e73",
+      "references": [
+        "apps/oma-peli/src/components/HelloPixi.svelte",
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols – kopio/vanhat/ReelFrames_ROSKATEST.png",
+      "sha256": "268013b4d6d527b062945a4fa4e880037c11a89d9b93fb234631bfe95eca4583",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols – kopio/vanhat/rockabilly.jpg",
+      "sha256": "3e365c61f4e02005136ab26e9e946f821f88bd772cf67f365ec910c4fc99c23f",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols – kopio/vanhat/RockABillyReels_logo.png",
+      "sha256": "fe586ce728643c3e4f15833a19cb8cbdaafe387fb4641d3eaab6cfc841b4181f",
+      "references": [
+        "apps/oma-peli/src/components/HelloPixi.svelte",
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols – kopio/vanhat/RockABillyReels_logoVANHA.png",
+      "sha256": "1a57f4703f0e935cee4c4eead561d85c6900f56424bab544577101e5611899be",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols – kopio/vanhat/shake.jpg",
+      "sha256": "650e93d41239fd74b841b0b9d9bc87d1e5474bd42b6f878c212490c0c875b0ae",
+      "references": [
+        "apps/oma-peli/src/game-standalone/assets.ts"
+      ],
+      "classification": "literal_or_manifest_reference",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols – kopio/vanhat/single.jpg",
+      "sha256": "b04080d0927eac17e0e2166612a71e9c44f237b8440ec9935237fd7675792f98",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols – kopio/vanhat/skateroller.jpg",
+      "sha256": "512d88e245db8183bfb8d309e7c8677e7ad60b5d3fdf3f80a56b5154da51af88",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    },
+    {
+      "path": "apps/oma-peli/static/symbols – kopio/vanhat/vanhaWILD.jpg",
+      "sha256": "714f9e70722e063782f71ec757b55fdca1b4ae2313e92a4e2fbf5bf0126294e5",
+      "references": [],
+      "classification": "dynamic_or_archive_candidate",
+      "deleteSafe": false
+    }
+  ]
+}

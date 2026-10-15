@@ -1,0 +1,18 @@
+import {createRequire} from 'node:module';
+import {spawnSync} from 'node:child_process';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+const require=createRequire(import.meta.url);
+let esbuild;try{esbuild=require('esbuild');}catch{esbuild=createRequire(require.resolve('vite/package.json'))('esbuild');}
+const appRoot=path.resolve(import.meta.dirname,'..');
+const repoRoot=path.resolve(appRoot,'../..');
+const temp=fs.mkdtempSync(path.join(os.tmpdir(),'rockabilly-rtp-'));
+const count=Number(process.argv[2]??1000000);
+if(!Number.isSafeInteger(count)||count<2)throw new Error('Paid-round count must be a safe integer of at least 2');
+try {
+	const output=path.join(temp,'audit.mjs');
+	await esbuild.build({entryPoints:[path.join(appRoot,'scripts/audit-active-rtp.ts')],outfile:output,bundle:true,platform:'node',format:'esm'});
+	const run=spawnSync(process.execPath,[output,String(count)],{cwd:repoRoot,stdio:'inherit'});
+	process.exitCode=run.status??1;
+} finally {fs.rmSync(temp,{recursive:true,force:true});}

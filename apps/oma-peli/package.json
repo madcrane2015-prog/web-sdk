@@ -1,6 +1,6 @@
 {
 	"name": "oma-peli",
-	"version": "1.5.4",
+	"version": "1.6.0",
 	"private": true,
 	"license": "MIT",
 	"scripts": {
@@ -9,12 +9,17 @@
 		"storybook": "PUBLIC_CHROMATIC=true storybook dev -p 6001 public",
 		"dev": "vite dev --host --port 3010",
 		"build": "vite build",
+		"build:stake": "cross-env OMA_PELI_BUILD_TARGET=stake vite build",
 		"preview": "vite preview",
 		"audit:screens": "node scripts/capture-audit-screenshots.mjs",
-		"test:reel-stop": "node --experimental-transform-types scripts/test-reel-stop.mjs"
+		"test:reel-stop": "node --experimental-transform-types scripts/test-reel-stop.mjs",
+		"test:domain": "node scripts/run-domain-tests.mjs",
+		"audit:resources": "node scripts/audit-resources.mjs",
+		"audit:math": "node scripts/run-rtp-audit.mjs"
 	},
 	"type": "module",
 	"devDependencies": {
+		"esbuild": "0.25.12",
 		"@storybook/addon-svelte-csf": "5.0.5",
 		"@sveltejs/adapter-static": "^3.0.10",
 		"@sveltejs/vite-plugin-svelte": "5.0.3",

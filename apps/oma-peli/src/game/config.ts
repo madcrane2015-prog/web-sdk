@@ -1,8 +1,9 @@
 // ============================================================================
 // ROCKABILLY SLOT - MATH CONFIGURATION
 // ============================================================================
-// NOTE: This config is DEPRECATED for reference only
-// Actual game math is implemented in HelloPixi.svelte
+// SDK/Storybook configuration: still imported by the SDK actor and board.
+// It is not the deployed demo math. Demo rules live in game-standalone/mathConfig.ts.
+// Retain until real Rockabilly RGS book fixtures replace the inherited SDK fixtures.
 //
 // GAME STRUCTURE:
 // - 5-reel slot with 3×3×1×3×3 grid layout

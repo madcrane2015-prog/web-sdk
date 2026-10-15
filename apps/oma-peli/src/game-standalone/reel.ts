@@ -25,16 +25,19 @@ export interface ReelDependencies {
 }
 
 export class Reel {
-	index: number;
-	container: Container;
-	offset = 0;
-	speed = 0;
-	targetSpeed = 30;
-	state: ReelState = 'idle';
-	stopDelay = 0;
-	bounceOffset = 0;
-	bounceSpeed = 0;
-	bounceFrames = 0;
+	readonly index: number;
+	readonly container: Container;
+	private offsetValue = 0;
+	private speedValue = 0;
+	private targetSpeed = 30;
+	private stateValue: ReelState = 'idle';
+	private stopDelay = 0;
+	private bounceOffsetValue = 0;
+	private bounceSpeed = 0;
+	get state() { return this.stateValue; }
+	get speed() { return this.speedValue; }
+	get offset() { return this.offsetValue; }
+	get bounceOffset() { return this.bounceOffsetValue; }
 	private sprites: Sprite[] = [];
 	private symbolStrip: SymbolKey[] = [];
 	private finalSymbol: SymbolKey | null = null;
@@ -51,13 +54,18 @@ export class Reel {
 	}
 
 	start(delay: number) {
-		this.state = 'spinning';
-		this.speed = 0;
+		this.stateValue = 'spinning';
+		this.speedValue = 0;
 		this.targetSpeed = 35;
 		this.stopDelay = delay;
 		this.symbolStrip = [];
 		this.finalSymbol = null;
 		this.stopRowsRemaining = 0;
+	}
+
+	startWithResult(delay: number, symbol: SymbolKey) {
+		this.start(delay);
+		this.finalSymbol = symbol;
 	}
 
 	startSynchronized(beatIndex: number, framesPerReel: number) {
@@ -66,7 +74,7 @@ export class Reel {
 	}
 
 	requestStop() {
-		if (this.state !== 'spinning') return;
+		if (this.stateValue !== 'spinning') return;
 		this.stopDelay = 0;
 		// Use the same transition as a timed stop so finalSymbol and the strip
 		// countdown are initialized before entering the slowing state.
@@ -74,41 +82,41 @@ export class Reel {
 	}
 
 	update() {
-		if (this.state === 'idle') return;
+		if (this.stateValue === 'idle') return;
 
-		if (this.state === 'spinning') {
-			if (this.speed < this.targetSpeed) this.speed += 2;
+		if (this.stateValue === 'spinning') {
+			if (this.speedValue < this.targetSpeed) this.speedValue += 2;
 			if (this.stopDelay > 0) this.stopDelay--;
 			else this.prepareStop();
 		}
 
-		if (this.state === 'slowing') {
+		if (this.stateValue === 'slowing') {
 			const spinSpeed = this.dependencies.getSpinSpeed();
 			const stopSpeed = spinSpeed === 'slow' ? 24 : spinSpeed === 'medium' ? 28 : 32;
-			this.speed = Math.max(this.speed * 0.96, stopSpeed);
+			this.speedValue = Math.max(this.speedValue * 0.96, stopSpeed);
 		}
 
-		if (this.state === 'bouncing') {
-			const springForce = -this.bounceOffset * 0.24;
+		if (this.stateValue === 'bouncing') {
+			const springForce = -this.bounceOffsetValue * 0.24;
 			this.bounceSpeed = (this.bounceSpeed + springForce) * 0.72;
-			this.bounceOffset += this.bounceSpeed;
+			this.bounceOffsetValue += this.bounceSpeed;
 
-			if (Math.abs(this.bounceOffset) < 0.35 && Math.abs(this.bounceSpeed) < 0.35) {
-				this.state = 'stopped';
-				this.bounceOffset = 0;
+			if (Math.abs(this.bounceOffsetValue) < 0.35 && Math.abs(this.bounceSpeed) < 0.35) {
+				this.stateValue = 'stopped';
+				this.bounceOffsetValue = 0;
 				this.bounceSpeed = 0;
 			}
 		}
 
-		if (this.speed > 0) {
-			this.offset += this.speed;
+		if (this.speedValue > 0) {
+			this.offsetValue += this.speedValue;
 
-			if (this.offset >= this.dimensions.rowHeight) {
-				this.offset -= this.dimensions.rowHeight;
+			if (this.offsetValue >= this.dimensions.rowHeight) {
+				this.offsetValue -= this.dimensions.rowHeight;
 				const currentSymbol = this.advanceSymbolStrip(this.getNextStripSymbol());
 				this.dependencies.setSymbol(this.index, currentSymbol);
 
-				if (this.state === 'slowing') {
+				if (this.stateValue === 'slowing') {
 					this.stopRowsRemaining--;
 
 					if (this.stopRowsRemaining <= 0 && this.finalSymbol) {
@@ -118,7 +126,7 @@ export class Reel {
 							this.finalSymbol,
 							currentSymbol,
 						];
-						this.offset = 0;
+						this.offsetValue = 0;
 						this.startBounce();
 					}
 				}
@@ -127,22 +135,22 @@ export class Reel {
 	}
 
 	private prepareStop() {
-		this.state = 'slowing';
-		this.finalSymbol = this.dependencies.randomSymbol(this.index);
+		this.stateValue = 'slowing';
+		this.finalSymbol ??= this.dependencies.randomSymbol(this.index);
 		this.stopRowsRemaining = 3;
 	}
 
 	private startBounce() {
-		this.state = 'bouncing';
-		this.speed = 0;
-		this.bounceOffset = 10;
+		this.stateValue = 'bouncing';
+		this.speedValue = 0;
+		this.bounceOffsetValue = 10;
 		this.bounceSpeed = -2.6;
 		this.dependencies.playStopSound();
 		this.dependencies.playDrumHit();
 	}
 
 	private getNextStripSymbol() {
-		if (this.state === 'slowing' && this.stopRowsRemaining <= 2 && this.finalSymbol) {
+		if (this.stateValue === 'slowing' && this.stopRowsRemaining <= 2 && this.finalSymbol) {
 			return this.finalSymbol;
 		}
 
@@ -181,7 +189,7 @@ export class Reel {
 		const symbolTextures = this.dependencies.getSymbolTextures();
 		if (!symbol || !symbolTextures || !symbolTextures[symbol]) return;
 
-		const y = Math.round(this.offset + this.bounceOffset);
+		const y = Math.round(this.offsetValue + this.bounceOffsetValue);
 		const [previousSymbol, currentSymbol, nextSymbol] = this.getSymbolStrip(symbol);
 
 		const drawSymbol = (spriteIndex: number, symbolKey: SymbolKey, yPos: number) => {

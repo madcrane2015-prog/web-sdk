@@ -1,6 +1,32 @@
 # Oma Peli Technical Deep Dive
 
-Last investigated: 2026-10-14
+Last investigated: 2026-10-15
+
+Local version-loading fix (2026-10-15): `src/version.ts` must not import
+`../package.json` into the browser module graph. Vite's development file allow
+list rejected that request, causing a failed dynamic page import and a 500
+screen. `vite.config.js` now reads the package version on the server and injects
+the string as `__OMA_PELI_VERSION__`. package.json remains the version source.
+Keep one development server per app; overlapping servers share generated files.
+
+Architecture continuation (2026-10-15): the active HelloPixi route now uses
+`RoundController` for demo accounting, frozen round/bonus bets and settlement,
+with an injectable `RoundProvider`. `MusicRuntime`, `Lifetime` and
+`reelGeometry.ts` hold extracted audio, scheduled-work cleanup and aperture
+geometry responsibilities. `/replay` is a development-only provider fixture.
+The main route rejects Stake launches; the local Stake session/transport and
+book-adapter tests do not establish live RGS integration. Older architecture
+descriptions below are historical checkpoints, not proof of current RGS support.
+
+The maintained math command is `pnpm --filter=oma-peli audit:math 1000000`.
+It compares 20,000 runtime fixtures and simulates three seeds, including complete
+bonus chains. Exact and accelerated calculations now read Wild probability and
+scatter threshold from `mathConfig.ts`, as well as weights, pays and multipliers.
+Sample counts below two or outside safe integers are rejected because sample
+variance otherwise cannot be reported reliably. Report dates use Europe/Helsinki.
+Domain-test entries are mandatory: a missing entry fails the run instead of
+silently skipping it. The workspace lockfile now includes the app's esbuild
+dependency used by the audit and domain-test runners.
 
 Reel stop repair, version 1.5.4 (2026-10-14): button and Space skip handlers
 must call `Reel.requestStop()` rather than assigning `state = 'slowing'`.
@@ -41,6 +67,16 @@ Release 1.5.3 (2026-10-14) synchronizes `package.json` and `src/version.ts`.
 Mobile/desktop browser validation is recorded in `UI_TEST_MATRIX.md`.
 
 Related agent/refactor documents:
+
+- `ACTIVE_MATH_AUDIT.md`: 2026-10-14 fixed-bet standalone RTP measurement:
+  80.6792147723% including free-spin retriggers, confirmed with three million
+  simulated paid rounds and 20,000 runtime-calculator fixtures. Records unlocked
+  bet changes and bonus-accounting classification as required follow-up fixes.
+
+- `ARCHITECTURE_CLEANUP_PLAN.md`: 2026-10-14 source/snapshot inventory, file-level
+  retain/merge/archive proposals, shared demo/RGS target architecture and ordered
+  migration acceptance criteria. `ARCHITECTURE_INVENTORY.json` records inspected
+  file paths, sizes, SHA-256 hashes and same-path canonical static comparisons.
 
 - `OMA_PELI_REFACTOR_PLAN.yaml`: parseable step-by-step refactor plan for stabilizing and modularizing oma-peli.
 - `OMA_PELI_UI_REFACTOR_PHASES.md`: detailed phase plan for the next deployed-route UI refactor, with mobile fullness, unusual-monitor behavior, modal fit, control extraction, and validation requirements.

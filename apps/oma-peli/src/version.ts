@@ -1,2 +1,2 @@
-// Auto-generated version file - update this when changing package.json version
-export const VERSION = '1.5.4';
+declare const __OMA_PELI_VERSION__: string;
+export const VERSION = __OMA_PELI_VERSION__;

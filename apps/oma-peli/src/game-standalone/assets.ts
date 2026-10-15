@@ -53,8 +53,7 @@ export function createStandaloneAssetManifest(
 	basePath: string,
 	options: { hostname?: string; cacheBust?: string | number } = {},
 ): StandaloneAssetManifest {
-	const isGitHubPages = options.hostname?.includes('github.io') ?? false;
-	const appBase = isGitHubPages ? '/web-sdk/oma-peli' : basePath;
+	const appBase = basePath;
 	const symbolPath = joinAssetPath(appBase, 'symbols');
 	const controlsPath = joinAssetPath(appBase, 'controls');
 	const soundPath = joinAssetPath(appBase, 'sounds');
