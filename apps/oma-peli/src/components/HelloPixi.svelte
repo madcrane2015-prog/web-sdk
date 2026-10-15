@@ -256,8 +256,8 @@
 	// Vinyl win animation configuration
 	const vinylAnimationConfig = {
 		vinylStartScale: 0.01, // Aloituskoko (0.01 = hyvin pieni keskipiste)
-		vinylEndScale: 0.05, // Lopetuskoko (0.15 = pienempi loppukoko)
-		sparkleScale: 0.1, // Tähtien koko (0.6 = pienempi)
+		vinylEndScale: 0.3,
+		sparkleScale: 1,
 	};
 
 	// Toggle musiikin on/off
@@ -1334,13 +1334,13 @@
 			if (vinylWinAnimationRef) {
 				if (winMultiplier >= 50) {
 					// JACKPOT-voitto (50x+) - Heti ilman viivettä
-					vinylWinAnimationRef.show();
+					vinylWinAnimationRef.show('jackpot', winAmount);
 				} else if (winMultiplier >= 20) {
 					// KESKISUURI voitto (20x-49x) - 200ms viive
-					lifetime.timeout(() => vinylWinAnimationRef.show(), 200);
+					lifetime.timeout(() => vinylWinAnimationRef.show('medium', winAmount), 200);
 				} else if (winMultiplier >= 10) {
 					// PIENI voitto (10x-19x) - 400ms viive
-					lifetime.timeout(() => vinylWinAnimationRef.show(), 400);
+					lifetime.timeout(() => vinylWinAnimationRef.show('small', winAmount), 400);
 				}
 			}
 		}

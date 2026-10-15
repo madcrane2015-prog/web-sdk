@@ -133,8 +133,10 @@ target_architecture:
 
 progress:
   active_phase: 'architecture_implementation'
-  active_step: 'debug.01_free_spins_autoplay'
+  active_step: 'ui.14_richer_large_win_stars'
   completed_steps:
+    - 'ui.14_richer_large_win_stars'
+    - 'ui.13_svg_win_animation_reference'
     - 'debug.01_free_spins_autoplay'
     - 'architecture.04_local_version_loading'
     - 'architecture.03_active_math_audit_and_validation'
@@ -206,6 +208,29 @@ progress:
     - 'ui.12.02_center_reel_horizontal_alignment'
   blocked_steps: []
   agent_journal:
+    - date: '2026-10-15'
+      author: 'Codex'
+      note: >-
+        Increased medium/jackpot stars from 16/30 to 48/96; small remains 8.
+        Added tier-scaled sizes and spread, staggered outward waves and rotation.
+        Stars now render in front of records but behind win text, retaining
+        the reduced-motion override. Browser verified the richer jackpot and
+        saved .codex-screenshots/richer-win-stars.png. Production build and
+        diff checks passed with existing warnings; get_errors unavailable.
+        No math changes.
+    - date: '2026-10-15'
+      author: 'Codex'
+      note: >-
+        Matched the supplied SVG reference: reusable native-coordinate vinyl
+        groups, 5/12/24 records, 8/16/30 sparkles, colored labels, small rotation
+        and a deterministic lightly overlapping spiral composition. Label and
+        amount share the square SVG coordinate system. show() snapshots level
+        and amount supplied by HelloPixi, and clears stale timers on repeat,
+        hide and destroy. Added a development-only /win-preview with longer
+        preview duration; gameplay durations remain unchanged. Browser checked
+        desktop, 390x844 portrait and 844x390 landscape and repeated tier changes.
+        Production compilation passed with existing warnings; get_errors unavailable.
+        No math changes or GitHub deployment in this step.
     - date: '2026-10-15'
       author: 'Codex'
       note: >-
