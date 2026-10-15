@@ -2,6 +2,21 @@
 
 Last investigated: 2026-10-15
 
+Large-win star enrichment (2026-10-15): star counts are now 8/48/96 for
+small/medium/jackpot. Larger tiers increase star scale and radial spread.
+Staggered waves travel outward from the center and fade, rendered above vinyls
+and below the SVG win text. Reduced-motion support remains in place.
+
+SVG win-effect reference pass (2026-10-15): VinylWinAnimation uses a square
+1024 viewBox and reusable SVG groups with native 180-unit record geometry.
+Using a symbol without explicit use dimensions had made its viewport sizing
+ambiguous. Records now have at most 15-degree resting rotation, colored labels,
+grooves and a center-weighted overlapping layout; tiers retain 5/12/24 records
+and 8/16/30 sparkles. HelloPixi supplies explicit level/amount to show() so the
+effect cannot read stale reactive props on an immediate jackpot. Timers are
+cancelled on restart, hide and destroy. The overlay is bounded by its game host.
+The development-only /win-preview route previews all three tiers independently.
+
 Debug free-spin autoplay (2026-10-15): a successful Test Free Spins grant
 starts the existing autoplay scheduler in a bonus-only mode. Its continuation
 condition uses the current free-spin balance, including retriggers, rather than
