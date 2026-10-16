@@ -1,6 +1,36 @@
 # Oma Peli Technical Deep Dive
 
-Last investigated: 2026-10-15
+Last investigated: 2026-10-16
+
+Bonus atmosphere refinement (2026-10-16): stronger violet edge bloom with a
+gold lower glow pulses between 80% and 100% opacity. The remaining-spin badge
+is now positioned inside game-stage beside the logo. layoutBonusCounter uses
+the actual logo sprite dimensions and gameLayer transform, refreshes on logo
+layout/resize, and clamps the badge to the viewport edge. Both touched Svelte
+components compile without warnings. Local browser verification confirmed a
+completed bonus spin, visible stronger aura, and badge to the logo's right.
+Desktop, 390x844 portrait and 844x390 landscape were visually checked; the
+original viewport was restored after testing.
+
+Free-spin atmosphere (2026-10-16): standalone FreeSpinsAtmosphere renders a
+pointer-transparent violet/gold viewport aura and remaining-spin badge throughout
+bonus mode. syncRoundState detects the base-to-bonus transition (natural trigger
+or debug grant) and starts a 3.6-second vinyl-rain / gold-sparkle introduction.
+Retriggers update the counter without replaying the introduction. spin is gated
+during the introduction; executeAutoPlay waits without consuming its round budget.
+The existing Lifetime owns the intro and retry timers and clears them on teardown.
+All visual motion respects prefers-reduced-motion. No new assets, audio or math
+changes are involved. Production build validation is recorded in the refactor plan;
+browser/mobile visual verification remains pending.
+
+Reel neighbor bleed repair (2026-10-16): standalone Reel.draw shows adjacent
+strip sprites only while spinning/slowing. During bounce, stopped and idle,
+only the selected symbol is visible. Side sprites have 28 pixels of vertical
+bleed and a 173 pixel pitch, so retaining them during the spring bounce exposed
+colored horizontal slivers over empty cells. The selected symbol still bounces;
+the dark backing fills its exposed edge. Regression coverage checks every
+bounce frame, stopped visibility and sprite reuse on the next spin for side and
+center dimensions, including compact landscape bleed.
 
 Release 1.7.0 promotes balanced-96-v1 to the active HelloPixi default via
 `activeMath.ts`. The low-level RoundController default and DemoRoundProvider

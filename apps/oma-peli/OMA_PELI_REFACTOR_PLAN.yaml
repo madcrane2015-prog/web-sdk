@@ -2,7 +2,7 @@ schema_version: 1
 document_type: oma_peli_refactor_plan
 status: active
 created: '2026-07-05'
-last_updated: '2026-10-15'
+last_updated: '2026-10-16'
 master_document: 'apps/oma-peli/OMA_PELI_TECHNICAL_DEEP_DIVE.md'
 agent_rules: 'apps/oma-peli/AGENTS.md'
 phase_runner: 'apps/oma-peli/agentic-refactor/Invoke-OmaPeliCopilotRefactor.ps1'
@@ -133,8 +133,11 @@ target_architecture:
 
 progress:
   active_phase: 'architecture_implementation'
-  active_step: 'release.17_promote_96_test_build'
+  active_step: 'targeted.free_spins_glow_and_badge_position'
   completed_steps:
+    - 'targeted.free_spins_glow_and_badge_position'
+    - 'targeted.free_spins_atmosphere'
+    - 'targeted.reel_neighbor_bleed'
     - 'release.17_promote_96_test_build'
     - 'math.03_experimental_30m_simulation'
     - 'math.02_parallel_96_percent_experiment'
@@ -1429,4 +1432,32 @@ review_queue:
       question: 'Can the missing music loop 14 be added, or should the random music manifest exclude it?'
       default_until_answered: 'Exclude missing files from random selection.'
 
-phase_notes: []
+phase_notes:
+  - date: '2026-10-16'
+    note: >-
+      targeted.free_spins_glow_and_badge_position: increased edge glow and
+      added gold lower bloom; badge follows actual logo size and game-layer
+      transform with viewport clamp. Both touched components compile without
+      warnings. Local browser confirmed bonus spin, aura and badge beside
+      logo at desktop, 390x844 portrait and 844x390 landscape. Original browser
+      viewport restored. Production build passed with existing config/env/chunk
+      warnings. get_errors tool unavailable; direct Svelte compilation passed.
+  - date: '2026-10-16'
+    note: >-
+      targeted.free_spins_atmosphere: added violet/gold bonus aura, remaining
+      spin badge and 3.6s falling-vinyl/sparkle introduction. Base-to-bonus
+      transitions include natural and debug triggers; retriggers do not replay.
+      Manual spins wait; autoplay retries without spending its budget.
+      Lifetime owns timers; reduced-motion CSS suppresses particle movement.
+      Both touched Svelte components compile with zero warnings. Production
+      build passed with existing config/env/chunk warnings. get_errors is
+      unavailable; browser/mobile visual verification remains pending.
+  - date: '2026-10-16'
+    note: >-
+      targeted.reel_neighbor_bleed: hide adjacent strip sprites during bounce
+      and rest, preserving selected-symbol animation and spinning visibility.
+      test:reel-stop passes, including new bounce/rest/restart visibility checks
+      for side/center and compact dimensions. get_errors tool unavailable.
+      Production build passed with existing config/env/chunk warnings;
+      git diff --check passed. Focused ESLint could not run because the project
+      lacks ESLint 9 flat config. Browser visual validation not performed.

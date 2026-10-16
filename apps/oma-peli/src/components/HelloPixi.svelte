@@ -16,6 +16,7 @@
 	import AutoplayMenu from './standalone/AutoplayMenu.svelte';
 	import DesktopControlBar from './standalone/DesktopControlBar.svelte';
 	import FreeSpinsEndPopup from './standalone/FreeSpinsEndPopup.svelte';
+	import FreeSpinsAtmosphere from './standalone/FreeSpinsAtmosphere.svelte';
 	import ModalShell from './standalone/ModalShell.svelte';
 	import MenuButton from './standalone/MenuButton.svelte';
 	import PaytableSection from './standalone/PaytableSection.svelte';
@@ -474,6 +475,7 @@
 	}
 
 	function syncRoundState() {
+		const wasFreeSpinMode = isFreeSpinMode;
 		const state = roundController.snapshot();
 		balance = state.balance;
 		totalRounds = state.totalRounds;
@@ -485,6 +487,10 @@
 		freeSpinsTotalWon = state.freeSpinsTotalWon;
 		freeSpinsTriggerCount = state.freeSpinsTriggerCount;
 		freeSpinsPlayedCount = state.freeSpinsPlayedCount;
+		if (!wasFreeSpinMode && isFreeSpinMode) {
+			showFreeSpinsIntro = true;
+			lifetime.timeout(() => { showFreeSpinsIntro = false; }, 3600);
+		}
 	}
 
 	// Kokonaisvoitto
@@ -493,6 +499,7 @@
 	let isShowingWin = $state(false);
 	let showPaytable = $state(auditMode === 'menu' || auditMode === 'paytable'); // Paytable-näkyvyys
 	let showFreeSpinsEndPopup = $state(false); // Free spins end popup
+	let showFreeSpinsIntro = $state(false);
 	let freeSpinsEndAmount = $state(0); // Total won in free spins
 
 	// Symbolin nimen muunnos näyttöä varten
@@ -597,6 +604,7 @@
 			logoSpriteRef.scale.set(0.46);
 			logoSpriteRef.x = -100;
 			logoSpriteRef.y = 96;
+			layoutBonusCounter();
 			return;
 		}
 
@@ -607,12 +615,27 @@
 			logoSpriteRef.scale.set(0.7);
 			logoSpriteRef.x = 430;
 			logoSpriteRef.y = -230;
+			layoutBonusCounter();
 			return;
 		}
 
 		logoSpriteRef.scale.set(LOGO_SCALE);
 		logoSpriteRef.x = (CANVAS_WIDTH - logoSpriteRef.width) / 2 + LOGO_X;
 		logoSpriteRef.y = LOGO_Y;
+		layoutBonusCounter();
+	}
+
+	let bonusCounterPosition = $state({ x: 0, y: 0, width: 160 });
+	function layoutBonusCounter() {
+		if (!logoSpriteRef || !gameLayer) return;
+		const width = Math.min(180, Math.max(100, stageViewportWidth * 0.25));
+		const right = gameLayer.x + (logoSpriteRef.x + logoSpriteRef.width) * gameLayer.scale.x;
+		const centerY = gameLayer.y + (logoSpriteRef.y + logoSpriteRef.height * 0.45) * gameLayer.scale.y;
+		bonusCounterPosition = {
+			x: Math.min(right + 12, stageViewportWidth - width - 8),
+			y: Math.max(12, centerY - 24),
+			width,
+		};
 	}
 
 	// ===================================================================
@@ -1203,6 +1226,7 @@
 	// 3) Kiekkojen pyörittämisen (BPM-synkronoitu)
 	// 4) Tilastojen päivittämisen
 	function spin() {
+		if (showFreeSpinsIntro) return;
 		if (
 			isProcessingAutoPlay ||
 			reels.some((reel) => reel.state !== 'idle' && reel.state !== 'stopped')
@@ -1432,6 +1456,11 @@
 	// Suorita yksi autoplay-kierros
 	// Tämä funktio kutsuu itseään rekursiivisesti kunnes kierrokset loppuvat
 	function executeAutoPlay() {
+		// Wait without consuming the autoplay budget while the bonus introduction plays.
+		if (showFreeSpinsIntro && isAutoPlaying) {
+			autoPlayTimeoutId = lifetime.timeout(executeAutoPlay, 100);
+			return;
+		}
 		// Lopeta jos autoplay on pysäytetty TAI kierrokset ovat loppuneet
 		if (!isAutoPlaying || (isDebugFreeSpinsAutoPlay
 			? !isFreeSpinMode || freeSpinsRemaining <= 0
@@ -1654,6 +1683,7 @@
   "
 	>
 		<!-- PixiJS canvas sijoitetaan tähän (container-div) -->
+		<FreeSpinsAtmosphere active={isFreeSpinMode} intro={showFreeSpinsIntro} remaining={freeSpinsRemaining} counterPosition={bonusCounterPosition} />
 		<div
 			class="pixi-layer"
 			bind:this={container}

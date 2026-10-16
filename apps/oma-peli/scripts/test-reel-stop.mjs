@@ -1,6 +1,44 @@
 import assert from 'node:assert/strict';
-import { Container } from 'pixi.js';
+import { Container, Texture } from 'pixi.js';
 import { Reel } from '../src/game-standalone/reel.ts';
+
+// Enlarged neighbors must disappear for every bounce frame and remain hidden
+// at rest, then return when the next spin starts (including reused sprites).
+for (const index of [0, 6]) {
+  for (const compact of [false, true]) {
+    const container = new Container();
+    let symbol = 'a';
+    const center = index === 6;
+    const reel = new Reel(index, container, {
+      symbolWidth: center ? 160 : 180, symbolHeight: center ? 158 : 169,
+      rowHeight: center ? 158 : 173,
+      symbolBleedLeft: center ? 0 : compact ? 42 : 12,
+      symbolBleedRight: center ? 0 : compact ? 16 : 12,
+      symbolBleedTop: center ? 0 : 14, symbolBleedBottom: center ? 0 : 14,
+      symbolYOffset: center ? 0 : -4,
+    }, {
+      getSymbol: () => symbol, setSymbol: (_, value) => { symbol = value; },
+      randomSymbol: () => 'a', getSpinSpeed: () => 'medium',
+      getSymbolTextures: () => ({ a: Texture.EMPTY, emptyslot: Texture.EMPTY }),
+      playStopSound: () => {}, playDrumHit: () => {},
+    });
+    reel.startWithResult(1, 'emptyslot');
+    let bounceFrames = 0;
+    for (let frame = 0; frame < 150; frame++) {
+      reel.update();
+      reel.draw();
+      const moving = reel.state === 'spinning' || reel.state === 'slowing';
+      assert.deepEqual(container.children.map(sprite => sprite.visible), [moving, true, moving]);
+      if (reel.state === 'bouncing') bounceFrames++;
+    }
+    assert.ok(bounceFrames > 0);
+    assert.equal(reel.state, 'stopped');
+    assert.equal(symbol, 'emptyslot');
+    reel.start(60);
+    reel.draw();
+    assert.ok(container.children.every(sprite => sprite.visible));
+  }
+}
 
 for (const speed of ['slow', 'medium', 'fast']) {
   // Each skip frame covers a different mixture of spinning/slowing/stopped

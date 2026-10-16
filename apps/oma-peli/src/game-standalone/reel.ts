@@ -191,6 +191,9 @@ export class Reel {
 
 		const y = Math.round(this.offsetValue + this.bounceOffsetValue);
 		const [previousSymbol, currentSymbol, nextSymbol] = this.getSymbolStrip(symbol);
+		// Only a moving strip needs neighboring symbols. Their enlarged artwork
+		// otherwise leaks into the aperture during the final spring bounce.
+		const showNeighbors = this.stateValue === 'spinning' || this.stateValue === 'slowing';
 
 		const drawSymbol = (spriteIndex: number, symbolKey: SymbolKey, yPos: number) => {
 			const texture = symbolTextures[symbolKey];
@@ -203,6 +206,7 @@ export class Reel {
 			}
 
 			sprite.texture = texture;
+			sprite.visible = spriteIndex === 1 || showNeighbors;
 			const bleedLeft = this.dimensions.symbolBleedLeft ?? 0;
 			const bleedRight = this.dimensions.symbolBleedRight ?? bleedLeft;
 			const bleedTop = this.dimensions.symbolBleedTop ?? 0;
